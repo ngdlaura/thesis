@@ -1,0 +1,3 @@
+$ conda deactivate
+$ latexmk -cd -pdf thesis_template/main.tex
+$ biber main

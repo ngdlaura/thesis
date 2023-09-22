@@ -1,0 +1,492 @@
+
+\chapter{A Layout-Aware Multimodal Benchmark for Long Document Summarization}
+\label{chapter:chapter5}
+
+\renewcommand{\leftmark}{\spacedlowsmallcaps{A Long and Layout-Aware Multimodal Benchmark for Text Summarization}}
+
+\begin{chapabstract}
+    {\em
+    Text Summarization is a popular task and an active area of research for the \ac{NLP} community. It requires accounting for long input texts, a characteristic which poses computational challenges for neural models. 
+    Moreover, real-world documents come in a variety of complex, visually-rich, layouts. This information is of great relevance, whether to highlight salient content or to encode long-range interactions between textual passages. Yet, all publicly available summarization datasets only provide plain text content.
+    To facilitate research on how to exploit visual/layout information to better capture long-range dependencies in summarization models, we present \textit{LoRaLay}, a collection of datasets for long-range summarization with accompanying visual/layout information. We extend existing and popular English datasets (arXiv and PubMed) with visual/layout information and propose four novel datasets -- consistently built from scholar resources -- covering French, Spanish, Portuguese, and Korean languages.
+    Further, we propose new baselines merging layout-aware and long-range models -- two orthogonal approaches -- and obtain state-of-the-art results, showing the importance of combining both lines of research.
+    \vspace*{5mm}
+    The work in this chapter has led to the publication of a conference paper:}
+    \begin{itemize}
+        \item \small \fullcite{nguyen-etal-2023-loralay}.
+    \end{itemize}
+\end{chapabstract}
+
+\ifthenelse{\boolean{skipCh5}}{\endinput}{}
+
+
+\newpage
+
+\minitoc
+\chapterwithfigures{\nameref*{chapter:chapter5}}
+\chapterwithtables{\nameref*{chapter:chapter5}}
+
+Long document understanding presents several significant challenges. Firstly, contemporary document understanding approaches are based on the Transformer architecture \citep{vaswani2017attention}. However, the quadratic complexity inherent to self-attention renders them unable to capture long-range dependencies, hence constraining their use to short sequences. Secondly, understanding long documents requires the ability to effectively model all information, encompassing not only text but also other modalities such as layout information. Although LayoutLM \citep{xu2020layoutlm} has shown substantial improvements in short document understanding tasks, efficiently leveraging long multimodal information to understand long documents remains an unresolved and under-explored problem.
+
+In this work, we aim at spurring further research on how to incorporate multimodal information to better capture long-range dependencies. To develop models capable of exploiting multimodal information from long documents, there is a need for tasks and datasets that cover every modality. Focusing on compressing the most relevant information from long texts to short summaries, the Text Summarization task naturally lends itself to benefit from a global context. Notice that, in practice, the limitations linked to sequence length are also amplified by the lack of visual/layout information in the existing datasets. 
+
+Yet, the vast majority of publicly available summarization datasets only provide plain text content. \citet{hermann2015teaching} proposed the CNN/DailyMail dataset, a collection of English articles extracted from the CNN and The Daily Mail portals. Each news article is associated with multi-sentence highlights which serve as reference summaries. \citet{scialom2020mlsum} bridge the gap between English and non-English resources for text summarization by introducing MLSum, a large-scale multilingual summarization corpus providing news articles written in French, German, Spanish, Turkish and Russian. Going toward more challenging scenarios involving significantly longer documents, the arXiv and PubMed datasets \citep{cohan2018discourse} consist of scientific articles collected from academic repositories, wherein the paper abstracts are used as summaries. To encourage a shift towards building more abstractive summarization models with global content understanding, \citet{sharma2019bigpatent} introduce BIGPATENT, a large-scale dataset made of U.S. patent filings, where invention descriptions serve as reference summaries. As opposed to other \ac{DU} tasks (e.g., form understanding, \ac{DVQA}) in which the placement of text on the page and/or visual components are the main source of information needed to find the desired data \citep{borchmann2021due}, text plays a predominant role in document summarization. However, guidelines for summarizing texts -- especially long ones -- often recommend roughly previewing them to break them down into their major sections \citep{toprak2009three, luo2019reading}. \citet{miculicich2022document} propose a two-stage method which detects text segments and incorporates this information in an extractive summarization model. \citet{cao2022hibrids} collect a new dataset for long and structure-aware document summarization, consisting of 21k documents written in English and extracted from WikiProject Biography. 
+
+Although not all documents are explicitly organized into clearly defined sections, the great majority contains layout and visual clues (e.g., a physical organization into paragraphs, bigger headings/subheadings) which help structure their textual contents and facilitate reading. Thus, we argue that layout is crucial to summarize long documents. We present \emph{LoRaLay}, a collection of datasets designed for long-range and layout-aware summarization. LoRaLay is a large-scale corpus of research papers that extends two popular datasets, arXiv and PubMed, with layout and visual information, and introduces 4 novel datasets covering French, Spanish, Portuguese and Korean languages. Finally, LoRaLay is accompanied by novel baselines that combine long-range and layout-aware models to provide enhanced performance.
+
+In this chapter, we first detail the dataset construction process. Then, we introduce novel long-range and layout-aware baselines and offer a detailed explanation of the experimental setup. Lastly, we demonstrate the importance of combining layout-aware and long-range modeling through qualitative and quantitative evaluations.
+
+\section{Datasets Construction}
+
+Inspired by the way the arXiv and PubMed datasets were built \citep{cohan2018discourse}, we construct our corpus from research papers, with abstracts as ground-truth summaries. As the PDF format allows simultaneous access to textual, visual and layout information, we collect PDF files to construct our datasets, and provide their URLs.\footnote{We make the corpus-construction code publicly available at \url{https://github.com/recitalAI/loralay-datasets}.}
+
+For each language, we select a repository that contains a high number of academic articles (in the order of hundreds of thousands) and provides easy access to abstracts. 
+More precisely, we chose the following repositories:
+\begin{itemize}
+    \item Archives Ouverte HAL (French),\footnote{\url{https://hal.archives-ouvertes.fr/}} an open archive of scholarly documents from all academic fields. As HAL is primarily directed towards French academics, a great proportion of articles are written in French;
+    \item SciELO (Spanish and Portuguese),\footnote{\url{https://www.scielo.org/}} an open access database of academic articles published in journal collections from Latin America, Iberian Peninsula and South Africa, and covering a broad range of topics (e.g. agricultural sciences, engineering, health sciences, letters and arts). Languages include English, Spanish, and Portuguese.
+    \item KoreaScience (Korean),\footnote{\url{http://www.koreascience.or.kr}} an open archive of Korean scholarly publications in the fields of natural sciences, life sciences, engineering, and humanities and social sciences. Articles are written in English or Korean.
+\end{itemize}
+
+Further, we provide enhanced versions of the arXiv and PubMed datasets, respectively denoted as arXiv-Lay and PubMed-Lay, for which layout information is provided.
+
+\begin{figure}[ht]
+\centering
+    \includegraphics[width=0.45\textwidth]{images/chapter5/Dataset_Construction_Process.pdf}
+  \caption{Dataset Construction Process.}
+  \label{fig:chapter5-dataset-construction}
+\end{figure}
+
+The dataset construction process is illustrated in Figure~\ref{fig:chapter5-dataset-construction}. 
+
+\subsection{Collecting the Data}
+
+\subsubsection{Extended Datasets}
+
+The arXiv and PubMed datasets \cite{cohan2018discourse} contain long scientific research papers extracted from the arXiv and PubMed repositories. We augment them by providing their PDFs, allowing access to layout and visual information. As the abstracts contained in the original datasets are all lowercased, we do not reuse them, but rather extract the raw abstracts using the corresponding APIs.
+
+Note that we were unable to retrieve all the original documents. For the most part, we failed to retrieve the corresponding abstracts, as they did not necessarily match the ones contained in the PDF files (due to \textit{e.g.} PDF-parsing errors). We also found that some PDF files were unavailable, while others were corrupted or scanned documents. Figure~\ref{fig:chapter5-details-lost-docs} provides details on the amount of original documents lost in the process of augmenting arXiv and PubMed with layout/visual information. We observe four types of failures, and provide numbers for each type: 
+
+\begin{itemize}
+    \item The link to the document's PDF file is not provided (\textit{Unavailable PDF});
+    \item The PDF file is corrupted (i.e., cannot be opened) (\textit{Corrupted PDF});
+    \item The document is not digital-born, making it impossible to parse it with PDF parsing tools (\textit{ Scanned PDF});
+    \item The document's abstract cannot be found in the PDF (\textit{Irretrievable Abstract}).
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+  \begin{subfigure}[b]{0.4\textwidth}
+    \includegraphics[width=0.8\textwidth]{images/chapter5/distribution_failure_types_arxiv.pdf}
+  \end{subfigure}
+  \begin{subfigure}[b]{0.4\textwidth}
+    \includegraphics[width=0.8\textwidth]{images/chapter5/distribution_failure_types_pubmed.pdf}
+  \end{subfigure}
+\caption{Distribution of failure types in arXiv-Lay (top) and PubMed-Lay (bottom).}
+\label{fig:chapter5-details-lost-docs}
+\end{figure}
+
+In total, about 39\% (35\%) of the original documents in arXiv (PubMed) were lost.
+
+\paragraph{arXiv-Lay}
+
+The original arXiv dataset \citep{cohan2018discourse} was constructed by converting the \LaTeX~ files to plain text. To be consistent with the other datasets -- for which \LaTeX~files are not available -- we instead use the PDF files to extract both text and layout elements. For each document contained in the original dataset, we fetch (when possible) the corresponding PDF file using Google Cloud Storage buckets. As opposed to the original procedure, we do not remove tables nor discard sections that follow the conclusion. We retrieve the corresponding abstracts from a metadata file provided by Kaggle.\footnote{\url{https://www.kaggle.com/Cornell-University/arxiv}}
+
+\paragraph{PubMed-Lay}
+
+For PubMed, we use the PMC OAI Service\footnote{\url{https://www.ncbi.nlm.nih.gov/pmc/tools/oai/}} to retrieve abstracts and PDF files. 
+
+\subsubsection{New Datasets}
+
+\paragraph{HAL}
+
+We use the HAL API\footnote{\url{https://api.archives-ouvertes.fr/docs/search}} to download research papers written in French. To avoid excessively long (e.g. theses) or short (e.g. posters) documents, extraction is restricted to journal and conference papers. 
+
+\paragraph{SciELO}
+
+Using Scrapy,\footnote{\url{https://scrapy.org/}} we crawl the following SciELO collections: Ecuador, Colombia, Paraguay, Uruguay, Bolivia, Peru, Portugal, Spain and Brazil. We download documents written either in Spanish or Portuguese, according to the metadata, obtaining two distinct datasets: SciELO-ES (Spanish) and SciELO-PT (Portuguese).
+
+\paragraph{KoreaScience}
+
+Similarly, we scrape the KoreaScience website to extract research papers. We limit search results to documents whose publishers’ names contain the word \emph{Korean}. This rule was designed after sampling documents in the repository, and is the simplest way to get a good proportion of papers written in Korean. We show that this rule does not bias the sample towards a specific research area. We compute the distribution of topics covered by all publishers, and compare it to the distribution of topics covered by publishers whose name contains the word \textit{Korean}. Figure~\ref{fig:chapter5-distr-koreascience-topics} shows that the distribution obtained using our rule remains roughly the same as the original. Further, search is restricted to papers published between 2012 and 2021, as recent publications are more likely to have digital-born, searchable PDFs. Finally, we download the PDF files of documents that contain an abstract written in Korean. 
+
+\begin{figure}[ht]
+\centering
+    \includegraphics[width=0.8\textwidth]{images/chapter5/koreascience_topic_distr.pdf}
+  \caption{Distribution of topics covered by all publishers (red) vs distribution of topics covered by publishers whose name contains the word \textit{Korean} (blue).}
+  \label{fig:chapter5-distr-koreascience-topics}
+\end{figure}
+
+\subsection{Data Pre-processing}
+
+For each corpus, we use the 95th percentile of the page distribution as an upper bound to filter out documents with too many pages, while the 5th (1st for HAL and SciELO) percentile of the summary length distribution is used as a minimum threshold to remove documents whose abstracts are too short. As our baselines do not consider visual information, we only extract text and layout from the PDF files. Layout is incorporated by providing the spatial position of each word in a document page image, represented by its bounding box $(x_0, y_0, x_1, y_1)$, where $(x_0, y_0)$ and $(x_1, y_1)$ respectively denote the coordinates of the top-left and bottom-right corners. Using the PDF rendering library Poppler\footnote{ \url{https://poppler.freedesktop.org/}}, text and word bounding boxes are extracted from each PDF, and the sequence order is recovered based on heuristics around the document layout (e.g., tables, columns). Abstracts are then removed by searching for exact matches; when no exact match is found, we use \texttt{fuzzysearch}\footnote{ \url{https://pypi.org/project/fuzzysearch/}} and \texttt{regex}\footnote{ \url{https://pypi.org/project/regex/}} to find near matches. We use a maximum Levenshtein distance of 20 with fuzzysearch, and a maximum number of errors of 3 with regex. For the non-English datasets, documents might contain several abstracts, written in different languages. To avoid information leakage, we retrieve the abstract of each document in every language available -- according to the API for HAL or the websites for SciELO and KoreaScience -- and remove them using the same strategy as for the main language. In the case an abstract cannot be found, we discard the document to prevent any unforeseen leakage. 
+
+\subsection{Datasets Statistics}
+
+The statistics of our proposed datasets, along with those computed on existing summarization datasets of long documents \citep{cohan2018discourse, sharma2019bigpatent} are reported in Table~\ref{tab:chapter5-datasets-stats}. We see that document lengths are comparable or greater than for the arXiv, PubMed and BigPatent datasets.  
+
+For arXiv-Lay and PubMed-Lay, we retain the original train/validation/splits and try to reconstruct them as faithfully to the originals as possible. For the new datasets, we order documents based on their publication dates and provide splits following a chronological ordering. For HAL and KoreaScience, we retain 3\% of the articles as validation data, 3\% as test, and the remaining as training data. To match the number of validation/test documents in HAL and KoreaScience, we split the data into 90\% for training, 5\% for validation and 5\% for test, for both SciELO datasets. The statistics of our splits are provided in Table~\ref{tab:chapter5-splits-stats}
+
+\begin{table}
+\centering
+\small
+% \resizebox{0.5\linewidth}{!}{%
+\begin{tabular}{ccccc}
+\hline
+             \multirow{3}{*}{\textbf{Dataset}} & \textbf{\# Docs} & \textbf{Mean}         & \textbf{Mean}  \\
+             &                  & \textbf{Article}        & \textbf{Summary} \\
+             &                  & \textbf{Length}        & \textbf{Length} \\
+             \hline
+arXiv \citep{cohan2018discourse}      & 215,913   & 3,016 & 203  \\
+PubMed \citep{cohan2018discourse}     & 133,215   & 4,938 & 220   \\
+BigPatent \citep{sharma2019bigpatent} & 1,341,362 & 3,572 & 117 \\
+\midrule
+arXiv-Lay       & 130,919 & 7,084 & 125 \\
+PubMed-Lay      & 86,668  & 4,038 & 144 \\
+HAL          & 46,148  & 4,543 & 134 \\
+SciELO-ES    & 23,170  & 4,977 & 172 \\
+SciELO-PT    & 21,563  & 6,853 & 162 \\
+KoreaScience & 37,498  & 3,192 &  95 \\
+\hline
+\end{tabular}
+% }
+\caption{Datasets statistics. Article and summary lengths are computed in words. For KoreaScience, words are obtained via white-space tokenization. Difference between arXiv and arXiv-Lay is due to the fact that we retain the whole document, while \citet{cohan2018discourse} truncate it after the conclusion.}
+\label{tab:chapter5-datasets-stats}
+\end{table}
+
+\begin{table}[]
+\centering
+\small 
+\resizebox{\linewidth}{!}{%
+\begin{threeparttable}
+\begin{tabular}{crrrrrrrrrr}
+\hline
+\multicolumn{1}{c}{\multirow{2}{*}{\textbf{Dataset}}} & & \multicolumn{3}{c}{\textbf{Instances}} &                                                  & \multicolumn{2}{c}{\textbf{Input Length}} & & \multicolumn{2}{c}{\textbf{Output Length}} \\
+\multicolumn{1}{l}{} & & \multicolumn{1}{c}{\textbf{Train}} & \multicolumn{1}{c}{\textbf{Dev}} & \multicolumn{1}{c}{\textbf{Test}} & & \textbf{Median}         & \textbf{90\%-ile}        & & \textbf{Median}         & \textbf{90\%-ile}         \\
+\hline
+arXiv \citep{cohan2018discourse}  & & 203,037 & 6,436 & 6,440 & & 6,151 & 14,405 & & 171 & 352 \\
+PubMed \citep{cohan2018discourse} & & 119,924 & 6,633 & 6,658 & & 2,715 &  6,101 & & 212 & 318 \\
+\midrule
+arXiv-Lay               & & 122,189                   & 4,374                   & 4,356      &              &  6,225         & 12,541           &   & 150          & 249     \\
+PubMed-Lay              & & 78,234                    & 4,084                   & 4,350      &              & 
+3,761        & 7,109           &  & 182           & 296              \\
+HAL                  & & 43,379                    & 1,384                   & 1,385      &              & 4,074          & 8,761           & & 179            & 351              \\
+SciELO-ES            & & 20,853                    & 1,158                   & 1,159      &               & 4,859          & 8,519           & & 226            & 382              \\
+SciELO-PT            & & 19,407                    & 1,078                   & 1,078      &               &  6,090          & 9,655           &  & 239                &  374                \\
+KoreaScience         & & 35,248                    & 1,125                   & 1,125      &              &  2,916          &  5,094           &  & 219           & 340   \\
+\hline 
+\end{tabular}
+\end{threeparttable}
+}
+\caption{Datasets splits and statistics. Input and output lengths are computed in tokens, obtained using Pegasus and mBART-50's tokenizers for the English and non-English datasets, respectively.}
+\label{tab:chapter5-splits-stats}
+\end{table}
+
+The distribution of research areas in arXiv-Lay and HAL are provided in Figures~\ref{fig:chapter5-arxiv-research-areas} and ~\ref{fig:chapter5-hal-research-areas}, respectively. Such distributions are not available for the other datasets, as we did not have access to topic information during extraction.
+
+\begin{figure}[H]
+    \includegraphics[width=0.5\textwidth]{images/chapter5/distribution_research_areas_arxiv.pdf}
+  \caption{Distribution of research areas in arXiv-Lay.}
+  \label{fig:chapter5-arxiv-research-areas}
+\end{figure}
+
+\begin{figure}[H]
+    \includegraphics[width=0.5\textwidth]{images/chapter5/distribution_research_areas_hal.pdf}
+  \caption{Distribution of research areas in HAL.}
+  \label{fig:chapter5-hal-research-areas}
+\end{figure}
+
+
+\section{Experiments}
+
+\subsection{Models}
+
+We provide baseline models for abstractive summarization, built on the Transformer architecture. These models are categorized into four groups: text-only models with standard input size, layout-aware models with standard input size, long-range text-only models, and long-range layout-aware models. For reproducibility purposes, we make the models' implementation, along with the fine-tuning and evaluation scripts, publicly available.\footnote{\url{https://github.com/recitalAI/loralay-modeling}}
+
+We do not explore the use of visual information in long document summarization, as the focus is on evaluating baseline performance using state-of-the-art summarization models augmented with layout information. While visual features might provide a better understanding of structures such as tables and figures, we do not expect substantial gains with respect to layout-aware models. Indeed, the information provided in figures (i.e., information that cannot be captured by layout or text) are commonly described in the caption or related paragraphs. 
+
+\paragraph{Text-only Models with Standard Input Size}
+
+We use Pegasus \citep{zhang2020pegasus} as a text-only baseline for arXiv-Lay and PubMed-Lay. Pegasus is an encoder-decoder model pre-trained using gap-sentences generation, making it a state-of-the-art model for abstractive summarization.
+For the non-English datasets, we rely on a finetuned mBART as our baseline. mBART \citep{liu2020multilingual} is a multilingual sequence-to-sequence model pretrained on large-scale monolingual corpora in many languages using the BART objective \citep{lewis2019bart}. We use its extension, mBART-50 \citep{tang2020multilingual},\footnote{For the sake of clarity, we refer to mBART-50 as mBART.} which is created from the original mBART by extending its embeddings layers and pre-training it on a total of 50 languages. 
+Both Pegasus and mBART are limited to a maximum sequence length of 1,024 tokens, which is well below the median length of each dataset.
+
+\paragraph{Layout-aware Models with Standard Input Size}
+
+We introduce layout-aware extensions of Pegasus and mBART, respectively denoted as Pegasus+Layout and mBART+Layout. Following LayoutLM \citep{xu2020layoutlm}, each token bounding box coordinates $(x_0, y_0, x_1, y_1)$ is normalized into an integer in the range [0, 1000]. Spatial positions are encoded using four embedding tables, namely two for the coordinate axes ($x$ and $y$), and the other two for the bounding box size (width and height). The layout representation of a token is formed by summing the resulting embedding representations
+The final representation of a token is then obtained through point-wise summation of its textual, 1D-positional and layout embeddings.
+
+\paragraph{Long-range, Text-only Models}
+
+To process longer sequences, we leverage BigBird \citep{zaheer2020big}, a sparse-attention based Transformer which reduces the quadratic dependency to a linear one. For arXiv-Lay and PubMed-Lay, we initialize BigBird from Pegasus \citep{zaheer2020big} and for the non-English datasets, we use the weights of mBART. The resulting models are referred to as BigBird-Pegasus and BigBird-mBART. For both models, BigBird sparse attention is used only in the encoder. Both models can handle up to 4,096 inputs tokens, which is greater than the median length in PubMed-Lay, HAL and KoreaScience. 
+
+
+\paragraph{Long-range, Layout-aware Models}
+
+We also include layout information in long-range text-only models. Similarly to layout-aware models with standard input size, we integrate layout information into our long-range models by encoding each token's spatial position in the page. The resulting models are denoted as BigBird-Pegasus+Layout and BigBird-mBART+Layout.
+
+
+\paragraph{Additional State-of-the-Art Baselines}
+
+We further consider additional state-of-the-art baselines for summarization: i) the text-only T5 \citep{raffel2020exploring} with standard input size, ii) the long-range Longformer-Encoder-Decoder (LED) \citep{beltagy2020longformer}, and iii) the layout-aware, long-range LED+Layout, which we implement similarly to the previous layout-aware models.
+
+\subsection{Implementation Details}
+
+We initialize our Pegasus-based and mBART-based models with, respectively, the google/pegasus-large and facebook/mbart-large-50 checkpoints shared through the Hugging Face Model Hub. As for T5 and LED, we use the weights from t5-base and allenai/led-base-16384, respectively.\footnote{The large versions of T5 and LED did not fit into GPU due to their size.}
+
+Following \citet{zhang2020pegasus} and \citet{zaheer2020big}, we fine-tune our models up to 74k (100k) steps on arXiv-Lay (PubMed-Lay). On HAL, the total number of steps is set to 100k, while it is decreased to 50k for the other non-English datasets. We tested different values for the number of steps (10k, 25k, 50k, 100k) and chose the one that gave the best validation scores for mBART.
+For each model, we select the checkpoint with the best validation loss. For Pegasus and mBART models, inputs are truncated at 1,024 tokens. For BigBird-Pegasus models, we follow \citet{zaheer2020big} and set the maximum input length at 3,072 tokens. As the median input length is much greater in almost every non-English dataset, we increase the maximum input length to 4,096 tokens for BigBird-mBART models. Output length is restricted to 256 tokens for all models, which is enough to fully capture at least 50\% of the summaries in each dataset.
+
+For evaluation, we use beam search and report a single run for each model and dataset. Following \citet{zhang2020pegasus, zaheer2020big}, we set the number of beams to 8 for Pegasus-based models, and 5 for BigBird-Pegasus-based models. For the non-English datasets, we set it to 5 for all models, for fair comparison. For all experiments, we use a length penalty of 0.8. 
+
+Models were implemented in Python using PyTorch \citep{paszke2017automatic} and Hugging Face \citep{wolf2019huggingface} librairies. In all experiments, we use Adafactor \citep{shazeer2018adafactor}, a stochastic optimization method based on Adam \citep{kingma2014adam} that reduces memory usage while retaining the empirical benefits of adaptivity. We set a learning rate warmup over the first 10\% steps -- except on arXiv-Lay where it is set to 10k consistently with \citet{zaheer2020big}, and use a square root decay of the learning rate. All our experiments have been run on four Nvidia V100 with 32GB each. 
+
+\section{Results and Discussion}
+
+\subsection{General Results}
+
+% \begin{table}[ht]
+% \centering
+% \small
+% \begin{tabular}{lccc}
+% \toprule
+% \multicolumn{1}{c}{\textbf{Model}} & \textbf{\# Params} & \shortstack{\textbf{arXiv/} \\ \textbf{arXiv-Lay}} & \shortstack{\textbf{PubMed/} \\ \textbf{PubMed-Lay}} \\  
+% \midrule
+%  \rowcolor{Gray} Pegasus \citep{zhang2020pegasus} & 568M & 38.83 & 41.34 \\
+%  \rowcolor{Gray} BigBird-Pegasus \citep{zaheer2020big} & 576M & 41.77 & 42.33\\
+% \hline
+% T5 \citep{raffel2020exploring}                     & 223M & 37.90 & 39.23 \\ 
+% LED \citep{beltagy2020longformer}                   & 161M & 40.74 & 41.54 \\ 
+% LED+Layout             & 165M & 40.96 & 41.83 \\[0.7mm]
+% Pegasus                & 568M & 39.07 & 39.75 \\ 
+% Pegasus+Layout         & 572M & 39.25 & 39.85 \\
+% BigBird-Pegasus        & 576M & 39.59 & 41.09 \\
+% BigBird-Pegasus+Layout & 581M & \textbf{41.15} & \textbf{42.05} \\
+% \bottomrule
+                            
+% \end{tabular}
+% % }
+% \caption{ROUGE-L scores on arXiv-Lay and PubMed-Lay. Reported results obtained by Pegasus and BigBird-Pegasus on the original arXiv and PubMed are reported with a gray background. The best results obtained on arXiv-Lay and PubMed-Lay are denoted in bold.}
+% \label{tab:chapter5-rl-scores-arxiv-pubmed}
+% \end{table}
+
+\begin{table}[ht]
+\centering
+\small
+\begin{tabular}{l*{13}{c}}
+\toprule
+\multicolumn{1}{c}{\multirow{2}{*}{\textbf{Model}}} & \textbf{\# Params} & \multicolumn{3}{c}{\shortstack{\textbf{arXiv/} \\ \textbf{arXiv-Lay}}}  &                                               & \multicolumn{3}{c}{\shortstack{\textbf{PubMed/} \\ \textbf{PubMed-Lay}}} \\ \cline{3-5} \cline{7-9} 
+\multicolumn{1}{l}{}               &  & \multicolumn{1}{c}{R-1} & \multicolumn{1}{c}{R-2} & \multicolumn{1}{c}{R-L} & & R-1     & R-2     & R-L \\ 
+\midrule
+\rowcolor{Gray} Pegasus \citep{zhang2020pegasus}             & 568M & 44.21 & 16.95 & 38.83 & & 45.97 & 20.15 & 41.34 \\  
+\rowcolor{Gray} BigBird-Pegasus \citep{zaheer2020big}        & 576M & 46.63 & 19.02 & 41.77 & & 46.32 & 20.65 & 42.33 \\  
+\hline
+T5 \citep{raffel2020exploring}    & 223M & 42.79 & 15.98 & 37.90 & & 42.88 & 17.58	& 39.23 \\
+LED \citep{beltagy2020longformer} & 161M & 45.41 & 18.14 & 40.74 &	& 45.28	& 19.86	& 41.54 \\
+LED+Layout                        & 165M & 45.51 & 18.55 & 40.96 &	& 45.41	& 19.74	& 41.83 \\
+Pegasus                           & 568M & 43.81	            & 17.27	            & 39.07          & & 43.52          &  17.96          & 39.75  \\
+Pegasus+Layout                    & 572M & 44.10	            & 17.01	            & 39.25          & & 43.59          &  18.24          & 39.85  \\
+BigBird-Pegasus                   & 576M & 44.43	            & 17.74	            & 39.59          & & 44.80          &  19.32          & 41.09  \\
+BigBird-Pegasus+Layout            & 581M & \textbf{46.02}	& \textbf{18.95}	& \textbf{41.15} & & \textbf{45.69} & \textbf{20.38} & \textbf{42.05} \\
+\bottomrule
+      
+\end{tabular}
+\caption{ROUGE scores on arXiv-Lay and PubMed-Lay. Reported results obtained by Pegasus and BigBird-Pegasus on the original arXiv and PubMed are highlighted with a gray background. The best results obtained on arXiv-Lay and PubMed-Lay are denoted in bold.}
+\label{tab:chapter5-results-arxiv-pubmed}
+\end{table}
+
+\begin{table}[ht]
+\centering
+\small
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{lcccccc}
+\toprule
+                        & \textbf{LED} & \shortstack{\textbf{LED} \\ \textbf{+Layout}}      & \textbf{Pegasus} & \shortstack{\textbf{Pegasus} \\ \textbf{+Layout}} 
+                        & \textbf{BigBird-Pegasus} & \shortstack{\textbf{BigBird-Pegasus} \\ \textbf{+Layout}} \\  
+\midrule
+\textbf{T5}                     & 2.84 / 2.31 & 3.06 / 2.60 & 1.17 / 0.52 & 1.35 / 0.62 & 1.69 / 1.86 & 3.25 / 2.82\\ 
+\textbf{LED}                    & -- & 0.22 / 0.29 & 1.67 / 1.79 & 1.49 / 1.69 & 1.15 / 0.45 & 0.41 / 0.51\\
+\textbf{LED+Layout}             & -- & -- & 1.89 / 2.08 & 1.71 / 1.98 & 1.38 / 0.74 & 0.19 / 0.22 \\
+\textbf{Pegasus}                & -- & -- & -- & 0.34 / 0.10 & 0.52 / 1.34 & 2.08 / 2.30 \\ 
+\textbf{Pegasus+Layout}         & -- & -- & -- & -- & 0.34 / 1.24 & 1.90 / 2.20 \\
+\textbf{BigBird-Pegasus}        & -- & -- & -- & -- & -- & 1.56 / 0.96 \\
+\bottomrule
+                            
+\end{tabular}
+}
+\caption{Absolute ROUGE-L score differences between each pair of models, on arXiv-Lay/PubMed-Lay.}
+\label{tab:chapter5-rouge-l-improvements-arxiv-pubmed}
+\end{table}
+
+\begin{table}[h]
+\centering
+\small
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{crrrrrrrrr}
+\toprule
+\multirow{2}{*}{\textbf{Distribution}} & & \multicolumn{2}{c}{\textbf{Q1}} & & \multicolumn{2}{c}{\textbf{Q2}} & & \multicolumn{2}{c}{\textbf{Q3}} \\ \cline{3-4} \cline{6-7} \cline {9-10} 
+               & & \textbf{arXiv-Lay} & \textbf{PubMed-Lay} & & \textbf{arXiv-Lay} & \textbf{PubMed-Lay} & & \textbf{arXiv-Lay} & \textbf{PubMed-Lay} \\ 
+\midrule
+Article Length                  & &    6,226 &    3,513 & &   9,142 &   5,557 & &   13,190 & 8,036 \\
+Summary Length                  & &      119 &      130 & &     159 &     182 & &      202 &   247 \\  
+$\sigma$ of bounding box height & &     3.37 &     1.34 & &    3.98 &    1.73 & &     4.70 &  2.28 \\
+\bottomrule
+      
+\end{tabular}
+}
+\caption{Quartiles calculated from the distributions of article lengths, summary lengths, and variation in the height of bounding boxes, for arXiv-Lay and PubMed-Lay.}
+\label{tab:chapter5-quartiles}
+\end{table}
+
+% \begin{table}[ht]
+% \centering
+% \small
+% \begin{tabular}{lccccc}
+% \toprule
+% \multicolumn{1}{c}{\textbf{Model}} & \textbf{\# Params} & \shortstack{\textbf{HAL} \\ (fr)} & \shortstack{\textbf{SciELO-ES} \\ (es)} & \shortstack{\textbf{SciELO-PT} \\ (pt)} & \shortstack{\textbf{KoreaScience} \\ (ko)} \\  
+% \midrule
+% MBART                  & 610M & 42.00 & 36.55 & 36.42 & 16.94 \\
+% MBART+Layout           & 615M & 41.67 & 37.47 & 34.37 & 14.98 \\
+% BigBird-MBART          & 617M & 45.04 & 37.76 & 39.63 & 18.55 \\
+% BigBird-MBART+Layout   & 621M & \textbf{45.20} & \textbf{40.71} & \textbf{40.51} & \textbf{19.95} \\
+% \bottomrule
+                            
+% \end{tabular}
+% \caption{ROUGE-L scores on the non-English datasets. The best results for each dataset are reported in bold. }
+% \label{tab:chapter5-rl-scores-multilingual}
+% \end{table}
+
+In Table~\ref{tab:chapter5-rl-scores-arxiv-pubmed}, we report the ROUGE scores obtained on arXiv and PubMed datasets (reported by \citet{zaheer2020big}), as well as on the corresponding layout-augmented counterparts we release. On arXiv-Lay and PubMed-Lay, we observe that, while the addition of layout to Pegasus does not improve the ROUGE-L scores, there are gains in integrating layout information into BigBird-Pegasus. To assess whether these gains are significant, we perform significance analysis at the 0.05 level using bootstrap, and estimate a ROUGE-L threshold that predicts when improvements are significant. ROUGE-L improvements between each pair of models are reported in Table~\ref{tab:chapter5-rouge-l-improvements-arxiv-pubmed}. On arXiv-Lay, we compute a threshold of 1.48 ROUGE-L, showing that BigBird-Pegasus+Layout significantly outperforms all Pegasus-based models. In particular, we find a 1.56 ROUGE-L improvement between BigBird-Pegasus and its layout-augmented counterpart, demonstrating that the addition of layout to long-range modeling significantly improves summarization. On PubMed-Lay, we compute a threshold of 1.77. Hence, the 0.96 ROUGE-L improvement from BigBird-Pegasus to its layout-augmented counterpart is not significant. However, the variance in font sizes in PubMed-Lay is much smaller compared to arXiv-Lay (see Table~\ref{tab:chapter5-quartiles}, which lists the quartiles computed from the distributions of article lengths, summary lengths, and variation in the height of bounding boxes, for arXiv-Lay and PubMed-Lay). This reflects an overall more simplistic layout. Therefore, we argue that layout integration has a lesser impact in PubMed-Lay, which can explain the non-significance of results. In addition, we find that BigBird-Pegasus significantly outperforms Pegasus and Pegasus+Layout only when augmented with layout, with an improvement of, respectively, 2.3 and 2.2 points. This demonstrates the importance of combining layout and long-range modeling. 
+
+While T5 and LED obtain competitive results, we find that the gain in adding layout to LED is minor. However, the models we consider have all been pre-trained only on plain text. As a result, the layout representations are learnt from scratch during fine-tuning. Similarly to us, \citet{borchmann2021due} show that their layout-augmented T5 does not necessarily improve the scores, and that performance is significantly enhanced only when the model has been pre-trained on layout-rich data.  
+
+Further, we observe, for both Pegasus and BigBird-Pegasus, a drop in performance w.r.t. the scores obtained on the original datasets. This can be explained by two factors. First, our extended datasets contain less training data due to the inability to process all original documents. Secondly, the settings are different: while the original arXiv and PubMed datasets contain clear discourse information (e.g., each section is delimited by markers) obtained from \LaTeX~ files, documents in our extended versions are built by parsing raw PDF files. Therefore, the task is more challenging for text-only baselines, as they have no access to the discourse structure of documents, which further underlines the importance of taking the structural information, brought by visual cues, into account.
+
+
+\begin{table}[]
+\centering
+\small
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{clllllllllllllll}
+\toprule
+\multirow{2}{*}{\textbf{Model}} & \multicolumn{3}{c}{\textbf{HAL} (FR)} & & \multicolumn{3}{c}{\textbf{SciELO-ES} (ES)} & & \multicolumn{3}{c}{\textbf{SciELO-PT} (PT)} & & \multicolumn{3}{c}{\textbf{KoreaScience} (KR)} \\  \cline{2-4} \cline{6-8} \cline{10-12} \cline{14-16}
+ &  R-1 & R-2 & R-L & & R-1     & R-2     & R-L & & R-1     & R-2     & R-L & & R-1     & R-2     & R-L  \\ 
+\midrule
+MBART                 & 47.05 & 22.23 & 42.00 & & 41.04 & 15.65 & 36.55 & & 41.18 & 15.53 & 36.42 & & 17.33 & 7.70 & 16.94 \\
+MBART+Layout          & 46.65 & 21.96 & 41.67 & & 42.27 & 15.73 & 37.47 & & 39.45 & 14.17 & 34.37 & & 15.43 & 6.69 & 14.98 \\
+BigBird-MBART         & 49.85 & \textbf{25.71} & 45.04 & & 42.64 & 16.60 & 37.76 & & 44.85 & 18.70 & 39.63 & & 18.96 & 8.01 & 18.55 \\
+BigBird-MBART+Layout  & \textbf{49.99} & 25.20 & \textbf{45.20} & & \textbf{45.64} & \textbf{19.33} & \textbf{40.71} & & \textbf{45.47} & \textbf{20.40} & \textbf{40.51} & & \textbf{20.36} & \textbf{9.49} & \textbf{19.95} \\
+\bottomrule
+                            
+\end{tabular}
+}
+\caption{ROUGE scores on the non-English datasets. The best results for each dataset are reported in bold.}
+\label{tab:chapter5-results-multilingual}
+\end{table}
+
+\begin{table}[ht]
+\centering
+\small
+\begin{tabular}{crrr}
+\toprule
+\textbf{Dataset} & \textbf{Train} & \textbf{Validation} & \textbf{Test} \\
+\midrule
+HAL (fr)                                 & 90.72                     & 90.54                          & 85.84                    \\
+SciELO-ES (es)                            & 84.86                     & 84.28                          & 84.90                    \\
+SciELO-PT (pt)                           & 90.95                     & 90.58                          & 91.96                    \\
+KoreaScience (ko) & 73.53                     & 70.26                          & 68.78       \\            
+\bottomrule
+\end{tabular}
+\caption{Percent confidence obtained for the main language, for each dataset split.}
+\label{table:chapter5-percentage-main-lang}
+\end{table}
+
+Table \ref{tab:chapter5-results-multilingual} presents the ROUGE scores reported on the non-English datasets. 
+On HAL, we note that BigBird-MBART does not benefit from layout. After investigation, we hypothesize that this is due to the larger presence of single-column and simple layouts, which makes layout integration less needed.
+On both SciELO datasets, we notice that combining layout with long-range modeling brings substantial improvements over MBART.
+Further, we find that the plain-text BigBird models do not improve over the layout-aware Pegasus and MBART on arXiv-Lay and SciELO-ES, demonstrating that simply capturing more context does not always suffice. 
+Regarding performance on KoreaScience, we can see a significant drop in performance for every model w.r.t the other non-English datasets. At first glance, we notice a high amount of English segments (e.g., tables, figure captions, scientific concepts) in documents in KoreaScience. To investigate this, we use the cld2 library\footnote{\url{https://github.com/GregBowyer/cld2-cffi}} to detect the language in each non-English document. We consider the percent confidence of the top-1 matching language as an indicator of the presence of the main language (i.e., French, Spanish, Portuguese or Korean) in a document, and average the results to obtain a score for the whole dataset. Table~\ref{table:chapter5-percentage-main-lang} reports the average percent confidence obtained on each split, for each dataset. We find that the percentage of text written in the main language in KoreaScience (i.e., Korean) is smaller than in other datasets. As the MBART-based models expect only one language in a document (the information is encoded using a special token), we claim the strong presence of non-Korean segments in KoreaScience causes them to suffer from interference problems. Therefore, we highlight that KoreaScience is a more challenging dataset, and we hope our work will boost research on better long-range, multimodal \textit{and} multilingual models.
+
+Overall, results show a clear benefit of integrating layout information for long document summarization. 
+
+\subsection{Human Evaluation}
+
+\begin{figure}[H]
+    \hspace{5cm}
+    \centering
+    \includegraphics[width=0.6\textwidth]{images/chapter5/interface_preview.pdf}
+  \caption{LoRaLay evaluation interface.}
+  \label{fig:chapter5-loralay-eval-interface}
+\end{figure}
+
+
+\begin{table}[ht]
+\centering
+\small
+\begin{tabular}{lccccc}
+\toprule
+\textbf{Metric}        & \textbf{BigBird} & \textbf{BigBird+Layout} \\ 
+\midrule
+Precision \%    &    35.15 \scriptsize{(0.81)}            &      37.51 \scriptsize{(0.70)}                   \\
+Recall \%       &    28.07 \scriptsize{(0.73)}             &     33.59 \scriptsize{(0.86)}                   \\
+Coherence     &     3.80 \scriptsize{(0.38)}             &      3.75 \scriptsize{(0.62)}                   \\ 
+Fluency       &     4.48 \scriptsize{(0.03)}             &      4.34 \scriptsize{(0.16)}                   \\
+Overlap \%     &    8.77 \scriptsize{(0.24)}             &     7.49 \scriptsize{(0.36)}                    \\ 
+Flow \%             &   30.75 \scriptsize{(0.68)}          &    33.02 \scriptsize{(0.71)}                     \\
+\bottomrule
+\end{tabular}
+\caption{Average human judgement scores obtained by comparing gold-truth abstracts and summaries generated by BigBird and BigBird+Layout from 50 documents sampled from arXiv-Lay and HAL. Inter-rater agreement	is computed using Krippendorff's alpha coefficient, and enclosed between parentheses.}
+\label{tab:chapter5-human-eval-scores}
+\end{table}
+
+To gain more insight into the effect of document layout for summarizing long textual content, we conduct a human evaluation of summaries generated by BigBird-Pegasus/BigBird-MBART and their layout-aware counterparts. We choose the BigBird-based models over the LED ones, as the gain in augmenting BigBird with layout is much more apparent. We evenly sample 50 documents from arXiv-Lay and HAL test sets, filtering documents by their topics (computer science) to match the judgment capabilities of the three human annotators. 
+Using the Streamlit\footnote{\url{https://streamlit.io/}} framework, we design and develop an interface to aid human evaluation of summarization models.\footnote{The code is publicly available at \url{https://anonymous.4open.science/r/loralay-eval-interface-C20D}.} A preview of the interface is presented in Figure~\ref{fig:chapter5-loralay-eval-interface}.
+For each sentence $s_i$ in the generated summary, we ask the annotators to highlight the relevant tokens in $s_i$, along with the equivalent parts in the ground-truth abstract (denoted $h_i$). Further, we ask them to rate the summary in terms of coherence and fluency, on a scale of 0 to 5, following the DUC quality guidelines \citep{dang2005overview}. Finally, annotators are asked to penalize summaries with hallucinated facts. The highlighting process allows us to compute precision and recall as the percentage of highlighted information in the generated summary and the ground-truth abstract, respectively. Moreover, we can compute an overlap ratio as the percentage of highlighted information that appears several times in the generated summary. Lastly, we calculate a flow percentage that evaluates how well the order of the ground-truth information is preserved by computing the percentage of times where the highlighted text $h_i$ in the gold summary for one generated sentence $s_i$ follows the highlighted text $h_{i-1}$ for the previous sentence $s_{i-1}$ (i.e. where any token from $h_i$ occurs after a token in $h_{i-1}$).
+Table~\ref{tab:chapter5-human-eval-scores} reports the scores for each metric and model, averaged over all 50 documents, along with inter-rater agreements, computed using Krippendorff's alpha coefficient. We find that adding layout to the models significantly improves precision and recall, results in less overlap (repetition), and is more in line with the ground truth order. Further, annotators did not encounter any hallucinated fact in the 50 generated summaries. To conclude, reported results show that human annotators strongly agree that adding layout generates better summaries, further validating our claim that layout provides vital information for summarization tasks.
+
+\subsection{Case Studies}
+
+\begin{figure}[ht]
+    \centering
+    \begin{subfigure}[b]{0.32\textwidth}
+        \includegraphics[width=1\textwidth]{images/chapter5/diff_in_len_barchart_nolegend.pdf}
+        \caption{Article length}
+    \end{subfigure}
+    \begin{subfigure}[b]{0.32\textwidth}
+        \includegraphics[width=\textwidth]{images/chapter5/diff_out_len_barchart_nolegend.pdf}
+        \caption{Summary length}
+    \end{subfigure}
+    \begin{subfigure}[b]{0.32\textwidth}
+        \includegraphics[width=\textwidth]{images/chapter5/diff_std_bbox_height_barchart_nolegend.pdf}
+        \caption{$\sigma$ of bounding box height}
+    \end{subfigure}
+    \caption{Benefit of using layout on arXiv-Lay (blue) and PubMed-Lay (red), defined as the difference in ROUGE-L scores between BigBird-Pegasus+Layout and BigBird-Pegasus. For each dataset, quartiles are calculated from the distributions of article lengths (a), summary lengths (b) and variance in the height of the bounding boxes (c). ROUGE-L scores are then computed per quartile range, and averaged over each range.}
+    \label{fig:chapter5-analysis-quartiles}
+\end{figure}
+
+\begin{table}[h]
+\centering
+\small
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{crrrrrrrrr}
+\toprule
+\multirow{2}{*}{\textbf{Distribution}} & & \multicolumn{2}{c}{\textbf{Q1}} & & \multicolumn{2}{c}{\textbf{Q2}} & & \multicolumn{2}{c}{\textbf{Q3}} \\ \cline{3-4} \cline{6-7} \cline {9-10} 
+               & & arXiv-Lay & PubMed-Lay & & arXiv-Lay & PubMed-Lay & & arXiv-Lay & PubMed-Lay \\ 
+\midrule
+Article Length                  & &    6,226 &    3,513 & &   9,142 &   5,557 & &   13,190 & 8,036 \\
+Summary Length                  & &      119 &      130 & &     159 &     182 & &      202 &   247 \\  
+$\sigma$ of bounding box height & &     3.37 &     1.34 & &    3.98 &    1.73 & &     4.70 &  2.28 \\
+\bottomrule
+      
+\end{tabular}
+}
+\caption{Quartiles calculated from the distributions of article lengths, summary lengths, and variation in the height of bounding boxes, for arXiv-Lay and PubMed-Lay.}
+\label{tab:chapter5-quartiles}
+\end{table}
+
+To have a better understanding of the previous results, we focus on uncovering the cases in which layout is most helpful. To this end, we identify features that relate to the necessity of having layout: 1) article length, as longer texts are intuitively easier to understand with layout, 2) summary length, as longer summaries are likely to cover more salient information, and 3) variance in font sizes (using the height of the bounding boxes), and, as such, the complexity of the layout.
+The benefit of using layout is measured as the difference in ROUGE-L scores between BigBird-Pegasus+Layout and its purely textual counterpart, on arXiv-Lay and PubMed-Lay. We compute quartiles from the distributions of article lengths, ground-truth summary lengths, and variance in the height of bounding boxes. The quartiles are provided in Table~\ref{tab:chapter5-quartiles}. Based on the aforementioned factors, the scores obtained by each model are then grouped by quartile range, and averaged over each range, see Figure~\ref{fig:chapter5-analysis-quartiles}. On arXiv-Lay, we find that layout brings most improvement when dealing with the 25\% longest documents and summaries, while, for both datasets, layout is least beneficial for the shortest documents and summaries. These results corroborate our claim that layout can bring important information about long-range context. Concerning the third factor, we see, on PubMed-Lay, that layout is most helpful for documents that have the widest ranges of font sizes, showcasing the advantage of using layout to capture salient information. 
+
+\section{Conclusion}
+
+In this chapter, we have presented LoRaLay, a set of large-scale datasets for long-range and layout-aware text summarization. LoRaLay provides the research community with 4 novel multimodal corpora covering French, Spanish, Portuguese, and Korean languages, built from scientific articles. Furthermore, it includes additional layout and visual information for existing long-range summarization datasets (arXiv and PubMed). We provide adapted architectures merging layout-aware and long-range models, and show the importance of layout information in capturing long-range dependencies. Finally, we design an annotation interface for human evaluation of summaries, and introduce the flow metric.
