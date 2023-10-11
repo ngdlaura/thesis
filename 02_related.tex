@@ -11,6 +11,169 @@
 \chapterwithfigures{\nameref*{chapter:related}}
 \chapterwithtables{\nameref*{chapter:related}}
 
+\todo[inline]{Intro}
+
+% “Language is essentially a complex, intricate system of human expressions governed by grammatical rules. It poses a significant challenge to develop capable artificial intelligence (AI) algorithms for comprehending and grasping a language. As a major approach, language modeling has been widely studied for language understanding and generation in the past two decades.” (https://browse.arxiv.org/pdf/2303.18223.pdf)
+
+% In recent years, the AI technology that has arguably advanced the most is foundation models (Bommasani et al., 2021), headlined by the rise of language models (LMs; Peters et al., 2018; Devlin et al., 2019; Brown et al., 2020; Rae et al., 2021; Chowdhery et al., 2022).
+
+\section{Language Modeling}
+
+Language modeling stands out as the major approach to advancing language understanding and generation. A \ac{LM} is a probabilistic model designed to capture the probability distribution of words within a given language, thereby constructing effective representations of text. Originally conceived for text generation, \acp{LM} have recently emerged as a powerful means to establish parametric models that can be fine-tuned on a wide range of tasks. 
+In this section, we explore the diverse tasks in \ac{NLP}, discuss the building blocks and historical approaches for Language Modeling, and describe how \acp{LM} are evaluated, examining both automatic and human evaluation methods.
+
+\subsection{Tasks} 
+
+The main goal in developping \acp{LM} is to enhance performance in tasks involving both text understanding and text generation. 
+
+\subsubsection{Natural Language Understanding}
+
+Comprising a broad array of tasks, \ac{NLU} focuses on the ability of machines to comprehend and interpret written language. 
+
+\paragraph{Text Classification} involves categorizing text into one or more classes or categories. This task finds applications in various scenarios, including sentiment analysis, spam detection, and content moderation. Automating these processes through \acp{LM} can streamline data management, decrease manual workload, and enhance the accuracy and efficiency of analysis. 
+
+\paragraph{Information Extraction} consists in automatically extracting structured information from unstructured and/or semi-structured documents, primarily texts. The goal of information extraction is to convert large volumes of textual data into a more organized and usable format, enabling machines to analyze and understand the content. Information extraction involves identifying specific pieces of information, such as entities (\textit{e.g.}, person names, organizations, and quantities), relationships between entities, and events, within a given text. Key tasks include \ac{NER}, which seeks to identify and classify named entities into pre-defined categories, and Relationship Extraction, where the goal is to determine relationships or connections between different entities mentioned in the text. 
+
+\paragraph{\ac{NLI}} is the task of determining the relationship between two given texts. A \textit{premise} and a \textit{hypothesis} are given as input and are to be classified as \textit{entailment}, meaning that the hypothesis is true based on the premise, \textit{contradiction}, indicating that the hypothesis is false, and \textit{neutral}, which signifies that there is no relation between the hypothesis and the premise.
+
+\paragraph{Semantic Understanding} refers to the comprehension and interpretation of language and its associated concepts, encompassing the understanding of words, phrases, sentences, and the relationships between them. Semantic understanding delves beyond surface-level comprehension and focuses on understanding the underlying meaning and intent in the text.
+
+\subsubsection{Natural Language Generation} 
+
+\ac{NLG} focuses on the automatic generation of human-like language. The primary goal of \ac{NLG} is to enable machines to produce coherent and contextually appropriate text that resembles natural language. 
+
+\paragraph{Text Generation} refers to the process of automatically creating human-like text for diverse purposes, such as articles, blogs, research papers, social media posts, source codes, and more.
+
+\paragraph{Text Summarization} is a generation task that aims to generate concise and coherent summaries from lenghty texts. Text summarization is a crucial component in the development of applications that require efficient information processing, allowing users to access relevant information more quickly and effectively. It plays a significant role in reducing information overload and improving the accessibility of large volumes of text.
+
+\paragraph{\ac{MT}} is the automated process of translating text from one language to another. The aim of machine translation is to produce translations that are linguistically accurate and convey the intended meaning of the source text in the target language. Machine translation finds application in a range of domains and industries, including language service providers, global businesses, content localization and information access. 
+
+\paragraph{\ac{QA}} involves comprehending questions posed in natural language and providing accurate and relevant answers. It has found wide application in scenarios such as search engines and customer support.
+
+\paragraph{Dialog Systems}, also known as chatbots, are designed to engage in natural language conversations with users. They play a crucial role in human-machine interaction, facilitating effective communication between humans and machines. Dialog systems are required to comprehend and interpret user input, keep track of the conversation context, create responses that are appropriate and linguistically coherent, and maintain an understanding of the state of the conversation and user preferences throughout the interaction. Their applications span various domains such as customer service, education, and entertainment. \\
+
+Language Models, specifically \acp{LLM}, have incited substantial interest across both academic and industrial domains, owing to their unprecedented performance in various tasks and domains, including medical language processing \citep{thirunavukarasu2023large}, scientific research \citep{wang2023scientific}, and code generation \citep{xu2022systematic}.
+
+\subsection{Modeling}
+
+Language modeling aims to predict the next element in a given sequence of text. We begin by discussing text representation units and the methods employed to obtain them. We then explain how probabilities over text sequences are calculated, before delving into the early iterations of language models, \textit{i.e.}, \acp{SLM}.
+
+\subsubsection{Text Representation Units}
+
+Natural language inputs commonly present themselves as sequences of words organized into sentences. Prior to inputting these sequences into a model, tokenization must be performed. Tokenization is a crucial pre-processing step that consists in splitting the input text into smaller units, \textit{i.e.}, tokens. Tokens serve as the fundamental components of language modeling, and all models operate on raw text at the token level. These tokens are used to build the vocabulary, which represents a set of unique tokens within a corpus. A token can be a character, a word, or a subword. Various algorithms adopt distinct processes to perform tokenization. 
+
+\paragraph{Word-based Tokenization} divides a text into words using a delimiter, with space and punctations being the most commonly employed. Rules are added into the tokenization process to deal with special cases such as negative forms (for instance, space and punctuation-based tokenization generates three tokens for the word “don't”:  “don”, “'”, and “t”, whereas a more effective tokenization using specific rules would  break it into “do”, and “n't”).
+
+In English, words like “helps”, “helped”, and “helping” are derived forms of the base word “help”. Similarly, the relationship between “dog” and “dogs” is analogous to that between “cat” and “cats”, and “boy” and “boyfriend” show the same relationship as “girl” and “girlfriend”. In some other languages like French and Spanish, verbs can have more than 40 inflected forms, and in Finnish, a noun might have up to 15 cases. However, word-based tokenization does not explore the internal structure of words, as morphological information, i.e., word formation and relationships, are not taken into account by the tokenization process. Instead, different inflected forms of the same word (e.g., “cat” and “cats”) are tokenized into two distinct tokens. Consequently, models would fail to recognize the similarity between those words. In addition, word-based tokenization produces a massive corpus, leading to a very large vocabulary. Furthermore, words not included in the vocabulary are treated as unknown (\ac{OOV} words), contributing to sub-optimal results.
+
+\paragraph{Character-based Tokenization} \citep{wehrmann2017character} can be used to alleviate the vocabulary problem. This tokenization process splits the raw text into individual characters, resulting in a very small vocabulary with little to no \ac{OOV} words. 
+
+However, few languages convey a significant amount of information within each character. Therefore, character-based tokenization suffers from a weak correlation between characters and semantic/syntactic aspects of the language. Furthermore, working at the character level results in much longer sequences, which are more challenging to deal with.
+
+\paragraph{Subword-based Tokenization} Modern NLP models address these issues by tokenizing text into subword units, a solution between word and character-based tokenization. Subword-based tokenization algorithms use the following principles: 1) frequently used words should not be split into smaller subwords, and 2) rare words should be split into smaller, meaningful words. 
+
+\citet{gage1994new} proposed the \ac{BPE} method, a compression algorithm that breaks down words into subwords to form a compact, fixed-size vocabulary with subwords of varying lengths. The \ac{BPE} algorithm performs a statistical analysis of the training dataset to identify common symbols within words, e.g., consecutive characters of arbitrary lengths. It starts with an initial vocabulary consisting of symbols of length 1 (characters), and iteratively merges the most frequent pairs of adjacent symbols to produce new, longer symbols. The process stops until a specified number of iterations or a predefined vocabulary size is reached. The resulting symbols can be used as subwords to segment words. \ac{BPE} is widely used for input representations in \ac{NLP} models, and has contributed significantly to improving their performance by enhancing their ability to handle morphologically-rich languages and \ac{OOV} words.
+
+WordPiece \citep{wu2016google} is another subword segmentation algorithm. Similar to \ac{BPE}, WordPiece learns merge rules. To build the vocabulary, it starts from a word unit inventory including individual characters in the language and special tokens used by the model. Using this inventory, a language model is built on the training data. A new word unit is obtained by combining two units out of the current word inventory. This increments the word unit inventory by one. From all possible combinations, the new word unit is selected such that it yields the highest increase in the likelihood on the training data after its addition to the model. From the updated inventory, a new language model is built and the process is repeated until a predefined limit of word units is reached or the likelihood increase falls below a certain threshold. 
+
+% Tokenization differs in WordPiece and \ac{BPE} in that WordPiece only saves the final vocabulary, not the merge rules learned. Starting from the word to tokenize, WordPiece finds the longest subword that is in the vocabulary, then splits on it. 
+
+Subword-based tokenization often maintains linguistic meaning, such as morphemes. Consequently, even though a word may be unknown to the model, individual subword tokens may retain enough information for the model to deduce its meaning to a certain degree. Additionally, using subword units helps keeping the vocabulary at a reasonable size.
+
+
+\subsubsection{Language Model Definition}
+
+An \ac{LM} is a probabilistic model of a natural language that predicts probability distributions over sequences of tokens. Given a sequence of tokens $w_1, w_2, ..., w_n$, a language model aims to calculate the joint probability $P(w_1, w_2, ..., w_n)$ of the whole sequence. Using the chain rule, the probability of the sequence can be decomposed into a product of conditional distribution on tokens. Most commonly, the probability $P$ of a sequence of words can be obtained from the probability of each word given the preceding ones:
+
+\begin{equation}
+    P(w_1, ..., w_n) = \prod_{t=1}^{n} P\bigl(w_t \mid w_1, ..., w_{t-1}\bigr).
+\label{equation:causal-distribution}
+\end{equation}
+
+In other words, the probability of a sequence is estimated as a product of each token's probability given its preceding tokens. \textit{Causal}\footnote{This name is common in the literature but is misleading as it has little connection to the proper study of causality.} \acp{LM} use this decomposition.
+
+A successful \ac{LM} estimates the distribution across text sequences, encoding not only the grammatical structure, but also the potential knowledge embedded in the training corpora \citep{jozefowicz2016exploring}.
+
+\subsubsection{Statistical Language Models} The history of \acp{LM} can be traced back to the 1990s, a period that marked the emergence of \acp{SLM}. Such \acp{LM} are rooted in probabilistic approaches to predict word sequences. The underlying idea is to simplify the word prediction model using the Markov assumption, \textit{e.g.}, approximating the probability of the next word using the most recent context. Prominent examples including $n$-gram models \citep{brown1992class, omar2018arabic} and \acp{HMM} \citep{petrushin2000hidden}.
+
+\paragraph{$N$-gram Models} simplify the calculation of the joint probability by operating on the assumption that the likelihood of the next token in a sequence is solely dependent on a fixed-size window spanning the $n-1$ previous adjacent tokens (\textit{$n$-grams}). If only one prior token is considered, it is termed a bigram model; with two words, a trigram model; and with $n-1$ words, an n-gram model. Given a window size $k$, the calculation of the joint probability is simplified as follows:
+
+\begin{equation}
+    P(w_1, ..., w_n) \approx \prod_{t=1}^{n} P\bigl(w_t \mid w_{t-k}, ..., w_{t-1}\bigr).
+    \label{equation:lm-likelihood-markov}
+\end{equation}
+
+$N$-grams models calculate Equation~\ref{equation:lm-likelihood-markov} using frequency counts based on $n$-grams. 
+
+\paragraph{Hidden Markov Models} are latent-variable models that are able to fully separate the process of generating hidden states from observations, while allowing for exact posterior inference. Given a sequence of observed tokens $\bm{w} = (w_1, \ldots, w_n)$, \acp{HMM} specify a joint distribution over observed tokens $\bm{x}$ and discrete latent states $\bm{z} = (z_1, \ldots, z_n)$:
+
+\begin{equation}
+    P(\bm{w}, \bm{z}; \theta) = \prod_{t=1}^{n} P\bigl(w_t \mid z_t \bigr) P\bigl(z_t \mid z_{t-1} \bigr). \\
+\end{equation}
+
+
+Nevertheless, the curse of dimensionality often hinders the performance of \acp{SLM}, making the accurate estimation of high-order language models challenging. This difficulty arises from the necessity to estimate an exponential number of transition probabilities. To tackle this issue, specific smoothing strategies, including backoff estimation \citep{katz1987estimation} and Good-Turing estimation \citep{gale1995good}, have been introduced to alleviate the problem of data sparsity.
+
+\acp{SLM} have found extensive application in boosting performance across \ac{NLP} tasks \citep{bahl1989tree, thede1999second}. While these models may appear rudimentary by today's standards, they represent a pivotal starting point in the field of \ac{NLP}. Although capable of basic text generation and word prediction, their limitations become apparent when attempting to capture complex contextual relationships \citep{rosenfeld2000two, arisoy2012deep}.
+
+
+\subsection{Evaluation of Language Models}
+
+As \acp{LM} play an increasingly critical role in both research and daily applications, the importance of their evaluation grows significantly. The evaluation of \acp{LM} stands as a crucial phase in assessing their efficacy and performance, bridging the gap between theoretical advancements and practical utility. We explore \textit{automatic evaluation} with computational metrics, and \textit{human evaluation} using qualitative assessments. 
+
+\subsubsection{Automatic Evaluation} 
+
+Several key metrics can be employed to provide valuable insights into the capacities and limitations of an \ac{LM}. \acp{LM} can be evaluated using \textit{intrinsic} or \textit{extrinsic} evaluation. 
+
+\paragraph{Intrinsic Evaluation} An intrinsic evaluation metric measures the quality of the \ac{LM} independently of any application, and can be used to quickly assess potential improvements in the model.
+
+Perplexity is a widely used intrinsic metric that measures how well an \ac{LM} predicts a sample. Given an input sequence $\bm{W} = (w_1, \ldots, w_n)$, and $P(w_1, \ldots, w_n)$ the probability assigned to $\bm{W}$ by the model, the perplexity of $\bm{W}$ can be defined as the multiplicative inverse of $P(w_1, \ldots, w_n)$, normalized by the number of words in the test set:
+
+\begin{equation}
+    \text{PPL}(\bm{W}) = P(w_1, \ldots, w_n)^{\frac{1}{n}}
+\end{equation}
+
+Perplexity quantifies how uncertain a model is about the predictions it makes. The lower the perplexity of a language model, the more confident (but not necessarily accurate) it is. Perplexity often correlates well with the model's performance on the target tasks, and it can be easily computed from the probability distribution learned during training. Hence, perplexity is a reliable metric to filter out models that are unlikely to perform well in real-world scenarios, where computing is costly and testing is time-consuming. However, comparing perplexity across different datasets, context lengths, vocabulary sizes, and tokenization procedures is challenging. These differences can significantly influence model performance, necessitating careful consideration and adjustment for fair evaluation.
+
+Cross-entropy is another intrinsic metric used to measure the performance of an \ac{LM}. Suppose $n$ the number of tokens, $m$ the vocabulary size, $\bm{y}$ the ground-truth vector, and $\bm{p}$ the vector of output probabilities. Cross-entropy can be calculated as:
+
+\begin{equation}
+    \text{CE}(\bm{y}, \bm{p}) = - \dfrac{1}{n} \sum_{i}^n \sum_{j}^m y_{ij} \log (p_{ij}).
+\end{equation}
+
+\noindent When $m = 2$, binary cross-entropy can be computed as:
+
+\begin{equation}
+    \text{BCE}(\bm{y}, \bm{p}) = - \dfrac{1}{n} \sum_{i}^n (y_i \log(p_i) + (1-y_i) \log (1-p_i))
+\end{equation}
+
+\noindent Cross-entropy loss increases as the predicted probability diverges from the actual label. Hence, it is minimized when adjusting model weights during training. 
+
+\ac{BPC} is a measurement used to quantify the efficiency of encoding text using a specific model. It calculates the average number of bits needed to represent each character in a text using the model's encoding scheme. The lower the \ac{BPC} value, the more efficient the model is at encoding the text, indicating that the model is effectively capturing the patterns and structure of the language. This metric is often used to assess the performance and compression capabilities of language models. Given an input sequence $\bm{W} = (w_1, \ldots, w_n)$, \ac{BPC} is defined as:
+
+\begin{equation}
+    \text{BPC}(\bm{W}) = - \dfrac{1}{n} \sum_{i=1}^n \log_2 P(w_i).
+\end{equation}
+
+\noindent Notably, \ac{BPC} serves as a metric for evaluating models in the Hutter Prize contest and its associated enwiki8 benchmark on data compression.\footnote{\url{http://prize.hutter1.net/}}
+
+\paragraph{Extrinsic Evaluation and Benchmarks} However, good scores during intrinsic evaluation do not always translate to better performance in downstream tasks. Therefore, extrinsic evaluation, also called task-based evaluation, is used to gauge how useful the \ac{LM} is in a particular task. As proper evaluation is a challenging task \citep{jones2005some}, benchmarking emerged as a prominent methodology in the 1980-1990s to address this challenge. 
+
+The Penn Treebank corpus \citep{marcus1993building}, specifically the section dedicated to Wall Street Journal articles, stands out as one of the most widely used annotated English dataset for evaluating models on sequence labelling. The dataset is renowned for its detailed syntatic annotations, providing a tree-like structure that represents the grammatical structure of sentences. The task involves assigning each word a \ac{POS} tag. 
+
+More recently, the \ac{SNLI} dataset, a larger corpus of sentence-pairs annotated from Flickr30k image captions, has been proposed to train and evaluate models for \ac{NLI} tasks. Additionally, the \ac{SQuAD} \citep{rajpurkar2016squad} dataset, a collection of question-answer pairs derived from Wikipedia articles, serves as an evaluation benchmark for \ac{QA} models. 
+
+With the rise of more general-purpose methods in \ac{NLP}, often replacing task-specific methods, the emergence of new and exhaustive benchmarks followed suit. SentEval \citep{conneau2018senteval} is a toolkit crafted for evaluating the quality of universal sentence representations. It covers an array of tasks, including binary and multi-class classification, \ac{NLI}, and sentence similarity. Simultaneously, the \ac{GLUE} benchmark has been developped to train and assess the performance of \ac{NLU} models across a diverse set of language tasks. \ac{GLUE} covers nine sentence/sentence-pair language understanding tasks (\textit{e.g.}, grammaticality judgments, sentence similarity, \ac{NLI}) selected to cover a broad array of dataset sizes, text genres, degrees of difficulty, and various linguistic aspects. The goal of \ac{GLUE} is to encourage the development of models that can generalize well, exhibit a broad understanding of natural language, and demonstrate robust performance across different tasks. 
+These benchmarks offer both a training set and an evaluation set for each task, enabling researchers to train models on one subset of the data and evaluate their performance on another, ensuring fair assessments of generalization. Additionally, unlike earlier benchmarks, they assign each model a vector of scores to gauge accuracy across a range of scenarios.
+
+
+\subsubsection{Human Evaluation} 
+
+Human evaluation consists in having human annotators evaluate the quality of generated text on specific tasks. Annotators can rate the generated text based on its fluency, coherence, and relevance to the given output. Human evaluation considers factors that might be difficult to quantify, \textit{e.g.}, the overall quality of the generated text, creativity, or the ability to handle ambiguous or nuanced language. While it can be time-consuming and subjective, human evaluation offers valuable insights into how language models perform in real-world scenarios. Integrating human judgment helps uncovering potential limitations, biases, or domains where models might struggle. The \ac{GEM} benchmark \citep{gehrmann2021gem} introduces a set of natural language generation tasks in diverse languages, emphasizing evaluation through both automated metrics and human annotations. 
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Neural Architectures for Language Modeling}
 %% Évolution de la représentation du texte
@@ -553,6 +716,8 @@ Let $\bm{v}_j$ be the value vector corresponding to token $j$. Relative position
 \todo[inline]{to do}
 
 \section{Pre-trained Language Models}
+
+% As Bommasani et al. (2021, §1.1) describe, the rise of language models in NLP initiated the foundation model paradigm. Specifically, ELMo (Peters et al., 2018), GPT (Radford et al., 2018), and BERT (Devlin et al., 2019) demonstrated that pretraining using language modeling objectives could produce powerful general-purpose representations for many downstream use cases, building on prior evidence of the successes of pretraining (Mikolov et al., 2013; Pennington et al., 2014)
 
 Prior to Transformer-based architectures, \ac{NLP} models were commonly trained in a supervised manner \textit{from scratch} to perform specific tasks, for which labeled training data is limited. Consequently, training deep neural networks on such small datasets leads to overfitting, and the models become specific experts that are sensitive to even slight shifts in the data distribution. 
 
