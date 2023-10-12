@@ -112,7 +112,9 @@ $N$-grams models calculate Equation~\ref{equation:lm-likelihood-markov} using fr
 \end{equation}
 
 
-Nevertheless, the curse of dimensionality often hinders the performance of \acp{SLM}, making the accurate estimation of high-order language models challenging. This difficulty arises from the necessity to estimate an exponential number of transition probabilities. To tackle this issue, specific smoothing strategies, including backoff estimation \citep{katz1987estimation} and Good-Turing estimation \citep{gale1995good}, have been introduced to alleviate the problem of data sparsity.
+\paragraph{On the Curse of Dimensionality} \acp{SLM} represent tokens through one-hot encoding, where each token is represented as a sparse binary vector, with a dimension for each unique token in the vocabulary. In this encoding, all dimensions are zero except for the one corresponding to the token, which is set to one. Hence, one-hot encoding leads to very high-dimensional and sparse representations. This often hinders the accurate estimation of language models, as one-hot encoding requires estimating an exponential number of transition probabilities. Furthermore, one-hot encoding introduces greater difficulty in capturing semantic relationships between tokens and handling \ac{OOV} tokens efficiently. This phenomenon is referred to as the \textit{curse of dimensionality}. To tackle this issue, specific smoothing strategies, including backoff estimation \citep{katz1987estimation} and Good-Turing estimation \citep{gale1995good}, have been introduced to alleviate the problem of data sparsity. \\
+
+% Nevertheless, the curse of dimensionality often hinders the performance of \acp{SLM}, making the accurate estimation of high-order language models challenging. This difficulty arises from the necessity to estimate an exponential number of transition probabilities. To tackle this issue, specific smoothing strategies, including backoff estimation \citep{katz1987estimation} and Good-Turing estimation \citep{gale1995good}, have been introduced to alleviate the problem of data sparsity.
 
 \acp{SLM} have found extensive application in boosting performance across \ac{NLP} tasks \citep{bahl1989tree, thede1999second}. While these models may appear rudimentary by today's standards, they represent a pivotal starting point in the field of \ac{NLP}. Although capable of basic text generation and word prediction, their limitations become apparent when attempting to capture complex contextual relationships \citep{rosenfeld2000two, arisoy2012deep}.
 
@@ -175,31 +177,42 @@ Human evaluation consists in having human annotators evaluate the quality of gen
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{Neural Architectures for Language Modeling}
-%% Évolution de la représentation du texte
+\section{Neural Language Models}
+
+Starting in the 2000s, neural networks began to be used for language modeling \citep{bengio2000neural}, and representation of text shifted from being non-continuous to being continuous (\textit{distributed}). The mid-2010s marked a significant milestone in language modeling with the emergence of deep learning, laying foundation for the developement of \acp{NLM}. An \ac{NLM} is a language model that exploits the ability of neural networks to learn distributed representations of text. \acp{NLM} delve into vast amounts of data to learn the intricate patterns and structures of language, allowing them to significantly improve their ability to understand context. In this section, we first describe how \textit{distributed} representations of textual data are obtained from neural networks, before exploring notable word embedding models.
+
+% NLMs characterize the probability of word sequences by neural networks
 
 % Starting in the 2000s, neural networks begin to be used for language modeling, a task which aims at predicting the next word in a text given the previous words. In 2003, Bengio et al. proposed the first neural language model, that consists of a one-hidden layer feed-forward neural network. They were also one of the first to introduce what is now referred as word embedding, a real-valued word feature vector in R^d. More precisely, their model took as input vector representations of the n previous words, which were looked up in a table learned together with the model. The vectors were fed into a hidden layer, whose output was then provided to a softmax layer that predicted the next word of the sequence. 
 
 % As a remarkable contribution, the work in [15] introduced the concept of distributed representation of words and built the word prediction function conditioned on the aggregated context features (i.e., the distributed word vectors).
 
-Natural language inputs present themselves as tokens or sequences of tokens, commonly in the form of words organized into sentences. A token can be a character, a word, or a subword. A language model is a probability distribution over sequences of tokens. Given a sequence of tokens $w_1, w_2, ..., w_n$, a language model aims to calculate the joint probability $P(w_1, w_2, ..., w_n)$ of the whole sequence. 
+\subsection{Distributed Representations of Text}
 
-The traditional way of representing tokens in natural language processing is through one-hot encoding, where each token is represented as a sparse binary vector, with a dimension for each unique token in the vocabulary. In this encoding, all dimensions are zero except for the one corresponding to the token, which is set to one. Therefore, one-hot encoding leads to very high-dimensional and sparse representations, making it challenging to capture semantic relationships between tokens and handle out-of-vocabulary tokens efficiently.
+A fundamental challenge that renders language modeling and other learning problems challenging is the curse of dimensionality. To overcome this issue, \citet{bengio2000neural} introduced the concept of \textit{distributed representation} of words, and, simultaneously, the first \ac{NLM}. Distributed representations of words, also known as \textit{word embeddings}, are dense and low-dimensional continuous-valued representations. Using distributed representations requires a much smaller number of features than the size of the vocabulary. Additionally, generalization can be obtained more easily: a sequence of words that has never been encountered before is assigned a high probability if it consists of words with representations similar to those forming an already seen sentence. 
 
-A neural language model is a language model that exploits the ability of neural networks to learn distributed representations of tokens, or token embeddings. Introduced by \citet{bengio2000neural}, word\footnote{Note that the term \say{word} is used for simplicity, but the idea can be applied on other kinds of tokens.} embeddings are dense and low-dimensional continuous-valued representations of words, obtained through non-linear combination of weights. Neural language models are typically trained as probabilistic classifiers that learn to predict a probability distribution over a vocabulary $V$, given the context features:
-
-\begin{equation}
-    P(w_t \mid \mathrm{context}), \forall t\in V    
-\end{equation}
-
-The probability of a sequence of words can then be decomposed into a product of conditional distributions on words. Most commonly, the probability $P$ of a sequence of words can be obtained from the probability of each word given the preceding ones:
+Distributed representations of words are obtained through the \ac{NLM}, which learns the probability function of a word sequence conditioned on the distributed word vectors. Given a context of size $k$, and a training sequence of words $(w_1, \ldots, w_n) \in V^n$, where $V$ is the vocabulary, the objective is to estimate $P(w_t \mid w_1, \ldots, w_{t-1})$ through a neural network $f(w_t, \ldots, w_{t-k+1})$. The distributed word vectors are first built using a matrix $C \in \mathbb{R}^{\mid V \mid \times h}$ whose parameters are simply the distributed word vectors themselves: the $i$-th row in $C$ is the distributed representation $C_i \in \mathbb{R}^h$ for word $i$. To obtain the next word $w_t$, the probability function over words is expressed as a function $g$ that maps the input sequence of feature vectors in the context, $\bigl(C_{w_{t-k+1}}, \ldots, C_{w_{t-1}}\bigr)$ to a conditional probability distribution over words in $V$. The output of $g$ is a vector whose $i$-th element provides an estimate of the probability $P(w_t = i \mid w_1, \ldots, w_{t-1})$. The function $f$ is a composition of $C$ and $g$, expressed as follows:
 
 \begin{equation}
-    P(w_1, ..., w_n) = \prod_{t=1}^{n} P\bigl(w_t \mid w_1, ..., w_{t-1}\bigr)
-\label{equation:causal-distribution}
+    f(i, w_{t-1}, \ldots, w_{t-k+1}) = g\bigl(i, C(w_{t-1}), \ldots, C(w_{t-k+1})\bigr).
 \end{equation}
 
-Causal\footnote{This name is common in the literature but is misleading as it has little connection to the proper study of causality} language models use this decomposition. In other words, the probability of a sequence is estimated as a product of each token's probability given its preceding tokens.
+The model is trained by searching for the parameter set $\theta = (C, \omega)$ that maximizes the following penalized log-likelihood:
+
+\begin{equation}
+    L = \frac{1}{n} \sum_{t=1}^n \log f(w_t, w_{t-1}, \ldots, w_{t-k+1}; \theta) + R(\theta),
+\end{equation}
+
+\noindent Where $R(\theta)$ is a regularization term.
+
+The function $g$ can be implemented by a \ac{FNN} or a \ac{RNN}, or another parametrized function.
+
+% Neural language models are typically trained as probabilistic classifiers that learn to predict a probability distribution over a vocabulary $V$, given the context features:
+
+\subsubsection{Recurrent Neural Networks}
+
+\subsubsection{Convolutional Neural Networks}
+
 
 \subsection{Static Word Embedding Models}
 
