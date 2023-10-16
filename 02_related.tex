@@ -17,20 +17,22 @@
 
 % In recent years, the AI technology that has arguably advanced the most is foundation models (Bommasani et al., 2021), headlined by the rise of language models (LMs; Peters et al., 2018; Devlin et al., 2019; Brown et al., 2020; Rae et al., 2021; Chowdhery et al., 2022).
 
+% Since their emergence, language models have constantly improved the state of the art in most NLP benchmarks. In this chapter we characterize the main approaches to ...
+
 \section{Language Modeling}
 
-Language modeling stands out as the major approach to advancing language understanding and generation. A \ac{LM} is a probabilistic model designed to capture the probability distribution of words within a given language, thereby constructing effective representations of text. Originally conceived for text generation, \acp{LM} have recently emerged as a powerful means to establish parametric models that can be fine-tuned on a wide range of tasks. 
-In this section, we explore the diverse tasks in \ac{NLP}, discuss the building blocks and historical approaches for Language Modeling, and describe how \acp{LM} are evaluated, examining both automatic and human evaluation methods.
+Language modeling stands out as the major approach to advancing language understanding and generation. A language model is a probabilistic model designed to capture the probability distribution of words within a given language, thereby constructing effective representations of text. Originally conceived for text generation, language models have recently emerged as a powerful means to establish parametric models that can be fine-tuned on a wide range of tasks. 
+In this section, we explore the diverse tasks in \ac{NLP}, discuss the building blocks and historical approaches for Language Modeling, and describe how language models are evaluated, examining both automatic and human evaluation methods.
 
 \subsection{Tasks} 
 
-The main goal in developping \acp{LM} is to enhance performance in tasks involving both text understanding and text generation. 
+The main goal in developping language models is to enhance performance in tasks involving both text understanding and text generation. 
 
 \subsubsection{Natural Language Understanding}
 
 Comprising a broad array of tasks, \ac{NLU} focuses on the ability of machines to comprehend and interpret written language. 
 
-\paragraph{Text Classification} involves categorizing text into one or more classes or categories. This task finds applications in various scenarios, including sentiment analysis, spam detection, and content moderation. Automating these processes through \acp{LM} can streamline data management, decrease manual workload, and enhance the accuracy and efficiency of analysis. 
+\paragraph{Text Classification} involves categorizing text into one or more classes or categories. This task finds applications in various scenarios, including sentiment analysis, spam detection, and content moderation. Automating these processes through language models can streamline data management, decrease manual workload, and enhance the accuracy and efficiency of analysis. 
 
 \paragraph{Information Extraction} consists in automatically extracting structured information from unstructured and/or semi-structured documents, primarily texts. The goal of information extraction is to convert large volumes of textual data into a more organized and usable format, enabling machines to analyze and understand the content. Information extraction involves identifying specific pieces of information, such as entities (\textit{e.g.}, person names, organizations, and quantities), relationships between entities, and events, within a given text. Key tasks include \ac{NER}, which seeks to identify and classify named entities into pre-defined categories, and Relationship Extraction, where the goal is to determine relationships or connections between different entities mentioned in the text. 
 
@@ -83,18 +85,20 @@ Subword-based tokenization often maintains linguistic meaning, such as morphemes
 
 \subsubsection{Language Model Definition}
 
-An \ac{LM} is a probabilistic model of a natural language that predicts probability distributions over sequences of tokens. Given a sequence of tokens $w_1, w_2, ..., w_n$, a language model aims to calculate the joint probability $P(w_1, w_2, ..., w_n)$ of the whole sequence. Using the chain rule, the probability of the sequence can be decomposed into a product of conditional distribution on tokens. Most commonly, the probability $P$ of a sequence of words can be obtained from the probability of each word given the preceding ones:
+% Language models give us the ability to assign such a conditional probability to every possible next word, giving us a distribution over the entire vocabulary. We can also assign probabilities to entire sequences by combining these conditional probabilities with the chain rule
+
+A language model is a probabilistic model of a natural language that predicts probability distributions over sequences of tokens. Given a sequence of tokens $w_1, w_2, ..., w_n$, a language model aims to calculate the joint probability $P(w_1, w_2, ..., w_n)$ of the whole sequence. Using the chain rule, the probability of the sequence can be decomposed into a product of conditional distribution on tokens. Most commonly, the probability $P$ of a sequence of words can be obtained from the probability of each word given the preceding ones:
 
 \begin{equation}
     P(w_1, ..., w_n) = \prod_{t=1}^{n} P\bigl(w_t \mid w_1, ..., w_{t-1}\bigr).
 \label{equation:causal-distribution}
 \end{equation}
 
-In other words, the probability of a sequence is estimated as a product of each token's probability given its preceding tokens. \textit{Causal}\footnote{This name is common in the literature but is misleading as it has little connection to the proper study of causality.} \acp{LM} use this decomposition.
+In other words, the probability of a sequence is estimated as a product of each token's probability given its preceding tokens. \textit{Causal}\footnote{This name is common in the literature but is misleading as it has little connection to the proper study of causality.}, or \textit{auto-regressive} language models use this decomposition.
 
-A successful \ac{LM} estimates the distribution across text sequences, encoding not only the grammatical structure, but also the potential knowledge embedded in the training corpora \citep{jozefowicz2016exploring}.
+A successful language model estimates the distribution across text sequences, encoding not only the grammatical structure, but also the potential knowledge embedded in the training corpora \citep{jozefowicz2016exploring}.
 
-\subsubsection{Statistical Language Models} The history of \acp{LM} can be traced back to the 1990s, a period that marked the emergence of \acp{SLM}. Such \acp{LM} are rooted in probabilistic approaches to predict word sequences. The underlying idea is to simplify the word prediction model using the Markov assumption, \textit{e.g.}, approximating the probability of the next word using the most recent context. Prominent examples including $n$-gram models \citep{brown1992class, omar2018arabic} and \acp{HMM} \citep{petrushin2000hidden}.
+\subsubsection{Statistical Language Models} The history of language models can be traced back to the 1990s, a period that marked the emergence of \acp{SLM}. Such language models are rooted in probabilistic approaches to predict word sequences. The underlying idea is to simplify the word prediction model using the Markov assumption, \textit{e.g.}, approximating the probability of the next word using the most recent context. Prominent examples including $n$-gram models \citep{brown1992class, omar2018arabic} and \acp{HMM} \citep{petrushin2000hidden}.
 
 \paragraph{$N$-gram Models} simplify the calculation of the joint probability by operating on the assumption that the likelihood of the next token in a sequence is solely dependent on a fixed-size window spanning the $n-1$ previous adjacent tokens (\textit{$n$-grams}). If only one prior token is considered, it is termed a bigram model; with two words, a trigram model; and with $n-1$ words, an n-gram model. Given a window size $k$, the calculation of the joint probability is simplified as follows:
 
@@ -112,7 +116,7 @@ $N$-grams models calculate Equation~\ref{equation:lm-likelihood-markov} using fr
 \end{equation}
 
 
-\paragraph{On the Curse of Dimensionality} \acp{SLM} represent tokens through one-hot encoding, where each token is represented as a sparse binary vector, with a dimension for each unique token in the vocabulary. In this encoding, all dimensions are zero except for the one corresponding to the token, which is set to one. Hence, one-hot encoding leads to very high-dimensional and sparse representations. This often hinders the accurate estimation of language models, as one-hot encoding requires estimating an exponential number of transition probabilities. Furthermore, one-hot encoding introduces greater difficulty in capturing semantic relationships between tokens and handling \ac{OOV} tokens efficiently. This phenomenon is referred to as the \textit{curse of dimensionality}. To tackle this issue, specific smoothing strategies, including backoff estimation \citep{katz1987estimation} and Good-Turing estimation \citep{gale1995good}, have been introduced to alleviate the problem of data sparsity. \\
+\paragraph{On the Curse of Dimensionality} \acp{SLM} represent tokens through one-hot encoding, where each token is represented as a sparse binary vector, with a dimension for each unique token in the vocabulary. In this encoding, all dimensions are zero except for the one corresponding to the token, which is set to one. Hence, one-hot encoding leads to very high-dimensional and sparse representations. This often hinders the accurate estimation of language models, as one-hot encoding requires estimating an exponential number of transition probabilities. Furthermore, one-hot encoding introduces greater difficulty in capturing semantic relationships between tokens (each individual token is treated independently of the others) and handling \ac{OOV} tokens efficiently. This phenomenon is referred to as the \textit{curse of dimensionality}. To tackle this issue, specific smoothing strategies, including backoff estimation \citep{katz1987estimation} and Good-Turing estimation \citep{gale1995good}, have been introduced to alleviate the problem of data sparsity. \\
 
 % Nevertheless, the curse of dimensionality often hinders the performance of \acp{SLM}, making the accurate estimation of high-order language models challenging. This difficulty arises from the necessity to estimate an exponential number of transition probabilities. To tackle this issue, specific smoothing strategies, including backoff estimation \citep{katz1987estimation} and Good-Turing estimation \citep{gale1995good}, have been introduced to alleviate the problem of data sparsity.
 
@@ -121,15 +125,15 @@ $N$-grams models calculate Equation~\ref{equation:lm-likelihood-markov} using fr
 
 \subsection{Evaluation of Language Models}
 
-As \acp{LM} play an increasingly critical role in both research and daily applications, the importance of their evaluation grows significantly. The evaluation of \acp{LM} stands as a crucial phase in assessing their efficacy and performance, bridging the gap between theoretical advancements and practical utility. We explore \textit{automatic evaluation} with computational metrics, and \textit{human evaluation} using qualitative assessments. 
+As language models play an increasingly critical role in both research and daily applications, the importance of their evaluation grows significantly. The evaluation of language models stands as a crucial phase in assessing their efficacy and performance, bridging the gap between theoretical advancements and practical utility. We explore \textit{automatic evaluation} with computational metrics, and \textit{human evaluation} using qualitative assessments. 
 
 \subsubsection{Automatic Evaluation} 
 
-Several key metrics can be employed to provide valuable insights into the capacities and limitations of an \ac{LM}. \acp{LM} can be evaluated using \textit{intrinsic} or \textit{extrinsic} evaluation. 
+Several key metrics can be employed to provide valuable insights into the capacities and limitations of a language model. Language models can be evaluated using \textit{intrinsic} or \textit{extrinsic} evaluation. 
 
-\paragraph{Intrinsic Evaluation} An intrinsic evaluation metric measures the quality of the \ac{LM} independently of any application, and can be used to quickly assess potential improvements in the model.
+\paragraph{Intrinsic Evaluation} An intrinsic evaluation metric measures the quality of the language model independently of any application, and can be used to quickly assess potential improvements in the model.
 
-Perplexity is a widely used intrinsic metric that measures how well an \ac{LM} predicts a sample. Given an input sequence $\bm{W} = (w_1, \ldots, w_n)$, and $P(w_1, \ldots, w_n)$ the probability assigned to $\bm{W}$ by the model, the perplexity of $\bm{W}$ can be defined as the multiplicative inverse of $P(w_1, \ldots, w_n)$, normalized by the number of words in the test set:
+Perplexity is a widely used intrinsic metric that measures how well a language model predicts a sample. Given an input sequence $\bm{W} = (w_1, \ldots, w_n)$, and $P(w_1, \ldots, w_n)$ the probability assigned to $\bm{W}$ by the model, the perplexity of $\bm{W}$ can be defined as the multiplicative inverse of $P(w_1, \ldots, w_n)$, normalized by the number of words in the test set:
 
 \begin{equation}
     \text{PPL}(\bm{W}) = P(w_1, \ldots, w_n)^{\frac{1}{n}}
@@ -137,7 +141,7 @@ Perplexity is a widely used intrinsic metric that measures how well an \ac{LM} p
 
 Perplexity quantifies how uncertain a model is about the predictions it makes. The lower the perplexity of a language model, the more confident (but not necessarily accurate) it is. Perplexity often correlates well with the model's performance on the target tasks, and it can be easily computed from the probability distribution learned during training. Hence, perplexity is a reliable metric to filter out models that are unlikely to perform well in real-world scenarios, where computing is costly and testing is time-consuming. However, comparing perplexity across different datasets, context lengths, vocabulary sizes, and tokenization procedures is challenging. These differences can significantly influence model performance, necessitating careful consideration and adjustment for fair evaluation.
 
-Cross-entropy is another intrinsic metric used to measure the performance of an \ac{LM}. Suppose $n$ the number of tokens, $m$ the vocabulary size, $\bm{y}$ the ground-truth vector, and $\bm{p}$ the vector of output probabilities. Cross-entropy can be calculated as:
+Cross-entropy is another intrinsic metric used to measure the performance of a language model. Suppose $n$ the number of tokens, $m$ the vocabulary size, $\bm{y}$ the ground-truth vector, and $\bm{p}$ the vector of output probabilities. Cross-entropy can be calculated as:
 
 \begin{equation}
     \text{CE}(\bm{y}, \bm{p}) = - \dfrac{1}{n} \sum_{i}^n \sum_{j}^m y_{ij} \log (p_{ij}).
@@ -159,7 +163,7 @@ Cross-entropy is another intrinsic metric used to measure the performance of an 
 
 \noindent Notably, \ac{BPC} serves as a metric for evaluating models in the Hutter Prize contest and its associated enwiki8 benchmark on data compression.\footnote{\url{http://prize.hutter1.net/}}
 
-\paragraph{Extrinsic Evaluation and Benchmarks} However, good scores during intrinsic evaluation do not always translate to better performance in downstream tasks. Therefore, extrinsic evaluation, also called task-based evaluation, is used to gauge how useful the \ac{LM} is in a particular task. As proper evaluation is a challenging task \citep{jones2005some}, benchmarking emerged as a prominent methodology in the 1980-1990s to address this challenge. 
+\paragraph{Extrinsic Evaluation and Benchmarks} However, good scores during intrinsic evaluation do not always translate to better performance in downstream tasks. Therefore, extrinsic evaluation, also called task-based evaluation, is used to gauge how useful the language model is in a particular task. As proper evaluation is a challenging task \citep{jones2005some}, benchmarking emerged as a prominent methodology in the 1980-1990s to address this challenge. 
 
 The Penn Treebank corpus \citep{marcus1993building}, specifically the section dedicated to Wall Street Journal articles, stands out as one of the most widely used annotated English dataset for evaluating models on sequence labelling. The dataset is renowned for its detailed syntatic annotations, providing a tree-like structure that represents the grammatical structure of sentences. The task involves assigning each word a \ac{POS} tag. 
 
@@ -179,7 +183,7 @@ Human evaluation consists in having human annotators evaluate the quality of gen
 
 \section{Neural Language Models}
 
-Starting in the 2000s, neural networks began to be used for language modeling \citep{bengio2000neural}, and representation of text shifted from being non-continuous to being continuous (\textit{distributed}). The mid-2010s marked a significant milestone in language modeling with the emergence of deep learning, laying foundation for the developement of \acp{NLM}. An \ac{NLM} is a language model that exploits the ability of neural networks to learn distributed representations of text. \acp{NLM} delve into vast amounts of data to learn the intricate patterns and structures of language, allowing them to significantly improve their ability to understand context. In this section, we first describe how \textit{distributed} representations of textual data are obtained from neural networks, before exploring notable word embedding models.
+Starting in the 2000s, neural networks began to be used for language modeling \citep{bengio2000neural}, and representation of text shifted from being non-continuous to being continuous (\textit{distributed}). The mid-2010s marked a significant milestone in language modeling with the emergence of Deep Learning, laying foundation for the developement of \acp{NLM}. An \ac{NLM} is a language model that exploits the ability of neural networks to learn distributed representations of text. \acp{NLM} delve into vast amounts of data to learn the intricate patterns and structures of language, allowing them to significantly improve their ability to understand context. In this section, we first describe how distributed representations of textual data can be obtained from neural architectures, before exploring notable word embedding models.
 
 % NLMs characterize the probability of word sequences by neural networks
 
@@ -189,190 +193,61 @@ Starting in the 2000s, neural networks began to be used for language modeling \c
 
 \subsection{Distributed Representations of Text}
 
-A fundamental challenge that renders language modeling and other learning problems challenging is the curse of dimensionality. To overcome this issue, \citet{bengio2000neural} introduced the concept of \textit{distributed representation} of words, and, simultaneously, the first \ac{NLM}. Distributed representations of words, also known as \textit{word embeddings}, are dense and low-dimensional continuous-valued representations. Using distributed representations requires a much smaller number of features than the size of the vocabulary. Additionally, generalization can be obtained more easily: a sequence of words that has never been encountered before is assigned a high probability if it consists of words with representations similar to those forming an already seen sentence. 
+A fundamental challenge that renders language modeling challenging is the curse of dimensionality, primarily stemming from the sparse and high-dimensional nature of one-hot encodings. Text representation has therefore evolved from a non-continuous to a continuous (\textit{i.e.}, distributed) form.
 
-Distributed representations of words are obtained through the \ac{NLM}, which learns the probability function of a word sequence conditioned on the distributed word vectors. Given a context of size $k$, and a training sequence of words $(w_1, \ldots, w_n) \in V^n$, where $V$ is the vocabulary, the objective is to estimate $P(w_t \mid w_1, \ldots, w_{t-1})$ through a neural network $f(w_t, \ldots, w_{t-k+1})$. The distributed word vectors are first built using a matrix $C \in \mathbb{R}^{\mid V \mid \times h}$ whose parameters are simply the distributed word vectors themselves: the $i$-th row in $C$ is the distributed representation $C_i \in \mathbb{R}^h$ for word $i$. To obtain the next word $w_t$, the probability function over words is expressed as a function $g$ that maps the input sequence of feature vectors in the context, $\bigl(C_{w_{t-k+1}}, \ldots, C_{w_{t-1}}\bigr)$ to a conditional probability distribution over words in $V$. The output of $g$ is a vector whose $i$-th element provides an estimate of the probability $P(w_t = i \mid w_1, \ldots, w_{t-1})$. The function $f$ is a composition of $C$ and $g$, expressed as follows:
+Initial attempts to estimate continuous word representations, as seen in methods like \ac{PLSA} \citep{hofmann2001unsupervised} and \ac{LDA} \citep{blei2003latent}, centered around extracting embeddings from co-occurrence matrices to represent words and documents in a latent topical space. Such continuous representations, while effective for their intended purposes such as document clustering and term analysis, have limited success when applied to a broader range of \ac{NLP} tasks. These limitations arise from a couple of key factors. Firstly, these methods overlook the context and relationships between words, essential for understanding natural language in diverse applications. Second, the representations derived lack the adaptability needed for the specific requirements of various \ac{NLP} tasks.
+
+% \textit{Distributed word representations}, or \textit{word embeddings}, are dense and low-dimensional continuous-valued representations that serve as the building blocks for contemporary \ac{NLP}. 
+
+Due to these limitations, researchers and practitioners have shifted towards using embeddings generated by neural network-based models, \textit{i.e.}, \textit{distributed representations}. The concept of distributed representations of words, also known as \textit{word embeddings} was introduced by \citet{bengio2000neural}. Distributed word representations are dense, low-dimensional, continuous-valued representations that rely on the distributional hypothesis, which posits that words with similar contexts have similar (or related) meaning. Using distributed representations requires a much smaller number of features than the size of the vocabulary. Additionally, the continuous space in which the vocabulary is embedded can represent the similarity structure between words, \textit{i.e.}, words with related meanings appear in the same region in the embedding space \citep{shazeer2016swivel}. Therefore, generalization can be obtained more easily: a sequence of words that has never been encountered before is assigned a high probability if it consists of words with representations similar to those forming an already seen sentence. 
+
+% A word embedding is a learned representation in which, ideally, words with related meanings or contextual relationships become highly correlated in the representation space. One of the main incentives behind word embeddings is their high generalization power, as opposed to sparse, higher dimensional representations \citep{bengio2000neural}.
+
+% Distributed word representations are based on the distributional hypothesis where words that co-occur in similar context are considered to have similar (or related) meaning.
+
+The same work by \citet{bengio2000neural} introduces \acp{NLM}. Using neural networks, \acp{NLM} learn the probability distribution of a word sequence given the previous context, while embedding the vocabulary in a continuous space to obtain distributed representations. Given a context of size $k$, and a training sequence of words $(w_1, \ldots, w_n) \in V^n$, where $V$ is the vocabulary, the objective is to estimate $P(w_t \mid w_1, \ldots, w_{t-1})$ through a neural network $f(w_t, \ldots, w_{t-k+1})$. The distributed word vectors are first built using a matrix $C \in \mathbb{R}^{\mid V \mid \times h}$ whose parameters are simply the distributed word vectors themselves: the $i$-th row in $C$ is the distributed representation $C_i \in \mathbb{R}^h$ for word $i$. To obtain the next word $w_t$, the probability function over words is expressed as a function $G$ that maps the input sequence of feature vectors in the context, $\bigl(C_{w_{t-k+1}}, \ldots, C_{w_{t-1}}\bigr)$ to a conditional probability distribution over words in $V$. The output of $G$ is a vector whose $i$-th element provides an estimate of the probability $P(w_t = i \mid w_1, \ldots, w_{t-1})$. The function $F$ is a composition of $C$ and $G$, expressed as follows:
 
 \begin{equation}
-    f(i, w_{t-1}, \ldots, w_{t-k+1}) = g\bigl(i, C(w_{t-1}), \ldots, C(w_{t-k+1})\bigr).
+    F(i, w_{t-1}, \ldots, w_{t-k+1}) = G\bigl(i, C(w_{t-1}), \ldots, C(w_{t-k+1})\bigr).
+\label{eq:chapter2-bengio}
 \end{equation}
 
 The model is trained by searching for the parameter set $\theta = (C, \omega)$ that maximizes the following penalized log-likelihood:
 
 \begin{equation}
-    L = \frac{1}{n} \sum_{t=1}^n \log f(w_t, w_{t-1}, \ldots, w_{t-k+1}; \theta) + R(\theta),
+    L = \frac{1}{n} \sum_{t=1}^n \log F(w_t, w_{t-1}, \ldots, w_{t-k+1}; \theta) + R(\theta),
+\label{eq:chapter2-nlm-log-likelihood}
 \end{equation}
 
 \noindent Where $R(\theta)$ is a regularization term.
 
-The function $g$ can be implemented by a \ac{FNN} or a \ac{RNN}, or another parametrized function.
+The function $G$ can be implemented as a \ac{FNN} or any another parametrized function. More specifically, \acp{NLM} leverage the capabilities of the prevailing architectures of the 2010s, \acp{RNN} and \acp{CNN}.
 
 % Neural language models are typically trained as probabilistic classifiers that learn to predict a probability distribution over a vocabulary $V$, given the context features:
 
 \subsubsection{Recurrent Neural Networks}
 
-\subsubsection{Convolutional Neural Networks}
+\acp{RNN} are neural networks designed to deal with sequential data. The key feature of \acp{RNN} is their ability to maintain “memory” across time steps, allowing them to process each token of a sequence using information from prior tokens. This has allowed them to reach superior performance in handling sequential data and capturing the context and semantics present in natural language.  
 
-
-\subsection{Static Word Embedding Models}
-
-A word embedding is a learned representation in which, ideally, words with related meanings or contextual relationships become highly correlated in the representation space. One of the main incentives behind word embeddings is their high generalization power, as opposed to sparse, higher dimensional representations \citep{bengio2000neural}.
-
-\subsubsection{Word2Vec}
-
-\citet{mikolov2013efficient} introduce Word2Vec, a word embedding model designed to learn continuous embeddings of words able to capture the semantic meaning and contextual relationships between words. Word2Vec comes with two techniques for capturing semantic meaning and contextual relationships between words: Continuous Bag of Words (CBOW) and Skip-gram. Both architectures use a shallow neural network and are trained using unsupervised learning on large amounts of text data.
-
-\paragraph{Continuous Bag of Words (CBOW)} 
-In the Continuous Bag Of Words (CBOW) architecture, the model predicts a word based on its context words. Given a word $w^c$ belonging in the vocabulary $V$, its context word embedding $\bm{v}_c \in \mathbb{R}^{d}$, and its center word embedding $\bm{u}_c \in \mathbb{R}^{d}$, the conditional probability of generating $w^c$ given its context words $W^o$ can be defined as:
+\noindent Formally, an \ac{RNN} is a function parameterized by a set of parameters $\theta$ shared across all time steps. At each time step $t$, the model receives an input $\bm{x}_t$ and a fixed-size hidden state vector $\bm{h}_{t-1}$ from the previous time step $t-1$. The hidden state at time $t$ acts as a “memory” summarizing information from previous words $(w_1, \ldots, w_{t-1})$, and is computed as follows::
 
 \begin{equation}
-    P(w^c \mid W^o) = \frac{\exp(\bm{u}_c^{\top}\bar{\bm{v}}_o)}{\sum_{i \in V} \exp(\bm{u}_{i}^{\top}\bar{\bm{v}_o})},
+    \bm{h}_{t} = f_{\bm{\theta}}(\bm{x}_t, \bm{h}_{t-1}),  
 \end{equation}
 
-where $\bar{\bm{v}_o}$ is an average of the context word vectors in $W_o$.
-
-Given a sequence of $n$ words and a context size $k$, the likelihood function of the CBOW model aims to maximize the likelihood of predicting all center words given their context words:
+The distribution of probabilities over the output is computed as:
 
 \begin{equation}
-    \prod_{i=1}^{n} P(w_i \mid w_{i-k}, ..., w_{i-1},  w_{i+1}, ..., w_{i+k})
+    \hat{\bm{y}}_t = g_{\bm{\theta}}(\bm{h}_t).
 \end{equation}
 
-\paragraph{Skip-gram} 
+\noindent $f_{\bm{\theta}}$ and $g_{\bm{\theta}}$ are activation functions, usually sigmoid, hyperbolic tangent, and \ac{ReLU} functions.
 
-Conversely, the idea behind Skip-gram is that a word can be used to generate its context words. Given a word, the Skip-gram model tries to predict the words that are likely to appear around it. Each word is assigned to its center word embedding, $\bm{v} \in \mathbb{R}^{d}$, and its context word embedding, $\bm{u} \in \mathbb{R}^{d}$. Given a vocabulary $V$, the  probability of a word $w^o \in V$ to appear in the context of a word $w^c \in V$ is expressed as:
+The recurrent connections allow information to be retained and updated over time, enabling \acp{RNN} to capture dependencies and temporal patterns in sequential data. \acp{RNN} are trained by minimizing the negative log-likelihood (\textit{i.e.}, maximizing the log-likelihood as in \ref{eq:chapter2-nlm-log-likelihood}) using the \ac{BPTT} algorithm \citep{werbos1990backpropagation}. \ac{BPTT} unrolls the computational graph of an \ac{RNN} one time step at a time, resulting in an \ac{FNN} with the special property that the same parameters are repeated throughout the unrolled network. Gradients are then backpropagated through the unrolled net, and accumulated in order to update $\bm{\theta}$. 
 
-\begin{equation}
-    P(w^o \mid w^c) = \frac{\exp (\bm{u}_{o}^{\top}\bm{v}_{c})}{\sum_{c' \in V} \exp (\bm{u}_{c'}^{\top} \bm{v}_{c})}
-\end{equation}
+Complications arise because sequences can be rather long. This is linked to the vanishing and exploding gradients problems that come from repeated application of recurrent connections \citep{hochreiter2001gradient}. When gradients are backpropagated through multiple time steps, gradients can become too small, leading to slow learning or information disappearing over time. Hence, this can affect the ability of \acp{RNN} to capture long-term dependencies. On the contrary, gradients can also become too large, causing the model's parameters to be updated dramatically, resulting in unstable training. 
 
-Given a sequence of $n$ words, a context window size $k$, and assuming that context words are independently generated given any center word, the likelihood function of the Skip-gram model is the probability of all context words given any center word:
-
-\begin{equation}
-    \prod_{i=1}^n \prod_{-k \leq j \leq k, j \neq 0} P\bigl(w_{i+j} \mid w_i \bigr)
-\end{equation}
-
-
-The training process of Word2Vec involves adjusting the word embeddings using gradient descent and backpropagation to minimize the prediction error. 
- 
-\subsubsection{SubWord Embeddings}
-
-In English, words like "helps," "helped," and "helping" are derived forms of the base word "help." Similarly, the relationship between "dog" and "dogs" is analogous to that between "cat" and "cats," and "boy" and "boyfriend" show the same relationship as "girl" and "girlfriend." In some other languages like French and Spanish, verbs can have more than 40 inflected forms, and in Finnish, a noun might have up to 15 cases. However, Word2Vec does not explore the internal structure of words, as morphological information, i.e., word formation and relationships, are not explicitly captured within the model. Instead, different inflected forms of the same word (e.g., "cat" and "cats") are represented by different embeddings without shared parameters. 
-
-In addition, words not included in the vocabulary are treated as \say{unknown} and assigned random vector representations, leading to sub-optimal results. Character-level embeddings \citep{wehrmann2017character} can be used to alleviate this problem. However, this approach suffers from a weak correlation between characters and semantic/syntactic aspects of the language. Furthermore, working at the character level results in much longer sequences, which are more challenging to deal with.
-
-% Instead of working at the word or character level, modern approaches use a vocabulary of subwords. 
-Modern NLP models address these issues by tokenizing text into subword units, which often retain linguistic meaning, such as morphemes. Consequently, even though a word may be unknown to the model, individual subword tokens may retain enough information for the model to deduce its meaning to a certain degree. Additionally, using subword units helps keeping the vocabulary at a reasonable size.
-
-\paragraph{FastText} Through fastText, \citet{bojanowski2017enriching} introduce subword embeddings, where a subword is a character n-gram. Rather than learning word embeddings, the model generates subword representations, and words are represented by the sum of their subword vectors. Formally, given $\mathcal{G}_w$ the set of all subwords of the word $w$, the central word vector $\bm{u}_w$ for $w$ in the Skip-gram model can be defined as:
-
-\begin{equation}
-    \bm{u}_w = \sum_{g \in \mathcal{G}_w} \bm{z}_g,
-\end{equation}
-
-where $\bm{z}_g$ is the vector of subword $g$ in the dictionary. The rest of the process is identical to the Skip-gram model.
-
-As parameters are shared among words with similar structures, fastText allows to obtain better vector representations for uncommon and out-of-vocabulary words.
-
-\paragraph{Byte Pair Encoding (BPE)}
-
-FastText uses fixed-size subwords, typically ranging from 3 to 6 characters. As a result, the vocabulary size cannot be predetermined. To address this limitation, \citet{gage1994new} propose the \ac{BPE} method, a compression algorithm that breaks down words into subwords to form a compact, fixed-size vocabulary with subwords of varying lengths. The \ac{BPE} algorithm performs a statistical analysis of the training dataset to identify common symbols within words, e.g., consecutive characters of arbitrary lengths. It starts with an initial vocabulary consisting of symbols of length 1 (characters), and iteratively merges the most frequent pairs of adjacent symbols to produce new, longer symbols. The process stops until a specified number of iterations or a predefined vocabulary size is reached. The resulting symbols can be used as subwords to segment words. \ac{BPE} is widely used for input representations in \ac{NLP} models, and has contributed significantly to improving their performance by enhancing their ability to handle morphologically-rich languages and out-of-vocabulary words.
-
-\paragraph{WordPiece}
-
-WordPiece \citep{wu2016google} is another subword segmentation algorithm. Similar to \ac{BPE}, WordPiece learns merge rules. To build the vocabulary, it starts from a word unit inventory including individual characters in the language and special tokens used by the model. Using this inventory, a language model is built on the training data. A new word unit is obtained by combining two units out of the current word inventory. This increments the word unit inventory by one. From all possible combinations, the new word unit is selected such that it yields the highest increase in the likelihood on the training data after its addition to the model. From the updated inventory, a new language model is built and the process is repeated until a predefined limit of word units is reached or the likelihood increase falls below a certain threshold. 
-
-Tokenization differs in WordPiece and \ac{BPE} in that WordPiece only saves the final vocabulary, not the merge rules learned. Starting from the word to tokenize, WordPiece finds the longest subword that is in the vocabulary, then splits on it. 
-
-% Word embeddings permitted the semantic representations of textual data with a richness that we would not achieve before. Semantic word representations allow for the extraction of information that would otherwise have been lost in the noisiness of textual data. Word embeddings are essential building blocks for representing sentences or documents, but they do not directly allow for sequence representation.
-
-\subsection{Sequence Modeling}
-% RNNs, LSTM
-
-Most \ac{NLP} tasks require modeling sequences in a way that captures the inherent temporal or sequential dependencies between elements. Sequence modeling is a fundamental concept in NLP that enables machines to process, understand, and generate text by considering the sequential relationships present in a sequence.
-
-\subsubsection{Convolutional Neural Networks}
-
-Initially designed for Computer Vision, \acp{CNN} can also be used to build sequence representations from the representation of its constituting elements \citep{collobert2008unified, kim2014convolutional}, and have been shown to achieve remarkable performance on \ac{NLP} tasks, notably text classification \citep{duque2019squeezed, wang2015semantic, liu2020multichannel}. 
-
-%The core idea behind \acp{CNN} is to recognize local patterns, e.g., key phrases, in a way that is invariant to translation. 
-We consider the most common and simplest architecture for a one-dimensional (1-D) \ac{CNN}, where a single layer of convolution is applied to the input token vectors obtained from an unsupervised neural language model. Given a sequence $(\bm{x}_1, \ldots, \bm{x}_n) \in \mathbb{R}^{n \times d}$ of $n$ $d$-dimensional token embedding vectors, a convolutional layer with $m$ filters is applied on each subsequence of $l$ consecutive words $\bm{u}_i = \bm{x}_{i:i+l-1} = (\bm{x}_i, \ldots, \bm{x}_{i+l-1}) \in \mathbb{R}^{d \times l}$. For each filter $\bm{f}_j \in \mathbb{R}^{d \times l}$ and each subsequence $\bm{u}_i \in \mathbb{R}^{d \times l}$, we compute:
-
-\begin{equation}
-\bm{F}_{i,j} = \langle \bm{u}_i, \bm{f}_j\rangle \qquad \forall \quad 0 \leq i \leq n-l, \forall \quad 0 \leq j \leq m-1,
-\end{equation}
-
-Max-pooling over time, which takes the maximum activation over the sequence length, is then applied for each feature. The resulting vector is then fed into a non-linear activation layer, most commonly ReLU. Formally:
-
-\begin{equation}
-    \bm{p}_j = \mathrm{ReLU}(\max_{i}\bm{F}_{i,j}) \qquad \forall \quad 0 \leq j \leq m-1.
-\end{equation}
-
-For classification tasks, $\bm{p}$ is then fed to a classification layer.
-
-Intuitively, 1-D convolution filters act as n-gram detectors, while max-pooling over time induces a thresholding behavior that essentially separates features that are relevant to the final classification from features that are not.
-
-While \acp{CNN} have been successful when applied to text classification, they are not the go-to architecture for many sequence-based \ac{NLP} tasks. Fixed-size filters may not effectively capture long-range dependencies in text. Furthermore, \acp{CNN} are designed to be translation-invariant, meaning the same filters are applied to different regions of the input. However, in language, the meaning of a sentence is highly dependent on the order of words, which is not explicitly modeled in \acp{CNN}. 
-
-% Other models like RNNs, LSTM, GRU, and transformers have shown superior performance in handling sequential data and capturing the rich context and semantics present in natural language. 
-
-
-\subsubsection{Recurrent Neural Networks}
-
-\paragraph{Vanilla \ac{RNN}} A \ac{RNN} is a class of neural networks designed to deal with the dynamic input sequences ubiquitous in \ac{NLP}. The key feature of \acp{RNN} is their ability to maintain \say{memory} across time steps, allowing them to process each element of a sequence using information from prior elements. This has allowed them to reach superior performance in handling sequential data and capturing the context and semantics present in natural language.  
-
-Formally, an \ac{RNN} is a function parameterized by a set of parameters shared across all time steps, $\bm{\theta} = \{\bm{b}, \bm{W}, \bm{U}, \bm{V}\}$. At each time step $t$, the model receives an input $\bm{x}_t$ and a hidden state $\bm{h}_{t-1}$ from the previous time step $t-1$. The hidden state at time $t$ is computed as follows:
-
-\begin{equation}
-    \bm{h}_{t} = f(\bm{U}\bm{x}_t + \bm{W}\bm{h}_{t-1} + \bm{b}),  
-\end{equation}
-
-where $f$ is a non-linear function, usually $f(x) = \tanh(x)$. The distribution of probabilities over the output is computed as:
-
-\begin{equation}
-    \hat{\bm{y}}_t = \mathrm{softmax}(\bm{V}\bm{h}_t + \bm{c}),
-\label{eq-rnn}
-\end{equation}
-
-% to flow from one time step to the next
-The recurrent connections allow information to be retained and updated over time, enabling \acp{RNN} to capture dependencies and temporal patterns in sequential data. \acp{RNN} are trained by minimizing the negative log-likelihood:
-
-\begin{equation}
-    \mathcal{L}_{\mathrm{RNN}}(\bm{\theta}) = \sum_{t=1}^{n} - \log P(w_t \mid \bm{x}_1, \ldots, \bm{x}_{t-1}; \bm{\theta}),
-\end{equation}
-
-using the \ac{BPTT} algorithm \citep{werbos1990backpropagation}. \ac{BPTT} unrolls the computational graph of an \ac{RNN} one time step at a time, resulting in a feedforward neural network with the special property that the same parameters are repeated throughout the unrolled network. Gradients are then backpropagated through the unrolled net, and accumulated in order to update $\bm{\theta}$. 
-
-\todo[inline]{Add figure}
-
-Complications arise because sequences can be rather long. This is linked to the vanishing and exploding gradients problems that come from repeated application of recurrent connections \citep{hochreiter2001gradient}. When gradients are backpropagated through multiple time steps, gradients can become too small, leading to slow learning or information disappearing over time. Hence, this can affect the ability of \acp{RNN} to capture long term dependencies. On the contrary, gradients can also become too large, causing the model's parameters to be updated dramatically, resulting in unstable training. 
-
-Formally, the derivation of the objective function with respect to $\bm{W}$ is defined as:
-
-\begin{equation}
-    \frac{\partial \mathcal{L}}{\partial \bm{W}} = \sum_{t=0}^{n} \frac{\partial \mathcal{L}_t}{\partial \bm{W}} \propto \sum_{t=0}^{n} \sum_{k=0}^{t} \left( \prod_{j = k} ^{t} \frac{\partial \bm{h}_{j+1}}{\partial \bm{h}_{j}} \right) \frac{\partial \bm{h}_{k}}{\partial \bm{W}}
-\end{equation}
-
-% multiplication of recursive derivative
-
-When $\left\Vert \frac{\partial \bm{h}_{j+1}}{\partial \bm{h}_{j}} \right\Vert_2$ is less than 1, the gradients will keep shrinking as they move backward in time. Conversely, if $\left\Vert \frac{\partial \bm{h}_{j+1}}{\partial \bm{h}_{j}} \right\Vert_2$ is greater than 1, the gradients grow exponentially at each time step, leading to extremely large gradients. 
-
-% Vanishing Gradient Problem: In RNNs, during backpropagation through time (BPTT), gradients are propagated backward from the output layer to the input layer to update the model's parameters. However, in deep architectures with many recurrent connections, the gradients can become very small as they are backpropagated through multiple time steps. This is because, during each time step, the gradients are multiplied by the weight matrices of the recurrent connections. If these weight matrices have values less than 1, the gradients will keep shrinking as they move backward in time. Consequently, the network fails to learn long-term dependencies, and the updates to the parameters become negligible. As a result, the RNN struggles to capture meaningful patterns over long sequences.
-
-% Exploding Gradient Problem: Conversely, in some cases, gradients can explode during backpropagation. This happens when the weight matrices of the recurrent connections have values greater than 1. As the gradients are backpropagated through time, they grow exponentially at each time step, leading to extremely large gradients. This can cause the model's parameters to be updated dramatically, resulting in unstable and unpredictable training.
-
-% Then, the chain rule is applied, backpropagating gradients through the unrolled net. The gradient with respect to each parameter must be summed across all places that the parameter occurs in the unrolled net. 
-
-% Because of their architecture, RNNs became popular for dealing with the dynamic input sequences ubiquitous in NLP
-
-% They are well-suited for tasks involving time series data, natural language processing, speech recognition, and other sequential data analysis tasks.
-
-% They are distinguished by their “memory” as they take information from prior inputs to influence the current input and output. While traditional deep neural networks assume that inputs and outputs are independent of each other, the output of recurrent neural networks depend on the prior elements within the sequence. While future events would also be helpful in determining the output of a given sequence, unidirectional recurrent neural networks cannot account for these events in their predictions.
-
-%Shared Parameters: RNNs share the same set of parameters across all time steps. This parameter sharing allows the model to learn and apply the same transformation to different elements in the sequence, which makes RNNs computationally efficient.
-
-\paragraph{\ac{LSTM}}
-
-To alleviate the vanishing gradient problem and better model long-range dependencies, several variants of \acp{RNN} have been introduced, the most common one being \ac{LSTM} \citep{hochreiter1997long}. The key idea behind \ac{LSTM} is to introduce special gated structures that allow the network to selectively remember or forget information over time. While a vanilla \ac{RNN} is a chain of very simple, repeated modules, an \ac{LSTM} is made of more complex modules, or \textit{cells}. At step $t$, a cell consists in a cell state $\bm{c}_t$, a cell candidate $\tilde{\bm{c}}_t$, a forget gate $\bm{f}_t$, an input gate $\bm{i}_t$, and an output gate $\bm{o}_t$. Given the input $\bm{x}_{t-1}$, the previous hidden state $\bm{h}_{t-1}$, along with the previous cell state $\bm{c}_{t-1}$, an \ac{LSTM} cell at step $t$ is defined by:
+To alleviate the vanishing gradient problem and better model long-range dependencies, several variants of \acp{RNN} have been introduced, the most common one being \ac{LSTM} \citep{hochreiter1997long}. The key idea behind an \ac{LSTM} is to introduce special gated structures that allow the network to selectively remember or forget information over time. While a vanilla \ac{RNN} is a chain of very simple, repeated modules, an \ac{LSTM} is made of more complex modules, or \textit{cells}. At step $t$, a cell consists in a cell state $\bm{c}_t$, a cell candidate $\tilde{\bm{c}}_t$, a forget gate $\bm{f}_t$, an input gate $\bm{i}_t$, and an output gate $\bm{o}_t$. Given the input $\bm{x}_{t-1}$, the previous hidden state $\bm{h}_{t-1}$, along with the previous cell state $\bm{c}_{t-1}$, an \ac{LSTM} cell at step $t$ is defined by:
 
 \begin{equation}
 \begin{aligned}
@@ -385,56 +260,105 @@ To alleviate the vanishing gradient problem and better model long-range dependen
 \end{aligned}
 \end{equation}
 
-where $\odot$ is the element-wise multiplication.
+\noindent where $\odot$ is the element-wise multiplication. More intuitively, the cell state $\bm{c}_t$ runs across the entire sequence and serves as an internal memory. The LSTM has the ability to remove or add information to the cell state by using gates. Gates are composed of a sigmoid activation function which outputs values between zero and one, describing how much of each component should be let through: a gate lets everything pass through if the value is one, and lets nothing through if the value is zero. The forget gate $\bm{f}_t$ determines what information to throw away from the cell state, the input gate $\bm{i}_t$ decides what new information to store in the cell state, while the output gate $\bm{o}_t$ controls what information from the cell state to pass to the next time step $t+1$. This gating mechanism allows \acp{LSTM} to control the flow of information and mitigates the vanishing gradient problem by breaking the multiplicative sequential gradient dependence. Hence, \acp{LSTM} are more robust at handling long sequences and preserving long-term dependencies.
 
-More intuitively, the cell state $\bm{c}_t$ runs across the entire sequence and serves as an internal memory. The LSTM has the ability to remove or add information to the cell state by using gates. Gates are composed of a sigmoid activation function which outputs values between zero and one, describing how much of each component should be let through: a gate lets everything pass through if the value is one, and lets nothing through if the value is zero. The forget gate $\bm{f}_t$ determines what information to throw away from the cell state, the input gate $\bm{i}_t$ decides what new information to store in the cell state, while the output gate $\bm{o}_t$ controls what information from the cell state to pass to the next time step $t+1$. This gating mechanism allows \acp{LSTM} to control the flow of information and mitigates the vanishing gradient problem by breaking the multiplicative sequential gradient dependence. Hence, \acp{LSTM} are more robust at handling long sequences and preserving long-term dependencies.
+\ac{RNN}-based language models process the input sequence one token at a time, predicting the next token from the current one and the previous hidden state. Unlike $n$-grams and \acp{FNN}, \acp{RNN} do not have limited or fixed context in theory, as the hidden state should ideally encapsulate information about all preceding words, extending back to the beginning of the sequence.
+\ac{RNN}-based (along with \ac{FNN}-based) language models have demonstrated superior performance over $n$-gram models in diverse setups \citep{mikolov2010recurrent}, producing more naturally-sounding text than previous language models \citep{kovavcevic2022bidirectional}. In addition, \ac{RNN}-based language models can be tailored for specific tasks. After training, the \ac{RNN} state $\bm{h}_t$ can serve as a representation of a text up to the word $w_t$. The final state $\bm{h}_{n}$ of a text corresponds to the representation of the entire text $(w_1, \ldots, w_n)$. Given that states have fixed dimensions, they can be applied to classification and regression tasks. \citet{schwenk2007continuous} have shown that \acp{RNN} provide significant improvements in speech recognition, while \citet{collobert2011deep} obtain close to state-of-the-art results on diverse morpho-syntactical labeling tasks.
 
-% LSTM and GRU networks have special gating mechanisms that allow them to preserve long-term dependencies and mitigate the vanishing/exploding gradient problem.
+\subsubsection{Convolutional Neural Networks}
 
-% Cell State: LSTMs have a special internal memory called the cell state. The cell state runs across the entire sequence, and it serves as the "long-term memory" of the network. It can store information from earlier time steps and allow relevant information to persist over time.
+\acp{CNN} constitute a family of neural network models characterized by a specific layer known as the convolutional layer. In this layer, features are extracted by convolving a learnable filter (or kernel) across various positions of a vectorial input.
+\acp{CNN} were initially designed to deal with the hierarchical representations inherent to the \ac{CV} field \citep{lecun1989backpropagation}. They are built upon two fundamental concepts: (1) the processing of an image region should not depend on its specific location (two-dimensional equivariance of data), (2) given the hierarchical nature of images, patterns should be captured at various levels of abstraction, progressing from regions composed of basic shapes to larger ones representing real-world objects. 
 
-% Gates: LSTMs use three types of gates to control the flow of information:
-
-% Gating Mechanism: The gates in an LSTM are trained through the backpropagation algorithm to learn which information to store, forget, or pass forward. The gating mechanism allows LSTMs to selectively retain important information, making them more robust at handling long sequences and capturing long-range dependencies.
-
-% RNNs have been successfully applied to various tasks, including language modeling, machine translation, sentiment analysis, and speech recognition. However, they do have limitations, especially in modeling long-range dependencies and handling very long sequences. More advanced architectures like transformers have emerged as alternatives to address these limitations and achieve state-of-the-art results in many NLP tasks.
-
-\subsection{Sequence-to-sequence Learning}
-
-\paragraph{Framework} Tasks in \ac{NLG}, e.g., summarization and translation, are most suitably formulated as sequence-to-sequence problems. Such tasks can be defined as finding a model $f$ that maps a sequence of $n$ input vectors $\bm{X}_{1:n} = (\bm{x}_1, \ldots, \bm{x}_n)$ to a sequence of $m$ target words $\bm{Y}_{1:m} = (\bm{y}_1, \ldots, \bm{y}_m)$, where $m$ is unknown apriori and depends on the input sequence:
+These concepts can also be applied to texts, where the translation equivariance is unidimensional rather than bi-dimensional. Let $(\bm{x}_1, \ldots, \bm{x}_n) \in \mathbb{R}^d$ be the input sequence of a convolutional layer, $\bm{K} \in \mathbb{R}^{w \times d' \times d}$ a kernel of width $w$, and $b \in \mathbb{R}^{d'}$ the bias term. One-dimensional convolution can be defined as:
 
 \begin{equation}
-    f : \bm{X}_{1:n} \rightarrow \bm{Y}_{1:m}.
+    \bm{y}_i = \sum_{j=1}^w \bm{K}_j \bm{x}_{i-j+1} + \bm{b},
 \end{equation}
 
-Using standard neural networks to address sequence-to-sequences problems requires the target sequence length $m$ to be known beforehand. However, the number of target vectors $m$ does not only depend on the number of input vectors $n$, but also on the entire input sequence $\bm{X}_{1:n}$. 
+\noindent where
 
-To address this, \citet{sutskever2014sequence} introduce \ac{Seq2Seq} models, a class of neural network architectures designed to process variable-length input sequences and generate variable-length target sequences. The fundamental concept behind the \ac{Seq2Seq} framework is the use of an encoder and a decoder. The encoder ingests the input sequence element by element, and compresses it into a mid-level vector representation, or \textit{context vector}, that encodes the information from the input sequence. Then, the decoder takes the context vector as its initial hidden state, and generates the output sequence element by element based on the previously predicted elements, taken as input at every step. The encoder and decoder are usually implemented via a series of \acp{RNN} or \ac{LSTM} cells. \todo[inline]{Add figure}
+\[
+    \bm{x}_{i-j+1} = 
+        \begin{cases}
+            \bm{x}_{i-j+1}, & \text{if } 0 \leq i-j \leq n \\
+            0,              & \text{otherwise}
+        \end{cases}
+\]
 
-\paragraph{Training} At training time, the Teacher Forcing strategy is used: to predict the next token, the decoder is fed with the ground-truth target tokens, rather than its own predictions from the previous time step. This technique guides the training process by mitigating the compounding errors that might occur to incorrect predictions, hence preventing the decoder from drifting too far away from the target. Furthermore, using ground-truth target tokens as inputs accelerates convergence, as stronger gradient signals are provided during backpropagation. 
+In the first layers of a \ac{CNN}, convolution is applied to word representations, \textit{i.e.}, $(\bm{x}_1, \ldots, \bm{x}_n)$ corresponds to a sequence of distributed representation of words. 
 
-\paragraph{Inference} However, teacher forcing is not applicable at inference time. Instead, the model is fed its own predictions from the previous time step as inputs to generate the next token. Different strategies can be used to determine how the model predicts the next element of the sequence:
+In \ac{NLP}, \acp{CNN} have mostly found application in static classification tasks for discovering latent structures in text, including sentiment analysis \citep{kalchbrenner2014convolutional}, topic categorization \citep{kim2014convolutional}, relation extraction \citep{nguyen2015relation}, and entity recognition \citep{adel2016comparing}. Additionally, they have demonstrated potential in sequential prediction tasks, such as language modeling \citep{pham2016convolutional} and \ac{POS} tagging \citep{collobert2011natural}. The popularity of \acp{CNN} is attributed to two key properties \citep{pham2016convolutional}: their ability to integrate information from larger context windows and their capacity to learn specific patterns at a high level of abstraction.
 
-\begin{itemize}
-    \item \textit{Greedy search} consists in selecting the token with the highest probability at each time step. While simple and computationally efficient, it misses high probabilities that can be found in posterior tokens;
-    \item \textit{Beam search} is an extension of greedy search that reduces the risk of missing hidden high probability token sequences by maintaining a fixed number $K$ of sequences with the highest probabilities. At each time step, it picks the $K$ best sequences so far based on their combined probabilities. Finally, the sequence with the highest probability is selected as the output sequence;
-    \item \textit{Random sampling} introduces randomness by selecting tokens according to their conditional probability distributions;
-    \item \textit{Top-k sampling} \citep{fan2018hierarchical} filters the $k$ most likely next tokens and redistributes the probability mass among those $k$ tokens only. This sampling strategy ensures that the less probable tokens should not have any chance of being selected;
-    \item \textit{Nucleus sampling} chooses from the smallest possible set of tokens whose cumulative probability exceeds a certain threshold $p$. The probability mass is then redistributed among this set of tokens. Nucleus sampling balances randomness and predictability better than traditional sampling.
-\end{itemize}
+This analogy extends to the role of convolutions in the \ac{CV} field, but it has its limitations. For instance, in language modeling, stacking convolution layers in a deeper model tends to harm performance \citep{pham2016convolutional}, unlike in \ac{CV} where it significantly improves results. This difference is attributed to the nature of visual versus linguistic data. While convolution creates abstract images that retain crucial properties in the visual domain, when applied to language, it detects important textual features but distorts the input to the extent that it is no longer recognizable as text.
+
+\subsection{Word Embedding Models}
+
+Word embeddings have been shown to significantly improve and simplify many \ac{NLP} applications \citep{collobert2011natural}. However, the approach introduced by \citet{bengio2000neural} requires calculating a probability distribution for all words in the vocabulary (Equation~\ref{eq:chapter2-bengio}). As a result, their embeddings are slow to compute and cannot be effectively learned from large datasets. 
+
+The work of \citet{bengio2000neural} laid the foundation for \ac{NLP} researchers to explore modifications to develop computationally more efficient methods. Subsequent research in \ac{NLP} primarily focused on unsupervised learning of word representations from large corpora, with the intent of leveraging them across diverse \ac{NLP} tasks.
 
 
-% The most common seq2seq framework is comprised of anencoder and a decoder. The encoder ingests the sequence of input data and generates a mid-level output which is subsequently consumed by the decoder to produce the series of final outputs. The encoder and decoder are usually implemented via a series of Recurrent Neural Networks or LSTM [40] cells.
+\subsubsection{Static Word Embedding Models} 
 
-% In 2014, Sutskever et al. proposed sequence-to-sequence learning, a general end-to-end approach for mapping one sequence to another using a neural network. In their method, an encoder neural network processes a sentence symbol by symbol, and compresses it into a vector representation. Then, a decoder neural network predicts the output sequence symbol by symbol based on the encoder state and the previously predicted symbols that are taken as input at every step. Encoders and decoders for sequences are typically based on RNNs,
+\paragraph{Word2Vec}
 
-% Encoder: The encoder processes the input sequence step by step, usually with recurrent neural network (RNN) layers, to generate a fixed-size representation called the context vector or the latent representation. This context vector aims to capture the essential information from the input sequence in a compressed form. In the case of natural language processing, the input sequence could be a sentence in the source language.
+\citet{mikolov2013efficient} introduced Word2Vec, a shallow neural network designed to efficiently learn continuous word embeddings by grouping semantically similar words in the same region of the vector space. While the model may not represent data as precisely as a neural network with limited data, its efficiency improves significantly when trained on larger datasets, enabling more accurate data representation. 
 
-% Context Vector: The context vector serves as a bridge between the input and output sequences. It encodes the input sequence's information and context, which is then passed to the decoder for generating the output sequence.
+Skip-gram is the simplest and most widely used model proposed by \citet{mikolov2013efficient}. The idea behind Skip-gram is to learn word representations in a manner that allows the context to be inferred from these representations. Therefore, words that co-occur in similar contexts have similar representations. Given a word, the Skip-gram model tries to predict the words that are likely to appear around it. The training objective of the model consists in maximizing the following log-probability:
 
-% Decoder: The decoder takes the context vector as its initial hidden state and generates the output sequence step by step, predicting each element of the sequence one at a time. The decoder is also typically implemented using RNN layers. In NLP applications, the output sequence could be a translated sentence or a summarized version of the input. 
+\begin{equation}
+    \sum_{(t, c)} \log P(t \text{ appears in the context } c) = \sum_{(t, c)} \log P(t \mid c),
+\end{equation}
 
-% Exposure Bias: One challenge with teacher forcing is that it can lead to exposure bias. The model becomes accustomed to seeing correct targets during training, which might not reflect real-world scenarios where the model's own predictions are used at inference time. This can lead to a discrepancy between training and inference behavior.
+\noindent where (t, c) corresponds to the set of terms $t$ associated with the context $c$. The context is defined by a fixed-sized window centered on $t$, such that any word in the window but $t$ are part of the context. Given $\bm{\underline{c}}$ the embedding for the context $c$ and $\bm{\underline{t}}$ the embedding for the target word $t$, the probability of $t$ to appear in $c$ is expressed as follows:
+
+\begin{equation}
+    P(t \mid c) = \frac{\exp (\bm{\underline{t}} \cdot \bm{\underline{c}})}{\sum_{t' \in V} \exp (\bm{\underline{t'}} \cdot \bm{\underline{c}})}
+\end{equation}
+
+To maximize the similarity of words appearing in the same context and minimizing it when they occur in different contexts, it is necessary to sample pairs of words that should not appear in the same context, \textit{i.e.}, negative samples. Instead of minimizing the objective for all words in the dictionary except the context words, the model randomly selects a limited number of words and uses them to optimize the objective. 
+
+One major limitation of Word2Vec lies in its inability to effectively handle \ac{OOV} words. Additionally, Word2Vec lacks shared representations at the subword level, which can become a challenge when dealing with morphologically rich languages such as Arabic or German.
+
+\paragraph{FastText}  \citet{bojanowski2017enriching} mitigate these issues by introducing subword information into the model, allowing for better handling of morphologically rich languages and enhanced understanding of subword structures. While Word2Vec treats each word as an atomic unit, fastText represents words as bags of character $n$-grams. Rather than learning word embeddings, the model generates subword representations, and words are represented by the sum of their subword vectors. Formally, given $\mathcal{G}_t$ the set of all subwords of the word $t$, the target word embedding $\bm{\underline{t}}$ in the Skip-gram model can be defined as:
+
+\begin{equation}
+    \bm{\underline{t}} = \sum_{g \in \mathcal{G}_t} \bm{z}_g,
+\end{equation}
+
+where $\bm{z}_g$ is the vector of subword $g$ in the dictionary. The rest of the process is identical to the Skip-gram model.
+
+The significant advantage of fastText over Word2Vec lies in its ability to comprehend the structure of words, including uncommon or unseen ones during training, by sharing parameters among words with similar structures. This capability is particularly valuable for languages with complex word forms.
+
+\subsubsection{Contextualized Word Embedding Models}
+
+% These advancements made it feasible to utilize LMs for representation learning beyond mere word sequence modeling.
+% These studies have initiated the use of language models for representation learning (beyond word sequence modeling), having an important impact on the field of NLP.
+
+The success of the Word2Vec algorithm \citep{mikolov2013efficient} has sparked immense interest in word embeddings within \ac{NLP} researchers and practitioners, leading to the development of a myriad of alternative models \citep{pennington2014glove, shazeer2016swivel, bojanowski2017enriching}. However, a significant drawback of such word embedding algorithms is that they produce static, context-independent embeddings. In other words, a word embedding remains the same across linguistic context — for instance, “jaguar” would have the same embedding whether referring to an animal or a car brand. Moreover, these approaches overlook multi-word expressions, grammatical nuances, and word-sense information, which can be crucial for handling polysemy and homonymy.
+
+To address these limitations, \textit{contextual} word embedding models have been introduced, initiating the use of language models for representation learning beyond mere word sequence modeling. These methods use language modeling to generate contextual word embeddings that adapt to the word's usage by considering the complete context within a sentence. 
+
+\paragraph{ELMo} \ac{ELMo} \citep{peters-etal-2018-deep} is a language model that learns contextual word embeddings by pre-training a stack of \acp{RNN} using the standard (\textit{i.e.}, auto-regressive) language modeling task on a large-scale corpora. To capture the influence of both preceding and succeeding words on the target word, \ac{ELMo} adopts a \textit{bidirectional} approach, employing a forward language model to process the input sequence and predict the next word, and a backward language model that runs the input sequence in reverse, predicting the previous token given the future ones. \ac{ELMo} introduced layered word representations where each layer captures different aspects of linguistic information, ranging from syntax to semantics. The model produces a series of contextualized embeddings for each token, with one embedding per layer. They can be used in a downstream model by aggregating representations from all layers, or \textit{fine-tuned} for specific downstream tasks by adding task-specific layers on top of the model.
+
+\paragraph{BERT} To learn a language model, the \ac{BERT} model \citep{devlin2018bert} moves away from \acp{RNN} by adopting a Transformer \citep{vaswani2017attention} architecture. A Transformer consists of parametric functions that iteratively improve the representation of a sequence of embeddings. Specifically, each layer $l$ transforms the sequence $\bm{x} = (x^l_1, \ldots, x^l_n)$ into a sequence $\bm{y} = (y^l_1, \ldots, y^l_n)$ of the same length, using \textit{self-attention}. The key idea behind self-attention is for each element in the sequence to learn to
+gather from other elements in the sequence (we will provide a detailed exploration of the attention mechanism in Section~\ref{sec:chapter2-plms}). Therefore, in contrast to \ac{ELMo}, bidirectionality is achieved by training a single model. \ac{BERT} uses two unsupervised tasks: \ac{MLM} and \ac{NSP}, where the former consists in predicting masked-out words in a sentence, while the latter involves determining whether two sentences follow each other in the original text. \ac{BERT} produces fixed-size contextualized embeddings for each token, which can be fine-tuned for downstream tasks by adding a classifier atop of the model.
+
+\paragraph{GPT} Similar to \ac{BERT}, the \ac{GPT} model \citep{radford2018improving} leverages the Transformer architecture. However, \ac{GPT} is trained using an auto-regressive language model objective. In this configuration, \ac{GPT} captures contextual information in a unidirectional manner: the sequence is processed from left to right, and each token can only attend to previous tokens to predict the next one in the sequence. \ac{GPT} is often used for tasks that require generating coherent and contextually relevant text, \textit{e.g.}, text completion, dialogue generation, and creative writing. \\
+
+These pre-trained context-aware word representations serve as highly effective general-purpose semantic features, significantly raising the performance bar of \ac{NLP} tasks. These studies have inspired numerous follow-up work, initiating a new era of algorithms that adhere to the “pre-training then fine-tuning” paradigm. 
+
+\section{Pre-trained Transformer Language Models}
+\label{sec:chapter2-plms}
+
+% These pre-trained context-aware word representations are very effective as general-purpose semantic features, which have largely raised the performance bar of NLP tasks. This study has inspired a large number of follow-up work, which sets the “pre-training and fine-tuning” learning paradigm
+
+% The main purpose of using transfer learning [136] is to avoid building task-specific models from scratch by leveraging knowledge previously acquired by training another task. While word embeddings are learnt from large corpora, their use in neural models to solve specific tasks is limited to the input layer. So, in practice a task-specific neural model is built almost from scratch since the rest of model parameters, which are typically initialized at random, need to be optimized for the task at hand, requiring large amounts of data to produce a high performance model.
+
+% The authors choose a transformer architecture following up on its successful use in a variety of NLP tasks, such as machine translation and document generation. Another interesting property of transformer architectures is their structured memory, which allows handling long-term dependencies in text, a problematic issue for recurrent networks like LSTMs. In addition, transformers support parallel processing since they are not sequential models like recurrent networks. 
+
+% Fine-tuning GPT for different evaluation tasks achieves better results than using task-specific architectures, showing that the latter are no longer required.
 
 \subsection{Attention Mechanism}
 
