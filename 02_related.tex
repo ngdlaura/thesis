@@ -54,7 +54,7 @@ Comprising a broad array of tasks, \ac{NLU} focuses on the ability of machines t
 
 \paragraph{Dialog Systems}, also known as chatbots, are designed to engage in natural language conversations with users. They play a crucial role in human-machine interaction, facilitating effective communication between humans and machines. Dialog systems are required to comprehend and interpret user input, keep track of the conversation context, create responses that are appropriate and linguistically coherent, and maintain an understanding of the state of the conversation and user preferences throughout the interaction. Their applications span various domains such as customer service, education, and entertainment. \\
 
-Language Models, specifically \acp{LLM}, have incited substantial interest across both academic and industrial domains, owing to their unprecedented performance in various tasks and domains, including medical language processing \citep{thirunavukarasu2023large}, scientific research \citep{wang2023scientific}, and code generation \citep{xu2022systematic}.
+Language Models have incited substantial interest across both academic and industrial domains, owing to their unprecedented performance in various tasks and domains, including medical language processing \citep{thirunavukarasu2023large}, scientific research \citep{wang2023scientific}, and code generation \citep{xu2022systematic}.
 
 \subsection{Modeling}
 
@@ -133,10 +133,10 @@ Several key metrics can be employed to provide valuable insights into the capaci
 
 \paragraph{Intrinsic Evaluation} An intrinsic evaluation metric measures the quality of the language model independently of any application, and can be used to quickly assess potential improvements in the model.
 
-Perplexity is a widely used intrinsic metric that measures how well a language model predicts a sample. Given an input sequence $\bm{W} = (w_1, \ldots, w_n)$, and $P(w_1, \ldots, w_n)$ the probability assigned to $\bm{W}$ by the model, the perplexity of $\bm{W}$ can be defined as the multiplicative inverse of $P(w_1, \ldots, w_n)$, normalized by the number of words in the test set:
+Perplexity is a widely used intrinsic metric that measures how well a language model predicts a sample. Given an input sequence $\bm{w} = (w_1, \ldots, w_n)$, and $P(w_1, \ldots, w_n)$ the probability assigned to $\bm{w}$ by the model, the perplexity of $\bm{w}$ can be defined as the multiplicative inverse of $P(w_1, \ldots, w_n)$, normalized by the number of words in the test set:
 
 \begin{equation}
-    \text{PPL}(\bm{W}) = P(w_1, \ldots, w_n)^{\frac{1}{n}}
+    \text{PPL}(\bm{w}) = P(w_1, \ldots, w_n)^{\frac{1}{n}}
 \end{equation}
 
 Perplexity quantifies how uncertain a model is about the predictions it makes. The lower the perplexity of a language model, the more confident (but not necessarily accurate) it is. Perplexity often correlates well with the model's performance on the target tasks, and it can be easily computed from the probability distribution learned during training. Hence, perplexity is a reliable metric to filter out models that are unlikely to perform well in real-world scenarios, where computing is costly and testing is time-consuming. However, comparing perplexity across different datasets, context lengths, vocabulary sizes, and tokenization procedures is challenging. These differences can significantly influence model performance, necessitating careful consideration and adjustment for fair evaluation.
@@ -155,10 +155,10 @@ Cross-entropy is another intrinsic metric used to measure the performance of a l
 
 \noindent Cross-entropy loss increases as the predicted probability diverges from the actual label. Hence, it is minimized when adjusting model weights during training. 
 
-\ac{BPC} is a measurement used to quantify the efficiency of encoding text using a specific model. It calculates the average number of bits needed to represent each character in a text using the model's encoding scheme. The lower the \ac{BPC} value, the more efficient the model is at encoding the text, indicating that the model is effectively capturing the patterns and structure of the language. This metric is often used to assess the performance and compression capabilities of language models. Given an input sequence $\bm{W} = (w_1, \ldots, w_n)$, \ac{BPC} is defined as:
+\ac{BPC} is a measurement used to quantify the efficiency of encoding text using a specific model. It calculates the average number of bits needed to represent each character in a text using the model's encoding scheme. The lower the \ac{BPC} value, the more efficient the model is at encoding the text, indicating that the model is effectively capturing the patterns and structure of the language. This metric is often used to assess the performance and compression capabilities of language models. Given an input sequence $\bm{w} = (w_1, \ldots, w_n)$, \ac{BPC} is defined as:
 
 \begin{equation}
-    \text{BPC}(\bm{W}) = - \dfrac{1}{n} \sum_{i=1}^n \log_2 P(w_i).
+    \text{BPC}(\bm{w}) = - \dfrac{1}{n} \sum_{i=1}^n \log_2 P(w_i).
 \end{equation}
 
 \noindent Notably, \ac{BPC} serves as a metric for evaluating models in the Hutter Prize contest and its associated enwiki8 benchmark on data compression.\footnote{\url{http://prize.hutter1.net/}}
@@ -342,256 +342,167 @@ To address these limitations, \textit{contextual} word embedding models have bee
 
 \paragraph{ELMo} \ac{ELMo} \citep{peters-etal-2018-deep} is a language model that learns contextual word embeddings by pre-training a stack of \acp{RNN} using the standard (\textit{i.e.}, auto-regressive) language modeling task on a large-scale corpora. To capture the influence of both preceding and succeeding words on the target word, \ac{ELMo} adopts a \textit{bidirectional} approach, employing a forward language model to process the input sequence and predict the next word, and a backward language model that runs the input sequence in reverse, predicting the previous token given the future ones. \ac{ELMo} introduced layered word representations where each layer captures different aspects of linguistic information, ranging from syntax to semantics. The model produces a series of contextualized embeddings for each token, with one embedding per layer. They can be used in a downstream model by aggregating representations from all layers, or \textit{fine-tuned} for specific downstream tasks by adding task-specific layers on top of the model.
 
-\paragraph{BERT} To learn a language model, the \ac{BERT} model \citep{devlin2018bert} moves away from \acp{RNN} by adopting a Transformer \citep{vaswani2017attention} architecture. A Transformer consists of parametric functions that iteratively improve the representation of a sequence of embeddings. Specifically, each layer $l$ transforms the sequence $\bm{x} = (x^l_1, \ldots, x^l_n)$ into a sequence $\bm{y} = (y^l_1, \ldots, y^l_n)$ of the same length, using \textit{self-attention}. The key idea behind self-attention is for each element in the sequence to learn to
-gather from other elements in the sequence (we will provide a detailed exploration of the attention mechanism in Section~\ref{sec:chapter2-plms}). Therefore, in contrast to \ac{ELMo}, bidirectionality is achieved by training a single model. \ac{BERT} uses two unsupervised tasks: \ac{MLM} and \ac{NSP}, where the former consists in predicting masked-out words in a sentence, while the latter involves determining whether two sentences follow each other in the original text. \ac{BERT} produces fixed-size contextualized embeddings for each token, which can be fine-tuned for downstream tasks by adding a classifier atop of the model.
+\paragraph{BERT} To learn a language model, the \ac{BERT} model \citep{devlin2018bert} moves away from \acp{RNN} by adopting a Transformer \citep{vaswani2017attention} architecture. A Transformer consists of parametric functions that iteratively improve the representation of a sequence of embeddings. Specifically, each layer $l$ transforms the sequence $\bm{x} = (x^l_1, \ldots, x^l_n)$ into a sequence $\bm{y} = (y^l_1, \ldots, y^l_n)$ of the same length, using \textit{self-attention}. The key idea behind self-attention is for each element in the sequence to learn to gather from other elements in the sequence (we will provide a detailed exploration of the attention mechanism in Section~\ref{sec:chapter2-plms}). Therefore, in contrast to \ac{ELMo}, bidirectionality is achieved by training a single model. \ac{BERT} produces fixed-size contextualized embeddings for each token, which can be fine-tuned for downstream tasks by adding a classifier atop of the model.
+
+% \ac{BERT} uses two unsupervised tasks: \ac{MLM} and \ac{NSP}, where the former consists in predicting masked-out words in a sentence, while the latter involves determining whether two sentences follow each other in the original text.
 
 \paragraph{GPT} Similar to \ac{BERT}, the \ac{GPT} model \citep{radford2018improving} leverages the Transformer architecture. However, \ac{GPT} is trained using an auto-regressive language model objective. In this configuration, \ac{GPT} captures contextual information in a unidirectional manner: the sequence is processed from left to right, and each token can only attend to previous tokens to predict the next one in the sequence. \ac{GPT} is often used for tasks that require generating coherent and contextually relevant text, \textit{e.g.}, text completion, dialogue generation, and creative writing. \\
 
-These pre-trained context-aware word representations serve as highly effective general-purpose semantic features, significantly raising the performance bar of \ac{NLP} tasks. These studies have inspired numerous follow-up work, initiating a new era of algorithms that adhere to the “pre-training then fine-tuning” paradigm. 
+These pre-trained context-aware representations, learned on large unlabeled corpora, serve as highly effective general-purpose semantic features, significantly raising the performance bar of \ac{NLP} tasks. These studies have inspired numerous follow-up work, estabilishing the “pre-training then fine-tuning” paradigm as the prevailing learning approach. 
 
-\section{Pre-trained Transformer Language Models}
+%enabling models to learn contextualized representations of words and phrases from large amounts of unlabeled data
+
+\section{Pre-trained Language Models}
 \label{sec:chapter2-plms}
 
-% These pre-trained context-aware word representations are very effective as general-purpose semantic features, which have largely raised the performance bar of NLP tasks. This study has inspired a large number of follow-up work, which sets the “pre-training and fine-tuning” learning paradigm
+Prior to the works of \citet{peters-etal-2018-deep}, \ac{NLP} models were commonly trained in a supervised manner \textit{from scratch} to perform specific tasks, for which labeled training data is limited. As a result, training deep neural networks on such small datasets led to overfitting, making the models sensitive to even slight shifts in the data distribution. 
 
-% The main purpose of using transfer learning [136] is to avoid building task-specific models from scratch by leveraging knowledge previously acquired by training another task. While word embeddings are learnt from large corpora, their use in neural models to solve specific tasks is limited to the input layer. So, in practice a task-specific neural model is built almost from scratch since the rest of model parameters, which are typically initialized at random, need to be optimized for the task at hand, requiring large amounts of data to produce a high performance model.
+While word embeddings such as Word2Vec's \citep{mikolov2013efficient} are learned from large corpora, their application in task-specific neural models is restricted to the input layer. Consequently, task-specific neural models must be built nearly from scratch, given that the majority of model parameters need to be optimized for the task at hand. This optimization process requires substantial amounts of data to attain a high-performance model.
 
-% The authors choose a transformer architecture following up on its successful use in a variety of NLP tasks, such as machine translation and document generation. Another interesting property of transformer architectures is their structured memory, which allows handling long-term dependencies in text, a problematic issue for recurrent networks like LSTMs. In addition, transformers support parallel processing since they are not sequential models like recurrent networks. 
+The seminal works of \citet{peters-etal-2018-deep, devlin2018bert, radford2018improving} marked a paradigm shift by generalizing the use of \textit{tranfer learning} in \ac{NLP}, initiating a new era of \acp{PLM}. Transfer learning avoids building task-specific models from scratch by applying the knowledge acquired from training a model on one task to another task. In the context of \acp{PLM}, the model is initially trained in an unsupervised way on a large-scale corpus to learn general language representations. This \textit{pre-training} phase allows the model to capture context and a general understanding of syntax and semantics. After pre-training, the model can be \textit{fine-tuned} on specific downstream tasks (\textit{e.g.}, text classification, \ac{NER}, machine translation, and more). Fine-tuning consists in further training the pre-trained model on a smaller, labeled dataset that is specific to the downstream task. The knowledge acquired during pre-training is leveraged and tailored to the new task, often resulting in improved performance.
 
-% Fine-tuning GPT for different evaluation tasks achieves better results than using task-specific architectures, showing that the latter are no longer required.
+% In summary, pre-trained LMs leverage transfer learning by first learning general language representations in an unsupervised manner and then transferring this knowledge to specific tasks through fine-tuning. This approach has proven effective in achieving state-of-the-art results across a variety of NLP applications.
 
-\subsection{Attention Mechanism}
+As an early attempt to leverage transfer learning in \ac{NLP}, \ac{ELMo} generates contextual representations that can be fine-tuned by adding task-specific layers. However, the need for specific architectures to solve different tasks still remains. The breakthrough in \acp{PLM} came with the introduction of the Transformer architecture in the work of \citet{vaswani2017attention}. Transformer-based \acp{PLM} \citep{devlin2018bert, radford2018improving} have demonstrated that fine-tuning the internal self-attention blocks along with a shallow \ac{FNN} is enough to improve the state of the art across a wide range of language tasks. This suggests that task-specfific architectures are no longer a necessity. Further, given more pre-training data, Transformer-based \acp{PLM} perform better with an increased model size and training compute, demonstrating superior scaling behavior \citep{kaplan2020scaling}. Hence, the Transformer has become the go-to component in the modern \ac{NLP} stack, largely replacing other architectures such as \acp{RNN}. Transformer-based \acp{PLM} are typically categorized into three main types: \textit{bidirectional} models utilizing only the encoder, \textit{encoder-decoder} models leveraging the entire Transformer architecture, and \textit{generative} models relying on the decoder alone.
 
-To encode a sequence into a fixed-size context vector, one can either use the last hidden state of the encoder or use a pooling layer (e.g., max-pooling) to aggregate the hidden states over time. Nevertheless, these approaches provide the decoder with limited access to the information contained in the input sequence, especially when the sequence is long. The last hidden state of the encoder often contains little information about the earliest parts of the sequence, while pooling the hidden states over time treats all time steps equally, resulting in a loss of sequential order, contextual information and long-range dependencies. Overall, encoding a variable-length input into a fixed-length vector squashes the information of the input sequence, irrespective of its length, causing the performance to deteriorate rapidly as the input sequence length increases \citep{bahdanau2014neural}. 
+In this section, we first explore the Transformer architecture, with a focus on its core component — the attention mechanism. Subsequently, we discuss how Transformers can be leveraged to build effective language models, ranging from bidirectional models capable of producing robust, general-purpose word representations to generative models able to create coherent and contextual relevant text, thereby laying the groundwork for \acp{LLM}.
 
-To alleviate the requirement to compress the entire content of the input sequence into a fixed-size context vector, \citet{bahdanau2014neural} introduce the attention mechanism, a principle that allows the decoder to look back at the input sequence hidden states and dynamically \textit{attend to} specific pieces of information. At each decoding step, the decoder only aggregates parts of the input sequence that are deemed relevant to the current prediction. Then, this information is used to modify the current state before generating the next token. 
+% The advent of pre-trained language models, starting with ELMo and later models like BERT and GPT, marked a paradigm shift by enabling models to learn contextualized representations of words and phrases from large amounts of unlabeled data. 
 
-%  Bahdanau’s attention mechanism provided a simple means by which the decoder could dynamically attend to different parts of the input at each decoding step
+% Another interesting property of transformer architectures is their structured memory, which allows handling long-term dependencies in text, a problematic issue for recurrent networks like LSTMs. In addition, transformers support parallel processing since they are not sequential models like recurrent networks. 
 
-\subsubsection{Bahdanau Attention Mechanism}
 
-% Rather than keeping the context vector as fixed, 
+\subsection{Transformer Architecture}
 
-As defined by \citet{bahdanau2014neural}, the attention mechanism replaces the fixed-size context vector with a variable-size one to improve the translation performance of the basic encoder-decoder model. The key idea behind attention is to dynamically update the context vector at each decoding time step, as a function of both the input sequence (encoder hidden states $\bm{h}^e_1, \ldots, \bm{h}^e_n$) and the already generated text (decoder hidden state $\bm{h}^d_{t-1}$). The context vector $\bm{c}_t$ at step $t$ is defined as:
+\acp{RNN} suffer from the vanishing/exploding gradient problem, which hinders their ability to capture long-range dependencies. In addition, the sequential processing of input in \acp{RNN} hampers efficient parallelization \citep{vaswani2017attention}. To address these limitations, \citet{vaswani2017attention} propose to remove recurrence altogether and introduce the Transformer, an architecture solely based on the \textit{self-attention} mechanism to capture global dependencies between input and output. 
 
-\begin{equation}
-    \bm{c}_t = \sum_{j=1}^n \alpha_{tj} \bm{h}^e_j,
-\end{equation}
+\subsubsection{Attention Mechanism} 
 
-where $\alpha_{tj}$ is the attention score at step $t$ for input $j$:
+The concept of attention can be best explained through an analogy with human biological systems. In various problems involving language, speech, or vision, specific parts of the input are more important than others. For instance, in tasks like machine translation and summarization, only certain words in the input sequence may hold relevance for predicting the next word. An attention mechanism integrates this idea of relevance by allowing the model to dynamically \textit{pay attention} to specific portions of the input that contribute to effectively performing the task at hand.
 
-\begin{equation}
-    \alpha_{tj} = \mathrm{Softmax}(\bm{e_{t}})_j = \frac{\exp(e_{tj})}{\sum_{k=1}^n \exp(e_{tk})},
-\end{equation}
+\paragraph{Bahdanau's Attention Mechanism} The earliest use of attention was proposed by \citet{bahdanau2014neural} for a \textit{sequence-to-sequence} modeling task. A sequence-to-sequence task involves mapping a sequence of $n$ input vectors to a sequence of $m$ target vectors, where $m$ is unknown apriori. A sequence-to-sequence model \citep{sutskever2014sequence} consists of an \textit{encoder-decoder} architecture, where the encoder encodes an input sequence $(\bm{x}_1, \ldots, \bm{x}_n)$ into a sequence of fixed-size vectors $(\bm{h}_1, \ldots, \bm{h}_n)$. The decoder is then fed the fixed-size vector $\bm{h}_n$ and generates an output sequence $(\bm{y}_1, \ldots, \bm{y}_m)$.
 
-with $e_{tj}$ being the alignment score between the encoder's hidden state at step $j$ and the decoder's hidden state at step $t-1$:
+In a traditional encoder-decoder framework, the encoder must compress all input information into a single fixed-size vector $\bm{h}_n$ that is fed to the decoder. However, encoding a variable-length input into a fixed-size vector squashes the information of the input sequence, irrespective of its length, causing the performance to deteriorate rapidly as the input sequence length increases \citep{cho2014properties}. In addition, in sequence-to-sequence tasks, each output token is expected to be more influenced by specific parts of the input sequence. However, the decoder lacks any mechanism to selectively focus on relevant input tokens.
+
+To alleviate these challenges, \citet{bahdanau2014neural} introduce the attention mechanism, a principle that allows the decoder to access the entire encoded input sequence $(\bm{h}_1, \ldots, \bm{h}_n)$ and dynamically \textit{attend to} information deemed relevant to generate the next output token. The key idea behind attention is to introduce attention weights $\bm{\alpha}$ over the input sequence, prioritizing positions with relevant information for the generation of the next output token. These attention weights determine the context vector $c$, which is then fed to the decoder. At each decoding position $j$, the context vector $\bm{c}_j$ is updated as a weighted sum of all encoder hidden states $\{\bm{h}_i\}_{i=1, \ldots, n}$ and their corresponding attention weights $\{\alpha_{ij}\}_{i=1, \ldots, n}$: 
 
 \begin{equation}
-    e_{tj} = a(\bm{h}^d_{t-1}, \bm{h}^e_j),
+    \bm{c}_j = \sum_{i=1}^n \alpha_{ij} \bm{h}_i.
 \end{equation}
 
-where $a$ is a feed-forward neural network.
+\noindent The introduction of the context vector serves as a mechanism for the decoder to access the entire input sequence and selectively attend to relevant posititons within it. It acts as a representation of the input sequence and is re-computed for each output token. This addition enhances the quality of the output by achieving better alignment.
 
-% In nmt, the memory is built from the hidden states of an rnn running on the sentence to be translated, while the query is the state of the translated sentence (“what was already translated”), the attention is then recomputed for each output position. In other words, a new representation of the source sentence is recomputed for each word in the target sentence. The attention weights—that is, the output of the softmax—can provide an interpretation of what the model is focusing on when making a prediction. In the case of nmt, the attention for producing a translated word usually focuses on the corresponding word or group of words in the source sentence.
-
-% Inspired by the idea of learning to align, Bahdanau et al. (2014) proposed a differentiable attention model without the unidirectional alignment limitation. When predicting a token, if not all the input tokens are relevant, the model aligns (or attends) only to parts of the input sequence that are deemed relevant to the current prediction. This is then used to update the current state before generating the next token. 
-
-% In 2015, Bahdanau et al. introduced the principle of attention, which is one of the core innovations in neural machine translation (NMT) and the key idea that enabled NMT models to outperform classic sentence-based MT systems. It basically alleviates the main bottleneck of sequence-to-sequence learning, which is its requirement to compress the entire content of the source sequence into a fixed-size vector. Indeed, attention allows the decoder to look back at the source sequence hidden states, that are then combined through a weighted average and provided as additional input to the decoder. Attention is potentially useful for any task that requires making decisions based on certain parts of the input.
-
-% Another problem is that there is no way to give more importance to some of the input words compared to others while translating the sentence.
-
-% Using an attention mechanism is a way to avoid these shortcomings. Furthermore, an attention mechanism is parametrized by a query which allows us to select the piece of information we want to extract from the sentence. The concept of attention first appeared in neural machine translation (nmt) under the name “alignment” (Bahdanau et al. 2015) before becom ing ubiquitous in nlp. The same principle was also presented under the name memory network (Sukhbaatar et al. 2015; Weston et al. 2015). It is also the building block of transformers, which are presented next. With this in mind, we use the vocabulary of memory networks to describe the attention mechanism.
-
-In other words, the context vector $\bm{c}_t$ represents the input sequence and is recomputed for each token in the output sequence.
-
-Initially appearing in \ac{NMT} where the idea is to learn to \say{align and translate}, attention is useful for any task that requires making decisions based on certain parts of the input. 
-
-\subsubsection{Generic Formulation}
-
-In more general terms, the attention mechanism provides a differentiable means of controlling how a neural network chooses elements from a set and constructs a weighted sum of their representations. Formally, the attention layer is fed a query $\bm{q} \in \mathbb{R}^d$ and a set of key-value pairs $\bm{K} \times \bm{Q} \in \mathbb{R}^{(n \times d) \times (n \times d')}$. The attention of $\bm{q}$ over $\bm{K}$ and $\bm{V}$ can be defined as:
+The attention weights $\alpha$ determine the relevance between each encoder hidden state and each decoder hidden state. Each attention weight $\alpha_{ij}$ is computed as a function of the encoder hidden state $\bm{h}_i$ and the decoder hidden state $\bm{s}_{j-1}$, defined as follows:
 
 \begin{equation}
-    \mathrm{Attention}(\bm{q}, \bm{K}, \bm{V}) = \mathrm{Softmax}(\bm{q}\bm{K})\bm{V}.
-\label{equation:attention-generic-formulation}
+    \alpha_{ij} = p(e_{ij}) = a(\bm{s}_{j-1}, \bm{h}_i),
 \end{equation}
 
-More intuitively, the query $\bm{q}$ indicates what the model is looking for, the keys $\bm{K}$ account for the positions to look at, while the values $\bm{V}$ represent the desired content. The attention weights $\mathrm{Softmax}(\bm{q}\bm{K})$ provide compatibility scores between the query and the keys, and indicate what the model is focusing on when making a prediction. In the \ac{RNN}-based encoder-decoder model proposed by \citep{bahdanau2014neural}, the decoder hidden state at the previous time step $\bm{h}^d_{t-1}$ represents the query, and the encoder hidden states $\bm{h}^e_{1}, \ldots, \bm{h}^e_{n}$ act as both the keys and values. 
+\noindent where $a$ is an alignment function implemented as an \ac{FNN}, and $p$ is a distribution function. The alignment score $a(\bm{s}_{j-1}, \bm{h}_i)$ defines how relevant $\bm{h}_i$ is for $\bm{s}_{j-1}$.
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Transformers}
+\paragraph{Generalized Attention} The \textit{generalized attention} model \citep{chaudhari2021attentive} is an extension of the attention mechanism of \citet{bahdanau2014neural} that allows for more flexibility and adaptability in capturing dependencies between different parts of the input and output sequences. While the original attention mechanism focuses on aligning parts of the input sequence with the current position in the output sequence, the generalized attention model introduces parameters and mechanisms to customize and control the attention process. In the generalized attention model, attention weights are not solely determined by the relevance between the current decoder hidden state and the encoder hidden states. Instead, the model introduces learnable parameters and scoring functions that can be adjusted to capture different types of relationships. This allows the attention mechanism to consider various aspects, such as semantic similarity, positional information, or other task-specific factors.
 
-\ac{RNN}-based encoder-decoder models suffer from several limitations. Firstly, the vanishing/exploding gradient problem from which \acp{RNN} and \acp{LSTM} suffer hinders their ability to capture long-range dependencies. Secondly, the inherent recurrent architecture of \acp{RNN} hampers efficient parallelization during encoding \citep{vaswani2017attention}: to obtain the context vector $\bm{c}$, the hidden states $\bm{h}^e_1, \ldots, \bm{h}^e_n$ have to be computed sequentially.
-
-% Note, that in an RNN-based encoder model, the computation of the hidden state \bm{c}c has to be done sequentially: Compute hidden state of the first input vector \bm{x}_1x , then compute the hidden state of the second input vector that depends on the hidden state of the first hidden vector, etc. The sequential nature of RNNs prevents effective parallelization and makes them much more inefficient compared to transformer-based encoder models on modern GPU hardware.
-
-To address this limitation, \citet{vaswani2017attention} propose to remove recurrence altogether and introduce the Transformer, an encoder-decoder architecture solely based on attention mechanisms. A Transformer is composed by stacking a series of Transformer blocks on top of each other. Similar to \ac{RNN}-based encoder-decoder models, a Transformer defines a conditional distribution of target vectors $\bm{Y}_{1:m}$ given an input sequence $\bm{X}_{1:n}$:
+A generalized attention model $A$ is characterized by a set of key-value pairs $(\bm{K}, \bm{V})$ and a query $\bm{q}$ such that:
 
 \begin{equation}
-    P(\bm{Y}_{1:m} | \bm{X}_{1:n})
+    A(\bm{q}, \bm{K}, \bm{V}) = \sum_i p(a(\bm{q}, \bm{k}_i)) \cdot \bm{v}_i
 \end{equation}
 
-The encoder encodes the input sequence $\bm{X}_{1:n}$ to a contextualized sequence of hidden states $\bm{\overline{X}}_{1:n}$, defining the mapping
+\noindent The alignment function $a$ determines how keys and queries are combined (\textit{e.g.}, dot product or cosine similarity), while the distribution function $p$ ensures that the attention weights lie between 0 and 1 and are normalized to sum to 1 (\textit{e.g.}, logistic sigmoid or softmax function).
+
+The attention mechanism of \citet{bahdanau2014neural} can be seen as a special case of generalized attention where $\bm{K} = \bm{V} = \{\bm{h}_i\}_{i=1, \ldots, n}$ and $\bm{q} = \bm{s}_{j-1}$. 
+% Then, $e = a(\bm{K}, \bm{q})$ and $\alpha = p(e)$.
+
+
+\paragraph{Self-Attention} One common form of the generalized attention model is \textit{self-attention}, or scaled dot-product attention, introduced by \citet{vaswani2017attention} in the Transformer architecture. In this mechanism, the alignment function is defined by a scaled dot product, while the distribution function corresponds to the softmax. The scaled dot product between query and key is passed through a softmax function to obtain the final attention weights. Self-attention is defined as follows:
 
 \begin{equation}
-    f_{\theta_e}: \bm{X}_{1:n} \rightarrow \bm{\overline{X}}_{1:n}.
+    A(\bm{q}, \bm{K}, \bm{V}) = \sum_i \textrm{softmax}\left(\frac{\bm{q}^{\top} \bm{k}_i}{\sqrt{d_k}}\right) \cdot \bm{v}_i,
 \end{equation}
 
-The decoder then models the conditional probability distribution of the target vector sequence $\bm{Y}_{1:n}$ given the sequence of encoded hidden states $\bm{\overline{X}}_{1:n}$:
+\noindent where $d_k$ is the dimensionality of the key vectors.
 
-\begin{equation}
-    p_{\theta_d}(\bm{{Y}}_{1:n} | \bm{\overline{X}}_{1:n}).
-\end{equation}
+The alignment score $\frac{\bm{q}^{\top} \bm{k}_i}{\sqrt{d_k}}$ indicate how to weigh the value $\bm{v}_i$ based on the query vector $\bm{q}$. The more similar a key vector $\bm{k}_i$ is to $\bm{q}$, the more important is the corresponding value vector $\bm{v}_j$ for the output vector. 
 
-By Bayes' rule, this distribution can be factorized to a product of conditional probability distribution of the target vector $\bm{y}_i$ given the encoded hidden states $\bm{\overline{X}}_{1:n}$ and all previous target vectors $\bm{Y}_{0:i-1}$
+% attention scores are computed by taking the dot product of the query (decoder hidden state) and key (encoder hidden state) vectors
 
-\begin{equation}
-    p_{\theta_d}(\bm{Y}_{1:n} | \bm{\overline{X}}_{1:n}) = \prod_{i=1}^{m} p_{\theta_d}(\bm{y}_i | \bm{Y}_{0: i-1}, \bm{\overline{X}}_{1:n}).
-\label{equation:transformer-conditional-prob-target-seq}
-\end{equation}
-
-Given an appropriate decoding mechanism, the output sequence $\bm{Y}_{1:m}$ can be sampled from $p_{\theta_d}\left(\bm{y}_i | \bm{Y}_{0: i-1}, \bm{\overline{X}}_{1:n}\right), \forall i \in \{1, \ldots, m\}$. \\
-
-\todo[inline]{Add figure}
-
-The overall architecture of the Transformer is presented in Figure~\ref{figure:transformer-architecture}. The input and output sequences are embedded and added with positional encoding before being passed through the encoder and the decoder. The encoder is a stack of identical layers, each of which has a multi-head self-attention module and two position-wise \acp{FNN}. Each encoder layer's input corresponds to the previous layer's output. Inspired by ResNet \citep{he2016deep}, a residual connection is added to all sublayers, followed by layer normalization. Likewise, the decoder is also a stack of identical layers with residual connections and layer normalization. An additional sublayer, the encoder-decoder attention (or cross-attention) module, is inserted between the self-attention module and the \acp{FNN}. Encoder-decoder attention takes as inputs both the encoder outputs and the outputs of the previous decoder layer. Finally, the outputs of the final decoder layer are fed to a \ac{FC} layer to obtain, for each target position, a probability distribution over the whole vocabulary.
-
-The key innovation of Transformers is their ability to process input sequences of variable lengths without relying on a recurrent structure, allowing them to be highly parallelizable and orders of magnitudes more efficient than \ac{RNN}-based models. 
-
-% Though initially designed for sequence-to- sequence learning on text data, Transformers have been pervasive in a wide range of modern Deep Learning applications, such as in areas of language, vision, speech, and reinforcement learning.
-
-\subsubsection{Transformer Attention}
-
-Each Transformer block is characterized by a multi-head self-attention module, which computes similarity scores for all pairs of tokens in an input sequence. The key idea behind self-attention is for each element in the sequence to learn to gather from other elements in the sequence. For each position in the sequence, self-attention computes a weighted average of feature representations with weights proportional to a similarity score between pairs of representations. 
-
-\paragraph{Self-Attention} Formally, an input sequence encoded as a matrix $\bm{X} \in \mathbb{R}^{n \times d}$ is projected using three weight matrices $\bm{W}_Q \in \mathbb{R}^{n \times d_q}$, $\bm{W}_K \in \mathbb{R}^{n \times d_k}$, and $\bm{W}_V \in \mathbb{R}^{n \times d_v}$ (with $d_q = d_k = d$) to extract the query, key and value matrices $\bm{Q}$, $\bm{K}$, and $\bm{V}$:
-
-\begin{equation}
-\begin{aligned}
-    \bm{Q} = \bm{W}_q \bm{X} + \bm{b}_v \\
-    \bm{K} = \bm{W}_k \bm{X} + \bm{b}_k \\
-    \bm{V} = \bm{W}_v \bm{X} + \bm{b}_v.
-\end{aligned}    
-\end{equation}
- 
-% The operation for a single layer and a single head is defined as a slight modification of Equation~\ref{equation:attention-generic-formulation}:
-
-The self-attention operation, for a single layer and a single head, is defined as a slight modification of Equation~\ref{equation:attention-generic-formulation}:
-
-\begin{equation}
-    \text{Attention}(\bm{Q}, \bm{K}, \bm{V}) = \text{Softmax}\left(\dfrac{\bm{Q}\bm{K}^\top}{\sqrt{d_k}}\right)\bm{V}.
-\end{equation}
-
-% More intuitively, the queries indicate what we are looking for, the keys account for where we will be looking, while the values will give us the desired content.
-The attention matrix, $\bm{A} = \bm{Q}\bm{K}^\top$, contains the alignment score between every query-key pair, and indicates how to weigh the values based on the queries. The more similar a key vector $\bm{k}_j$ is to a query vector $\bm{q}_i$, the more important is the corresponding value vector $\bm{v}_j$ for the output vector $\overline{\bm{x}}_i$. This drives the self-alignment process in self-attention whereby tokens learn to gather from each other. Using the full set of attention scores, token representations are computed by building the corresponding weighted sum over every other tokens. Because each token is attending to tokens in the same sequence (unlike the case where the decoder attends to encoder states), this mechanism is described as self-attention.
-
-% In a traditional attention layer, each token representation is linearly transformed into a Query vector, a Key vector, and a Value vector. A token “looks” for other tokens from which it might want to absorb information (i.e., attend to) by finding the ones with Key vectors that create relatively high scores when matrix-multiplied (called Matmul) by its Query vector and then softmax-normalized. The token then sums together the Value vectors of all other tokens in the sentence, weighted by their score, and passes this up the network, where it will normally be added to the token’s original input vector.
-
-% The key innovation of transformer-based encoder-decoder models is that such residual attention blocks can process an input sequence of variable length $n$ without exhibiting a recurrent structure. Not relying on a recurrent structure allows transformer-based encoder-decoders to be highly parallelizable, which makes the model orders of magnitude more computationally efficient than RNN-based encoder-decoder models on modern hardware.
-
-Because the output is calculated via a series of matrix multiplications, and each query is processed completely independently from the others, the Transformer architecture is able to compute the relevant context around each element in parallel. As opposed to \acp{RNN}, Transformers are much more efficient on modern GPU hardware. 
-
-\paragraph{Multi-Head Attention} To ensure different views of the same sequence and enable parallelized computation of attention across different representation subspaces, \citet{vaswani2017attention} extend the concept of self-attention to multiple heads. The self-attention operation is decomposed in $h$ heads: each Transformer layer computes $h$ attentions in parallel before. The $h$ outputs are then concatenated and linearly projected. Mathematically, this operation is expressed as:
-% Each head’s dimension is a subspace of the model’s representation space ($d_k = d_v = d/h$). Specifically, query, key and value matrices are transformed into sub-queries, sub-keys, and sub-values, which are passed through the scaled dot product attention independently. Afterward, the heads are concatenated and combined with a final weight matrix. Mathematically, this operation is expressed as:
+\paragraph{Muti-Head Self-Attention} Rather than computing attention in a single step, \citet{vaswani2017attention} propose to decompose the self-attention operation in $h$ heads. The feature dimension $d$ is divided into $h$ fixed-size segments. Self-attention is then computed over each segment in parallel, using different linear transformations of the same input. The outputs of each head are then concatenated to form the complete attention output. \textit{Multi-head} self-attention is then expressed as:
 
 \begin{flalign}
-\text{MultiHeadAttention}(\bm{Q}, \bm{K}, \bm{V}) &= 
-\begin{bmatrix}
-    \mathrm{head}_1(\bm{Q}, \bm{K}, \bm{V}) \\
-    \mathrm{head}_2(\bm{Q}, \bm{K}, \bm{V}) \\
-    \ldots \\
-    \mathrm{head}_h(\bm{Q}, \bm{K}, \bm{V})
-\end{bmatrix}
-\bm{W}_o \\
-\mathrm{where} \quad \mathrm{head}_i(\bm{Q}, \bm{K}, \bm{V}) &= \text{Attention}\left(\bm{QW}^{(i)}_q, \bm{KW}^{(i)}_k, \bm{VW}^{(i)}_v\right).
-\end{flalign}
-
-The dimension of each head is a subspace of the model's representation space, i.e., $d_k = d_v = \frac{d}{h}$. For each head $i$, query, key and value matrices are transformed into sub-queries, sub-keys, and sub-values using the learned projection matrices $\bm{W}^{(i)}_q$, $\bm{W}^{(i)}_k$ and $\bm{W}^{(i)}_v$. The matrix $\bm{W}_o$ then projects the concatenation of head-attentions back into the model's representation space $d$.
-
-% For additional processing, the outputs are then passed into a feed-forward neural network with residual connections and layer normalization steps.
-
-\subsubsection{Using Self-Attention in Transformers}
-
-Self-attention is used in both the encoder and the decoder.
-
-\paragraph{Encoder} 
-In the encoder, self-attention is used to map the input sequence $\bm{X_{1:n}}$ to a sequence of context-dependent vectors $\bm{\overline{X}}_{1:n}$. Each attention block builds the queries, keys and values from the outputs of the previous encoder layer, and uses \textit{bi-directional} self-attention to put each input token in relation with all input tokens in the sequence. Given an encoder self-attention layer's input $\bm{X'}_{1:n}$, the outputs $\bm{X''}_{1:n}$ constructed using bi-directional self-attention can be expressed as:
-
-\begin{equation}
-    \bm{X''}_{1:n} = \mathrm{Softmax}(\bm{Q}_{1:n}\bm{K}^{\top}_{1:n}) \bm{V}_{1:n} + \bm{X'}_{1:n}.
-\end{equation}
-
-Each encoder block builds a contextualized representation of its input sequence, and the following blocks further refine this context-dependent representation. Compared to \acp{RNN}, bidirectional self-attention reduces the amount of computation steps that information needs to flow from one point to another. Therefore, information loss is reduced, making long-range dependencies more easily learnable.
-
-\paragraph{Decoder} 
-
-The decoder models the conditional distribution of a target sequence $\bm{Y}_{1:m}$. Each decoder layer contains three sublayers: \textit{decoder self-attention}, \textit{encoder-decoder attention}, and a module made of two position-wise \acp{FNN}. The final decoder layer is followed by a \ac{FNN}, the \textit{language modeling head}. 
-
-Given an input target vector $\bm{y}_i, \forall i \in \{1, \ldots, m\}$, the decoder self-attention (or \textit{uni-directional}) layer models the probability distribution of the next target vector $\bm{y}_{i+1}$. As opposed to the encoder, the encoded target vector $\bm{y''}_{i}$ represents the next target vector $\bm{y}_{i+1}$ and not the input vector $\bm{y}_{i}$ itself. In order to define a conditional distribution of the next target vector $\bm{y}_{i+1}$, the distribution cannot be conditioned on $\bm{y}_{i+1}$, as the decoder would just copy $\bm{y}_{i+1}$ through the network to $\bm{y''}_{i+1}$. Hence, uni-directional self-attention puts each of its input vectors $\bm{y'}_i$ only into relation with all previous input vectors $\bm{y'}_j$, with $j \leq i$. This ensures that the prediction $\bm{y''}_i$ only depends on the tokens that have already been generated. Given $\bm{y'}_i$ an input vector at position $i$, the output vector $\bm{y''}_i$ built using uni-directional self-attention is defined as follows:
-
-\begin{equation}
-    \bm{y''}_i = \mathrm{Softmax}(\bm{q}_i \bm{K}^{\top}_{0:i}) \bm{V}_{0:i} + \bm{y'}_i,
-\end{equation}
-
-where, $\bm{q}_i$, $\bm{K}_{0:i}$, and $\bm{V}_{0:i}$ all come from the outputs of the previous decoder layer $\bm{Y'}_{0:i}$. This twist to the attention mechanism allows to define a \textit{causal} probability distribution.
-
-To condition the probability distribution of the next target vector on the encoder's input, encoder-decoder attention (or \textit{cross-attention}) then puts each of its input vectors $\bm{y''}_i$ into relation with all contextualized input vectors $\overline{\bm{X}}_{1:n}$:
-
-\begin{equation}
-    \bm{y'''}_i = \mathrm{Softmax}(\bm{q}_i \bm{K}^{\top}_{1:n}) \bm{V}_{1:n} + \bm{y''}_i.
-\end{equation}
-
-Here, $\bm{q}_i$ is computed from the outputs of the previous decoder layer $\bm{Y'''}_{0:i}$, while $\bm{K}_{1:n}$ and $\bm{V}_{1:n}$ come from the contextualized input sequence $\overline{\bm{X}}_{1:n}$. Cross-attention ensures that, the more similar a decoder input representation (represented by $\bm{q}_i$) is to an encoder input representation ($\bm{k}_j$), the more does the input representation influence the decoder output representation ($\bm{v}_j$).
-
-All in all, the decoder maps the contextualized input sequence $\overline{\bm{X}}_{1:n}$ and the target vectors $\bm{Y}_{0:m-1}$ (prepended by the \ac{BOS} token) to an encoded sequence of target vectors $\overline{\bm{Y}}_{0:m-1}$. Then, the language modeling head maps $\overline{\bm{Y}}_{0:m-1}$ to a sequence of logit vectors $\bm{L}_{1:m}$, where each vector $\bm{l}_i$ is transformed into a conditional probability distribution of the target vector $\bm{y}_i$ using the softmax operation:
-
-\begin{equation}
-    p_{\theta_d}(\bm{y}_i \mid \bm{X}_{1:n}, \bm{Y}_{0:i-1}) = \mathrm{Softmax}(\bm{l}_i).
-\end{equation}
-
-Finally, the conditional probabilities of all target vectors $\bm{y}_1, \ldots, \bm{y}_m$ are multiplied together to obtain the conditional probability of the whole target sequence (Equation~\ref{equation:transformer-conditional-prob-target-seq}).
-
-\begin{comment}
+    \text{MultiHeadAttention}(\bm{q}, \bm{K}, \bm{V}) &= 
+    \begin{bmatrix}
+        \mathrm{head}_1(\bm{q}, \bm{K}, \bm{V}) \\
+        \mathrm{head}_2(\bm{q}, \bm{K}, \bm{V}) \\
+        \ldots \\
+        \mathrm{head}_h(\bm{q}, \bm{K}, \bm{V})
+    \end{bmatrix}
+    \bm{W}_o \\
+    \mathrm{where} \quad \mathrm{head}_i(\bm{q}, \bm{K}, \bm{V}) &= \text{Self-Attention}\left(\bm{qW}^{(i)}_q, \bm{KW}^{(i)}_k, \bm{VW}^{(i)}_v\right).
+    \end{flalign}
     
-To model the conditional distribution of a target sequence $\bm{Y}_{1:m}$, the target vectors $\bm{Y}_{1:m-1}$, prepended by the \ac{BOS} token, along with the encoded sequence of input vectors $\overline{\bm{X}}_{1:n}$ are mapped to an encoded sequence of target vectors $\overline{\bm{Y}}_{0:m-1}$. A \ac{LM} head, consisting of a feed-forward layer and a softmax function, then maps this sequence to a a sequence of logit vectors $\bm{L}_{1:m}$.
 
-In the decoder, the Transformer blocks are followed by a \ac{LM} head, represented by a feed-forward layer and a softmax function. Given $\bm{\overline{X}}_{1:n}$ a contextualized sequence output by the encoder and $\bm{Y}_{0:i-1}$ a target sequence pre-pended by the \ac{BOS} token, the decoder maps $\bm{\overline{X}}_{1:n}$ and $\bm{Y}_{0:i-1}$ to an encoded target sequence $\bm{\overline{Y}}_{0: i-1}$. Then, the \ac{LM} head maps $\bm{\overline{Y}}_{0: i-1}$ to a sequence of logit vectors $\bm{L}_{1:i} \in \mathbb{R}^{i \times |V|}$, where each logit $\bm{l}_k$ represents a similarity score between the encoded target vector $\bm{\overline{y}}_k$ and each token embedding in the vocabulary. This way, for each position $i \in \{1, \ldots, m\}$ a probability distribution over the whole vocabulary can be obtained by applying a softmax operation on $\bm{l}_i$, defining the conditional distribution  $P(\bm{y}_i | \bm{Y}_{0: i-1}, \bm{\overline{X}}_{1:n})$:
+% The dimension of each head is a subspace of the model's representation space, \textit{i.e.}, $d_k = d_v = \frac{d}{h}$. 
+\noindent For each head $i$, query, key and value matrices are transformed into sub-queries, sub-keys, and sub-values using the learned projection matrices $\bm{W}_q$, $\bm{W}_k$ and $\bm{W}_v$. The matrix $\bm{W}_o$ then projects the concatenation of head-attentions back into the original $d$-dimensional representation space.
+
+The motivation behind multi-head attention is to ensure different views of the same sequence and enable parallelized computation of attention across different representation subspaces
+
+ 
+\subsubsection{Self-Attention in Transformers}
+
+\paragraph{Transformer Architecture} A Transformer \citep{vaswani2017attention} is an encoder-decoder architecture that defines a conditional distribution of target vectors $(\bm{y}_1, \ldots, \bm{y}_m)$ given an input sequence $(\bm{x}_1, \ldots, \bm{x}_n)$. The encoder encodes the input sequence $(\bm{x}_1, \ldots, \bm{x}_n)$ into a contextualized sequence of hidden states $(\overline{\bm{x}}_1, \ldots, \overline{\bm{x}}_n)$. The decoder then uses these hidden states to condition the probability distribution of the target vector sequence $(\bm{y}_1, \ldots, \bm{y}_m)$. By Bayes' rule, this distribution can be factorized to a product of conditional probability distribution of the target vector $\bm{y}_i$ given the encoded hidden states $(\overline{\bm{x}}_1, \ldots, \overline{\bm{x}}_n)$ and all previous target vectors $(\bm{y}_0, \ldots, \bm{y}_{i-1})$. Formally:
 
 \begin{equation}
-\begin{aligned}
-    p_{\theta_d}(\bm{y} \mid \bm{X}_{1:n}, \bm{Y}_{0:i-1}) &= \mathrm{Softmax}(f_{\theta_d}(\bm{X}_{1:n}, \bm{Y}_{0:i-1})) \\
-    &= \mathrm{Softmax}(\bm{l}_i)
-\end{aligned}
+    p_{\theta} \bigl( \bm{y}_1, \ldots, \bm{y}_m \mid \overline{\bm{x}}_1, \ldots, \overline{\bm{x}}_n \bigr) = \prod_{i=1}^{m} p_{\theta}\bigl(\bm{y}_i |\bm{y}_0, \ldots, \bm{y}_{i-1}; \overline{\bm{x}}_1, \ldots, \overline{\bm{x}}_n\bigr).
 \end{equation}
 
-%Because the encoded target vector $\bm{\overline{y}}_i$ should be a good representation of the next target vector $\bm{y}_{i+1}$ and not of the input vector $\bm{y}_{i}$ itself
+The input and target sequences $(\bm{x}_1, \ldots, \bm{x}_n)$ and $(\bm{y}_1, \ldots, \bm{y}_m)$ are embedded and fed to the encoder and the decoder. Both encoder and decoder are composed by stacking a series of Transformer layers on top of each other. Each Transformer layer is characterized by a multi-head self-attention module and two position-wise \acp{FNN}. The input of each encoder layer corresponds to the previous layer's output. To help the model train faster and more accurately, a residual connection \citep{he2016deep} is added to all sublayers, followed by layer normalization. In the decoder, the self-attention module is masked to enforce \textit{unidirectional} self-attention, preventing tokens from attending to future tokens. Furthermore, an additional sublayer, the \textit{cross-attention} module, is inserted between the self-attention module and the \acp{FNN}. Cross-attention takes as inputs both the encoder's outputs and the outputs of the previous decoder layer. Finally, the outputs of the final decoder layer are fed to an \ac{FNN} layer to obtain, for each target position, a probability distribution over the whole vocabulary.
 
-Because $\bm{\overline{y}}_i$ is also conditioned on the input of the encoder, uni-directional self-attention is followed by cross-attention. In a cross-attention setting, each vector output by uni-directional self-attention, $\bm{y'}_i$, attends to every contextualized encoding vector in $\bm{\overline{X}}_{1:n}$. Whereas the query vectors $\bm{Q}_{0:i}$ are still obtained from the outputs $\bm{Y'}_{0:i}$ of the previous layer, the key and value vectors are projections of $\bm{\overline{X}}_{1:n}$. As in bi-directional self-attention, each query vector $\bm{q}_i$ is then compared to all key vectors and the corresponding scores are used to weight the respective value vectors. 
+% Using the full set of attention scores $A(\bm{Q}^{(l)}, \bm{K}^{(l)}, \bm{V}^{(l)})$, token representations $(\bm{x}^{(l+1)}_1, \ldots, \bm{x}^{(l+1)}_n)$ are computed by building the corresponding weighted sum over every other token, \textit{i.e.},
 
-In conclusion, the Transformer decoder uses uni-directional self-attention to condition each output vector on every preceding input vector, including its corresponding input vector. Cross-attention is then used to condition each output vector on each contextualized vector output by the encoder. 
+% \begin{equation}
+%     \bm{x}^{(l+1)}_i = \bm{x}^{(l)}_i + \sum_j \textrm{softmax} \left(\dfrac{\bm{q}^{{(l)_i}^\top} \bm{k}^{(l)}_j}{\sqrt{d_k}}\right) \cdot \bm{v}^{(l)}_j.
+% \end{equation}
 
-\end{comment}
+% Authors demonstrated that Transformer architecture achieved significant parallel processing, shorter training time and higher accuracy for Machine Translation without any recurrent component
 
-% With the self attention mechanism, the sequential aspect handled by the RNNs is almost gone; it is only enforced by masking at decoding time. This makes the encoding of long sequences easier, as all the information is encoded "at once" and does not get lost along the tokens.
+\paragraph{Self-Attention in the Encoder} In the encoder, self-attention is used to map the input sequence $(\bm{x}_1, \ldots, \bm{x}_n)$ to a sequence of context-dependent vectors $(\overline{\bm{x}}_1, \ldots, \overline{\bm{x}}_n)$. Each attention layer builds the queries, keys and values from the outputs of the previous encoder layer, and uses \textit{bidirectional} self-attention to put each input token in relation with all input tokens in the sequence. Given $(\bm{x}^{(l)}_1, \ldots, \bm{x}^{(l)}_n)$ the input sequence to the $l$-th encoder layer, the outputs $(\bm{x}^{(l+1)}_1, \ldots, \bm{x}^{(l+1)}_n)$ constructed using bidirectional self-attention can be expressed as:
 
-% The uni-directional self-attention architecture, therefore, allows us to define a causal probability distribution, which is necessary to effectively model a conditional distribution of the next target vector.
-% To conclude, the uni-directional self-attention layer is responsible for conditioning each output vector on all previous decoder input vectors and the current input vector and the cross-attention layer is responsible to further condition each output vector on all encoded input vectors.
+\begin{equation}
+    \bm{x}^{(l+1)}_i = \bm{x}^{(l)}_i + \textrm{MultiHeadAttention}\left(\bm{q}^{(l)}_i, \bm{K}^{(l)}, \bm{V}^{(l)}\right), \qquad \forall \quad 1 \leq i \leq n,
+    % \bm{x}^{(l+1)}_i = \bm{x}^{(l)}_i + \sum_{j=1}^{n} \textrm{softmax} \left(\dfrac{\bm{q}_i^{{(l)}^\top} \bm{k}^{(l)}_j}{\sqrt{d_k}}\right) \cdot \bm{v}^{(l)}_j, \qquad \forall \quad 1 \leq i \leq n.
+\end{equation}
 
-\subsubsection{Positional Encodings}
+\noindent where $\bm{q}^{(l)}_i$, $\bm{K}^{(l)}$, and $\bm{V}^{(l)}_i$ are the query vector, key, and value matrices obtained by projecting $\bm{x}^{(l)}_i$ using three weight matrices $\bm{W}^{(l)}_Q \in \mathbb{R}^{n \times d_q}$, $\bm{W}^{(l)}_K \in \mathbb{R}^{n \times d_k}$ and $\bm{W}^{(l)}_V \in \mathbb{R}^{n \times d_v}$ (with $d_q = d_k = d$).
 
-The position and order of words form the semantics of a sentence and thus are a fundamental component of any language. By processing sequences token by token in a sequential manner, \acp{RNN} inherently integrate the order of the sequence in their backbone. Unlike \acp{RNN}, self-attention simultaneously processes each token in the sequence, hence losing any sense of position/order. Consequently, there is a need to explicitly incorporate the order of tokens into the Transformer.
+Each encoder layer builds a contextualized representation of its input sequence, and the following layer further refines this context-dependent representation. Compared to \acp{RNN}, bidirectional self-attention reduces the amount of computation steps that information needs to flow from one point to another. Therefore, information loss is reduced, making long-range dependencies more easily learnable. 
 
-There are many reasons why assigning a single number (\textit{e.g.}, the index value) to each time step is not used to represent a token's position in Transformer models. For long sequences, the indices can grow large in magnitude. If the index value is normalized to lie between 0 and 1, it can create problems for variable length sequences, as they would be normalized differently. 
+\paragraph{Self-Attention in the Decoder} The decoder models the distribution of a target sequence $(\bm{y}_1, \ldots, \bm{y}_m)$ conditioned on the input sequence $(\bm{x}_1, \ldots, \bm{x}_n)$. Each decoder layer contains three sublayers: \textit{decoder self-attention}, \textit{cross-attention}, and a module made of two position-wise \acp{FNN}. The final decoder layer is followed by an \ac{FNN} which produces a probability distribution over the whole vocabulary. 
 
-% The first idea that might come to mind is to assign a number to each time-step within the [0, 1] range in which 0 means the first word and 1 is the last time-step. Could you figure out what kind of issues it would cause? One of the problems it will introduce is that you can’t figure out how many words are present within a specific range. In other words, time-step delta doesn’t have consistent meaning across different sentences.
-% Another idea is to assign a number to each time-step linearly. That is, the first word is given “1”, the second word is given “2”, and so on. The problem with this approach is that not only the values could get quite large, but also our model can face sentences longer than the ones in training. In addition, our model may not see any sample with one specific length which would hurt generalization of our model.
+The decoder self-attention layer conditions each decoder output vector on all previous decoder input vectors. As opposed to the encoder, self-attention in the decoder is masked to ensure that each vector attends only to the previous positions, making predictions depend only on the tokens that have already been generated. Given $\bm{y}^{(l)}_i$ a target vector fed to the $l$-th decoder layer, the output vector $\bm{y}^{\prime(l)}_i$ generated by unidirectional self-attention is defined as follows:
+
+\begin{equation}
+    \bm{y}^{\prime(l)}_i = \bm{y}^{(l)}_i + \textrm{MultiHeadAttention}\left(\bm{q}^{(l)}_i, \bm{K}^{(l)}_{0:i}, \bm{V}^{(l)}_{0:i}\right), \qquad \forall \quad 1 \leq i \leq m,
+\end{equation}
+
+\noindent where $\bm{q}^{(l)}_i$, $\bm{K}^{(l)}_{0:i}$, and $\bm{V}^{(l)}_{0:i}$ are projections of $(\bm{y}^{(l)}_0, \ldots, \bm{y}^{(l)}_i)$.
+
+To condition the probability distribution of the next target vector on the encoder's input, \textit{cross-attention} is applied to put each of the target vectors $\bm{y}'^{(l)}_i$ into relation with all contextualized input vectors $(\overline{\bm{x}}_1, \ldots, \overline{\bm{x}}_n)$. The output $\bm{y}^{(l+1)}_i$ built using cross-attention is expressed as:
+
+\begin{equation}
+    \bm{y}^{(l+1)}_i = \bm{y}^{\prime(l)}_i + \textrm{MultiHeadAttention}\left(\bm{q}'^{(l)}_i, \overline{\bm{K}}^{(l)}, \overline{\bm{V}}^{(l)}\right), \qquad \forall \quad 1 \leq i \leq m.
+\end{equation}
+
+\noindent While $\bm{q}^{\prime(l)}_i$ is computed from the output $\bm{y}^{\prime(l)}_i$ of the unidirectional self-attention module, $\overline{\bm{K}}^{(l)}$ and $\overline{\bm{V}}^{(l)}$ are built from the contextualized input sequence $(\overline{\bm{x}}_1, \ldots, \overline{\bm{x}}_n)$. Cross-attention ensures that, the more similar a decoder input representation is to an encoder input representation, the more does the input representation influence the decoder output representation.
+
+
+
+\subsubsection{Sequential Information in Transformers}
+
+The position and order of words form the semantics of a sentence and thus are a fundamental component of any language. By processing sequences token by token in a sequential manner, \acp{RNN} inherently integrate the order of the sequence in their backbone. Unlike \acp{RNN}, Transformers simultaneously process each token in the sequence, hence losing any sense of position and order. Consequently, there is a need to explicitly incorporate the order of tokens into the Transformer.
+
+\paragraph{Positional Encodings} There are many reasons why assigning a single number (\textit{e.g.}, the index value) to each time step is not used to represent a token's position in Transformer models. For long sequences, the indices can grow large in magnitude. If the index value is normalized to lie between 0 and 1, it can create problems for variable length sequences, as they would be normalized differently. 
 
 A satisfactory positional encoding method must be deterministic, produce a unique encoding at each time step, generalize to longer sequences, and ensure that distance between two time steps are consistent across sequences with different lengths. Instead of integrating this encoding into the model itself, the dominant approach for preserving information about the sequence order is to equip each token with information about its position in the sequence. These inputs are called positional encodings (or embeddings) and can either be learned or fixed a priori. % In other words, we enhance the model’s input to inject the order of words.
-
-\subsubsection{Absolute Positional Information}
-
-% The dominant approach for preserving information about the order of tokens is to represent this to the model as an additional input associated with each token. These inputs are called positional encodings. and they can either be learned or fixed a priori. We now describe a simple scheme for fixed positional encodings based on sine and cosine functions (Vaswani et al., 2017).
-
-% To incorporate this information, positional encodings are added to the word embeddings to create the input matrix $\bm{X}$. A positional encoding equips each element in the sequence with information about its position, so that each position is assigned a unique representation. In other words, the model’s input is enhanced by injecting the order of elements.
 
 Absolute position encodings encode the absolute position of a token within a sequence, meaning that each token is assigned a fixed vector based on its position in the sequence. \citet{vaswani2017attention} propose a simple scheme for fixed absolute positional encodings, where each position is mapped to a vector. Given $t$ a position in an input sequence, $d$ the encoding dimension, and $k \in \{1, \ldots, d/2\}$, the function $f: \mathbb{N} \rightarrow \mathbb{R}^d$ produces the positional encoding $\bm{p}_t$ as follows:
 
@@ -605,15 +516,13 @@ Absolute position encodings encode the absolute position of a token within a seq
 
 where $\omega_k =\dfrac{1}{10000^{2k/d}}$. This encoding scheme is called \textit{sinusoidal} positional encoding.
 
-The positional embedding matrix $\bm{P} \in \mathbb{R}^{n \times d}$, obtained by encoding every position $t \in {1, \ldots, n}$, is added to the input representation matrix $\bm{X} \in \mathbb{R}^{n \times d}$ and fed to the Transformer.
+The positional embedding matrix $\bm{P} \in \mathbb{R}^{n \times d}$, obtained by encoding every position $i \in {1, \ldots, n}$, is added to the input representation matrix $\bm{X} \in \mathbb{R}^{n \times d}$ and fed to the Transformer.
 
 % Given $t \in \{1, \ldots, n\}$ a position in the input sequence and $k \in \{0,1, \cdots, d/2-1\}$ the index of an element in the vector space, the positional encoding is defined as a function of type $f:\mathbb {R} \to \mathbb {R} ^{d}$:
 
 % Transformers use a smart positional encoding scheme, where each position/index is mapped to a vector. Hence, the output of the positional encoding layer is a matrix, where each row of the matrix represents an encoded object of the sequence summed with its positional information.
 
-\subsubsection{Relative Positional Information}
-
-Besides capturing absolute positional information, sinusoidal positional encoding also allows the model to learn to attend by relative positions. This is because, for any offset $\delta$, the positional encoding at position $i + \delta$ can be represented by a linear projection of that at position $i$. Formally, any pair of $(p_{i, 2k}, p_{i, 2k+1})$ can be linearly projected to $(p_{i + \delta, 2k}, p_{i + \delta, 2k+1})$ for any offset $\delta$:
+\paragraph{Relative Positional Biases} Besides capturing absolute positional information, sinusoidal positional encoding also allows the model to learn to attend by relative positions. This is because, for any offset $\delta$, the positional encoding at position $i + \delta$ can be represented by a linear projection of the encoding at position $i$. Formally, any pair of $(p_{i, 2k}, p_{i, 2k+1})$ can be linearly projected to $(p_{i + \delta, 2k}, p_{i + \delta, 2k+1})$ for any offset $\delta$:
 
 \begin{equation}
     \begin{bmatrix}
@@ -630,112 +539,70 @@ Besides capturing absolute positional information, sinusoidal positional encodin
     \end{bmatrix}
 \end{equation}
 
-Although absolute positional encodings show satisfactory performance, they still face limitations. First, using absolute positions limits the maximum length of the sequence that the model can process. Besides, absolute positional encodings do not generalize well to sequences of unseen lengths. Relative positional encoding address these issues by using a different vector for each pair of tokens, based on their relative distance \citep{shaw2018self, huang2018music, ke2020rethinking}.  \citet{shaw2018self} are the first to leverage pairwise distances to create positional encodings. During attention calculation, relative positional information is added on the fly to keys and values. Given a query $\bm{q}_i$ computed from token $\bm{x}_i$ and a key $\bm{k}_j$ calculated from token $\bm{x}_j$, the attention score between tokens $i$ and $j$ is reformulated as follows:
+Although absolute positional encodings show satisfactory performance, they still face limitations. First, relying on absolute positional information imposes a constraint on the number of tokens a model can handle. For instance, if a language model can only encode up to 1,024 positions, any sequence longer than 1,024 tokens cannot be processed by the model. Besides, absolute positional encodings do not generalize well to sequences of unseen lengths. Relative positional encoding address these issues by using a different vector for each pair of tokens, based on their relative distance \citep{shaw2018self, huang2018music, ke2020rethinking}.  \citet{shaw2018self} are the first to leverage pairwise distances to create positional encodings. During attention calculation, relative positional information is added on the fly to keys and values. Given a query $\bm{q}_i$ computed from token $\bm{x}_i$ and a key $\bm{k}_j$ calculated from token $\bm{x}_j$, the attention score between tokens $i$ and $j$ is reformulated as follows:
 
 \begin{equation}
-    \alpha_{ij} = \mathrm{Softmax}\left(\frac{\bm{q}_i (\bm{k}_j + \bm{r}^K_{ij})^{\top}}{\sqrt{d}}\right).
+    \alpha_{ij} = \mathrm{Softmax}\left(\frac{\bm{q}_i (\bm{k}_j + \bm{r}^K_{ij})^{\top}}{\sqrt{d_k}}\right).
 \end{equation}
 
 Let $\bm{v}_j$ be the value vector corresponding to token $j$. Relative positional information is supplied again as a sub-component of the values matrix:
 
 \begin{equation}
-    \bm{z}_i = \sum_{j=1}^n \alpha_{ij} (\bm{v}_j + \bm{r}^V_{ij}).
+    \bm{y}_i = \sum_{j=1}^n \alpha_{ij} (\bm{v}_j + \bm{r}^V_{ij}).
 \end{equation}
 
-% While absolute positional encodings work reasonably well, there have also been efforts to exploit pairwise, relative positional information. In Self-Attention with Relative Position Representations, Shaw et al. introduced a way of using pairwise distances as a way of creating positional encodings.
+Relative positional encodings offer the advantage of generalizing to sequences of unseen lengths. Theoretically, they encode only the relative pairwise distance between two tokens, allowing adaptability to various sequence lengths.
 
-% There are a number of reasons why we might want to use relative positional encodings instead of absolute ones. First, using absolute positional information necessarily means that there is a limit to the number of tokens a model can process. Say a language model can only encode up to 1024 positions. This necessarily means that any sequence longer than 1024 tokens cannot be processed by the model. Using relative pairwise distances can more gracefully solve this problem, though not without limitations. Relative positional encodings can generalize to sequences of unseen lengths, since theoretically the only information it encodes is the relative pairwise distance between two tokens.
+\subsection{Bidirectional Models}
 
-% Relative positional information is supplied to the model on two levels: values and keys. This becomes apparent in the two modified self-attention equations shown below. First, relative positional information is supplied to the model as an additional component to the keys.
+\textit{Bidirectional} language models refer to models that employ the Transformer encoder. These models are pre-trained on large corpora and learn deep contextualized representations of words and phrases by jointly conditioning on left and right context in all layers. Bidirectional Transformer-based models are effective for capturing dependencies and contextual information in both directions, making them suitable for various \ac{NLI} tasks. 
 
-\subsection{Conclusion}
+\subsubsection{BERT}
 
-\todo[inline]{to do}
+The exploration of bidirectional Transformer-based \acp{PLM} was initiated by \citet{devlin2018bert}. Their breakthrough model, \ac{BERT}, marked a paradigm shift. In contrast to traditional models that process language in a unidirectional manner, \ac{BERT} introduced bidirectional processing, allowing the model to consider both preceding and following words when understanding the context of a word. 
 
-\section{Pre-trained Language Models}
+% The exploration in this area has since expanded, with researchers and practitioners building upon the foundation laid by BERT.
 
-% As Bommasani et al. (2021, §1.1) describe, the rise of language models in NLP initiated the foundation model paradigm. Specifically, ELMo (Peters et al., 2018), GPT (Radford et al., 2018), and BERT (Devlin et al., 2019) demonstrated that pretraining using language modeling objectives could produce powerful general-purpose representations for many downstream use cases, building on prior evidence of the successes of pretraining (Mikolov et al., 2013; Pennington et al., 2014)
+In \ac{NLP}, some tasks (\textit{e.g.}, sentiment analysis) take a single sequence as input, while others (\textit{e.g.}, natural language inference) require a pair of sequences. \ac{BERT} can represent both single text and text pairs. In both cases, a classification token is prepended to the input sequence and is used to represent the whole sequence. In addition, a special separation token, indicating the end of the sequence, is added to the end of the sequence. In the case of text pairs, an extra separation token is added between the pair to separate the texts. Additionally, segment embeddings are used and trained to distinguish text pairs. To encode positions, \ac{BERT} departs from the fixed positional encodings used in the original Transformer and employs learnable positional embeddings. To sum up, text is tokenized into subwords using WordPiece \citep{wu2016google}, and special tokens are added accordingly to the aforementioned scenarios. The final input embeddings of \ac{BERT} are the sum of the token embeddings, positional embeddings, and segment embeddings. The input embeddings $(\bm{x}_1, \ldots, \bm{x}_n)$ are passed through a Transformer encoder that generates a sequence of contextualized token representations $(\overline{\bm{x}}_1, \ldots, \overline{\bm{x}}_n)$.
 
-Prior to Transformer-based architectures, \ac{NLP} models were commonly trained in a supervised manner \textit{from scratch} to perform specific tasks, for which labeled training data is limited. Consequently, training deep neural networks on such small datasets leads to overfitting, and the models become specific experts that are sensitive to even slight shifts in the data distribution. 
+\paragraph{Pre-training BERT}
 
-% Prior to transformer-based architectures, the best-performing neural NLP (natural language processing) models commonly employed supervised learning from large amounts of manually-labeled data. The reliance on supervised learning limited their use on datasets that were not well-annotated, and also made it prohibitively expensive and time-consuming to train extremely large language models
+\ac{BERT} is trained on a large-scale dataset \citep{zhu2015aligning}, as a language model that operates at both the word-level and the sentence-level. The training involves two unsupervised tasks: \ac{MLM} and \ac{NSP}. 
 
-To alleviate this limitation, pre-training has become a prevalent step in developing Deep Learning models. Instead of training a model from scratch for each task, which requires a substantial labeled dataset and computing power, pre-trained models serve as a foundation. Pre-trained models are first trained in an unsupervised way (\textit{self-supervised learning}) on a diverse and extensive dataset to learn powerful token representations that capture a general understanding of grammar and syntax. Once pre-trained, the model can be \textit{fine-tuned} for specific \textit{downstream} tasks, \textit{e.g.}, Text Classification, \ac{NER}, \ac{MT}, and more. Fine-tuning consists in further training the pre-trained model on a smaller dataset that is specific to the downstream task, allowing the model to leverage the generalized knowledge accumulated during pre-training and tailor it to the task at hand.
-
-% Pretrained models may be adapted to perform different tasks with model update (e.g., fine tuning) or not (e.g., few shot). Scalability of Transformers suggests that better performance benefits from larger models, more training data, and more training compute. 
-
-% conceptually simple yet empirically powerful pretraining of deep representations for natural languages have revolutionized solutions to various natural language processing tasks.
-
-Given more pre-training data, the Transformer architecture performs better with an increased model size and training compute, demonstrating superior scaling behavior \citep{kaplan2020scaling}. In addition, it requires minimal architecture changes for a wide range of \ac{NLP} tasks. Hence, the Transformer has become the go-to component in the modern Deep Learning stack, largely replacing other \ac{NLP} architectures such as \acp{RNN}. Current state-of-the-art \ac{NLP} models are \acp{PLM} based on the Transformer architecture. They use the Transformer architecture in part or as a whole: encoder-only, decoder-only, and encoder-decoder.
- 
-% These models are designed to learn the underlying patterns, structures, and relationships present in human language.
-
-%The benefit of pre-trained language models is that they save a significant amount of time and computational resources. Instead of training a model from scratch for each task, which requires a substantial dataset and computing power, pre-trained models serve as a foundation. This approach has led to significant advancements in NLP tasks, as it leverages the knowledge accumulated during pre-training and tailors it to specific applications.
-%Notable examples of pre-trained language models include OpenAI's GPT (Generative Pre-trained Transformer) series, BERT (Bidirectional Encoder Representations from Transformers) developed by Google, and more recent models like T5 and RoBERTa. These models have achieved state-of-the-art results across a variety of NLP benchmarks and continue to shape the landscape of natural language understanding and generation.
-
-% Given larger data for pretraining, the Transformer architecture performs better with an increased model size and training compute, demonstrating superior scaling behavior. Specifically, performance of Transformer-based language models scales as a power-law with the amount of model parameters, training tokens, and training compute (Kaplan et al., 2020). 
-
-% \paragraph{Decoder-only} 
-
-% Autoregressive models, also called unidirectional or causal language models, rely on the decoder part of the Transformer architecture and use an attention mask so that at each position, the model can only look at the preceding tokens. They are pretrained on the \ac{CLM} task: predict the next token given all the previous ones. Their most natural application is text generation. GPT \citep{radford2018improving} is a typical example of an autoregressive model.
-
-% \paragraph{Encoder-decoder} 
-
-% Sequence-to-sequence models use the full encoder-decoder architecture of the Transformer. Their most natural applications are translation, summarization and question answering (QA). T5 \citep{raffel2019exploring} is an example of such models.
-
-\subsection{Extractive Models}
-
-Extractive, or encoder-only language models make use of the Transformer encoder to convert a sequence of input tokens into a contextualized sequence with the same number of representations, further used for classification. In order to build deep bidirectional representations, extractive language models are heavily pre-trained on large and diverse corpora of data in a self-supervised way. Their most natural application is sentence classification and token classification. 
-
-A typical example of such model is \ac{BERT} \citep{devlin2018bert}. \ac{BERT} takes a bidirectional approach by processing the entire input sequence in both directions, \textit{i.e.}, each token can attend to every other token. As a result, it is able to capture context and relationships in all directions. 
-
-In \ac{NLP}, some tasks (\textit{e.g.}, sentiment analysis) take a single sequence as input, while others (\textit{e.g.}, natural language inference) require a pair of sequences. \ac{BERT} can represent both single text and text pairs. In the former case, the input sequence consists in the classification token \texttt{[CLS]}, followed by the tokens in the text and the separation token \texttt{[SEP]}. In the latter, the input sequence is composed of \texttt{[CLS]}, tokens from the first text, \texttt{[SEP]}, tokens from the second text, and \texttt{[SEP]}. To distinguish text pairs, segment embeddings are used and learned during training. Unlike the original Transformer which uses fixed positional encodings, \ac{BERT} uses learnable positional embeddings. To sum up, text is tokenized into subwords using WordPiece, and special tokens are added accordingly to the aforementioned scenarios. The final input embeddings of \ac{BERT} are the sum of the token embeddings, positional embeddings, and segment embeddings. The input embeddings $\bm{X} \in \mathbb{R}^{n \times d}$ are passed through a Transformer encoder that generates a sequence of contextualized token representations $\overline{\bm{X}} \in \mathbb{R}^{n \times d}$.
-
-%  able to represent any token based on its bidirectional context
-
-\subsubsection{Pre-training BERT}
-
-To train \ac{BERT} as a language model that operates at both the word-level and the sentence-level, two pre-training objectives are used: \ac{MLM} and \ac{NSP}. 
-
-% BERT is pretrained on text sequences using masked language modeling: input text with randomly masked tokens is fed into a Transformer encoder to predict the masked tokens. As illustrated in Fig. 11.9.1, an original text sequence “I”, “love”, “this”, “red”, “car” is prepended with the “<cls>” token, and the “<mask>” token randomly replaces “love”; then the cross-entropy loss between the masked token “love” and its prediction is to be minimized during pretraining. Note that there is no constraint in the attention pattern of Transformer encoders (right of Fig. 11.9.1) so all tokens can attend to each other. Thus, prediction of “love” depends on input tokens before and after it in the sequence. This is why BERT is a “bidirectional encoder”. Without need for manual labeling, large-scale text data from books and Wikipedia can be used for pretraining BERT.
-
-\paragraph{Masked Language Modeling}
-
-To encode context bidirectionally, \ac{BERT} randomly masks tokens and uses the remaining tokens in all directions to recover the masked tokens in a self-supervised fashion. This task is referred to as \ac{MLM}. Instead of following the same probability distribution as causal language models (Equation~\ref{equation:causal-distribution}), \ac{BERT} uses the following approximation:
+The \ac{MLM} task consists in randomly masking out tokens and using all remaining tokens to recover the masked-out tokens in a self-supervised fashion. Instead of following the same probability distribution as causal language models (Equation~\ref{equation:causal-distribution}), \ac{BERT} uses the following approximation:
 
 \begin{equation}
-    P(\bm{W}) \propto \prod_{w \in C}P\left(w \mid \tilde{\bm{W}}\right),
+    P(\bm{w}) \propto \prod_{w \in C}P\left(w \mid \tilde{\bm{w}}\right),
 \end{equation}
 
-where $C$ is a random set of tokens, with 15\% of tokens selected to be in $C$, and $\tilde{\bm{W}}$ is the input sequence $\bm{W}$ corrupted as follows:
+\noindent where $C$ is a random set of tokens, with 15\% of tokens selected to be in $C$, and $\tilde{\bm{w}}$ is the input sequence $\bm{w}$ corrupted as follows:
 
 \begin{equation}
     \tilde{w} = 
 \begin{cases}
     w_t,               & \text{if } w_t \notin C\\
-    \texttt{[MASK]}       & \text{if } w_t \in C, \text{ with probability 80\%} \\
+    \text{mask token}       & \text{if } w_t \in C, \text{ with probability 80\%} \\
     \text{random token}       & \text{if } w_t \in C, \text{ with probability 10\%} \\
     w_t       & \text{if } w_t \in C, \text{ with probability 10\%.} \\
 \end{cases}
 \end{equation}
 
-Because \texttt{[MASK]} is never used during fine-tuning, a discrepancy between pre-training and fine-tuning can occur. For 10\% of 15\% time, the masked token is replaced with a random token. This occasional noise reduces \ac{BERT}'s bias towards the masked token in its bidirectional context encoding. The cross-entropy loss between the masked tokens and their predictions is minimized during pre-training.
+\noindent Because the mask token is never used during fine-tuning, a discrepancy between pre-training and fine-tuning can occur. For 10\% of 15\% time, the masked token is replaced with a random token. The cross-entropy loss between the masked tokens and their predictions is minimized during pre-training. The primary benefit of the \ac{MLM} task, in contrast to a causal language model, is that token representations are parameterized by the whole sequence.
 
-The primary benefit of the \ac{MLM} task, in contrast to a causal language model, is that the representation of a token at a specific position is parameterized by the whole sequence.
+While \ac{MLM} effectively captures bidirectional context to represent words, it does not explicitly capture the logical correlation between pairs of texts. To address this, the \ac{NSP} task is introduced. This task involves determining whether two sentences follow each other and helps in modeling the relationship between texts. The training dataset is constructed such that half of the pairs are made of consecutive sequences, while for the other half the second sequence is randomly sampled from the corpus. Given a pair of sequences $(s_1, s_2)$, a binary single-layer \ac{FNN} classifier is trained to determine whether $s_2$ follows $s_1$ in the corpus. The classifier is fed with the \ac{BERT} representation of the classification token, which encodes both sequences, and outputs the probability that the sequences are successive sentences. 
 
-% The masked tokens <blank/> make up the majority of the set �� of tokens predicted by the model, thus the name “masked language model”. The main advantage of this approach compared to causal language model is that the probability distribution at a given position is parametrized by the whole sentence, including both the left and right context of a token.
+% However, this loss was later found not useful when pretraining RoBERTa, a BERT variant of the same size, on 2000 billion tokens (Liu et al., 2019) 
 
-\paragraph{Next Sentence Prediction}
+\paragraph{Fine-tuning BERT}
 
-While \ac{MLM} effectively captures bidirectional context to represent words, it does not explicitly capture the logical correlation between pairs of texts. To model the relationship between text sequences, the \ac{NSP} task is used. In the pre-training dataset, half of the pairs are made of consecutive sequences, while for the other half the second sequence is randomly sampled from the corpus. Given a pair of sequences $(S_1, S_2)$, a binary single-layer \ac{FC} classifier is trained to determine whether $S_2$ follows $S_1$ in the corpus. The classifier is fed with the \ac{BERT} representation of the \texttt{[CLS]} token, which encodes both sequences, and outputs the probability that the sequences are successive sentences. \\ % However, this loss was later found not useful when pretraining RoBERTa, a BERT variant of the same size, on 2000 billion tokens (Liu et al., 2019) 
+% The outcome of this pre-training process is a language model able to comprehend context, semantics, and relationships between words and sentences. 
+The knowledge gained during pre-training can then transferred to various downstream tasks through fine-tuning. The contextualized token representations obtained by the pre-trained \ac{BERT} are fed to a shallow \ac{FNN} built over the last encoder layer. In this layer, predictions are generated for either individual tokens or the entire sequence. While the parameters of the pre-trained encoder are reused and fine-tuned for the task, the additional layer is initialized randomly and trained from scratch. This layer either outputs a prediction for either every token or the entire sequence. While all the parameters of the pre-trained encoder are re-used and adjusted to the task, the additional layer is randomly initialized and trained from scratch. \\
 
-Note that all labels used for both pre-training tasks can be easily derived from the pre-training corpus without requiring manual labeling. \ac{BERT} has been pretrained on the concatenation of BookCorpus \citep{zhu2015aligning} and English Wikipedia, amounting to 800 million words and 2.5 billion words, respectively.
+The bidirectional capability of \ac{BERT} addressed a crucial limitation in previous models, especially for tasks requiring a deep understanding of context and relationships between words. \ac{BERT} demonstrated remarkable performance across various NLP benchmarks (\textit{e.g.}, sentiment analysis, \ac{QA}, text classification), showcasing the potential of bidirectional Transformer-based PLMs.
+ 
+\subsubsection{BERT Variants}
 
-\subsubsection{Fine-tuning BERT}
-
-The outcome of this pre-training process is a language model able to comprehend context, semantics, and relationships between words and sentences. The knowledge gained during pre-training can then transferred to various downstream tasks through fine-tuning. The contextualized token representations obtained by the pre-trained \ac{BERT} are fed to a task-specific module built over the last encoder layer. This module outputs a prediction for either every token or the entire sequence. While all the parameters of the pre-trained encoder are re-used and adjusted to the task, the additional task-specific module is randomly initialized and trained from scratch.
-
-\ac{BERT} achieved state-of-the-art results on numerous NLP benchmarks covering tasks like sentiment analysis, question answering, and text classification, demonstrating its ability to understand context and handle semantics. The success of BERT has prompted most contemporary \ac{NLP} models to adopt its architectural framework, with a considerable number of \ac{BERT}-like models building on \ac{BERT}'s bidirectional contextualized embeddings and tailoring them for various specific tasks. For instance, \ac{RoBERTa} \citep{liu2019roberta} modifies BERT's training procedure by using larger batch sizes, longer training times, more training data, and dynamic masking. These changes collectively result in \ac{RoBERTa} outperforming \ac{BERT} on various benchmark tasks and becoming a foundation for many subsequent language model advancements.
+The success of BERT has prompted most contemporary \ac{NLP} models to adopt its architectural framework, with a considerable number of \ac{BERT}-like models building on \ac{BERT}'s bidirectional contextualized embeddings and tailoring them for various specific tasks. For instance, \ac{RoBERTa} \citep{liu2019roberta} modifies BERT's training procedure by using larger batch sizes, longer training times, more training data, and dynamic masking. These changes collectively result in \ac{RoBERTa} outperforming \ac{BERT} on various benchmark tasks and becoming a foundation for many subsequent language model advancements.
 
 
 % The result of this pre-training is a highly capable language model that can understand context, semantics, and relationships between words and sentences. After pre-training, BERT can be fine-tuned for specific NLP tasks with a smaller task-specific dataset. Fine-tuning adapts the model's learned knowledge to the specific task's requirements.
