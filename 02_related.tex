@@ -213,14 +213,14 @@ The same work by \citet{bengio2000neural} introduces Neural Language Models. Usi
 
 \begin{equation}
     F(i, w_{t-1}, \ldots, w_{t-k+1}) = G\bigl(i, C(w_{t-1}), \ldots, C(w_{t-k+1})\bigr).
-\label{eq:chapter2-bengio}
+\label{eq:bengio}
 \end{equation}
 
 The model is trained by searching for the parameter set $\theta = (C, \omega)$ that maximizes the following penalized log-likelihood:
 
 \begin{equation}
     L = \frac{1}{n} \sum_{t=1}^n \log F(w_t, w_{t-1}, \ldots, w_{t-k+1}; \theta) + R(\theta),
-\label{eq:chapter2-nlm-log-likelihood}
+\label{eq:nlm-log-likelihood}
 \end{equation}
 
 \noindent Where $R(\theta)$ is a regularization term.
@@ -609,7 +609,7 @@ The bidirectional capability of \ac{BERT} addressed a crucial limitation in prev
 
 The success of \ac{BERT} has expanded exploration of bidirectional Transformer-based Pre-trained Language Models, with researchers and practitioners building upon the foundation laid by the model. 
 
-Some extensions of \ac{BERT} have introduced different optimization objectives to further improve the quality of the contextual representations. To enhance the robustness and generalization capability of the model, \ac{RoBERTa} removes the \ac{NSP} objective of \ac{BERT}, uses dynamic masking, and employs a bigger dataset. \ac{ALBERT} \citep{lan2019albert} introduces a variant of \ac{NSP} where, given two continuous spans of sentences from different documents as input segments, the model is trained to predict whether these spans are in the correct order. This modification of the \ac{NSP} objective enhances the robustness and generalization of the model.
+Some extensions of \ac{BERT} have introduced different optimization objectives to further improve the quality of the contextual representations. To enhance the robustness and generalization capability of the model, \ac{RoBERTa} \citep{liu2019roberta} removes the \ac{NSP} objective of \ac{BERT}, uses dynamic masking, and employs a bigger dataset. \ac{ALBERT} \citep{lan2019albert} introduces a variant of \ac{NSP} where negative examples correspond to two consecutive segments with their order reversed. This modification of the \ac{NSP} objective, emphasizing coherence, makes the task more challenging, thereby improving the robustness and generalization of the model. SpanBERT \citep{joshi2020spanbert} modify the masking strategy in \ac{MLM} by masking contiguous random spans, rather than random tokens. 
 
 Furthermore, several adaptations of \ac{BERT}, pre-trained on specific datasets tailored to particular languages or domains, have been proposed. SciBERT \citep{beltagy2019scibert} has been pre-trained on scientific texts and is specialized for tasks in the scientific research domain. Similarly, BioBERT \citep{lee2020biobert} has been designed for biomedical texts. CamemBERT \citep{martin2019camembert}, on the other hand, is a French version of \ac{BERT}, pre-trained on French texts, and adapted for French language understanding tasks.
 
@@ -932,16 +932,17 @@ While the aforementioned methods demonstrate good performance across document un
 
 Visually-rich documents encompass three modalities that inherently align: text, layout, and visual information. The spatial relationship of text blocks within a document often carries rich semantic information. For instance, the arrangement of key-value pairs in forms typically follows a left-right or top-down order. This layout invariance among document types is a crucial characteristic. In addition to spatial information, the visual elements presented with the text can offer global structural information (\textit{e.g.} there is a clear visual distinction between different document types) and help with downstream tasks (\textit{e.g.}, the title of documents is usually enlarged). Hence, it becomes vital to jointly learn text, layout, and visual information.
 
-As visually-rich documents are widely used in real-world applications, there is a substantial volume of unlabeled documents. This provides an opportunity for leveraging self-supervised pre-training methods. The widespread success and popularity of pre-training techniques in transfer learning, notably with the Transformer architecture, emphasizes the critical role of deep contextualization for sequence modeling in both \ac{NLP} and Computer Vision problems. This trend has prompted a shift in document understanding towards the “pre-training then fine-tuning” paradigm, marking a notable surge in the adoption of pre-training techniques in the field in recent years. Following the current research trend, a framework that can learn from unlabeled documents through pre-training and perform model fine-tuning for specific downstream applications is preferred over ones that require fully-annotated training data.
+As visually-rich documents are widely used in real-world applications, there is a substantial volume of unlabeled documents. This provides an opportunity for leveraging self-supervised pre-training methods. The widespread success and popularity of pre-training techniques in transfer learning, notably with the Transformer architecture, emphasizes the critical role of deep contextualization for sequence modeling in both \ac{NLP} and Computer Vision problems. This trend has prompted a shift in document understanding towards the “pre-training then fine-tuning” paradigm, marking a notable surge in the adoption of pre-training techniques in the field in recent years. Following the current research trend, a general-purpose framework that can learn from unlabeled documents through pre-training and perform model fine-tuning for different types of downstream applications is preferred over ones that are task-specififc and require fully-annotated training data.
 
-
-In particular, researchers and practitioners have been leveraging the Transformer architecture to attain cross-modal alignment via joint pre-training of text, layout, and images from large amounts of unlabeled data. Next, we discuss document understanding systems that leverage general-purpose, multimodal pre-training methods. We review these methods from various viewpoints, considering the challenges in document understanding. This includes the integration of layout, image encoding, the use of pre-training tasks, the incorporation of positional information, model initialization, and considerations for multilingual and long-range aspects.
+In particular, researchers and practitioners have been leveraging the Transformer architecture to attain cross-modal alignment via joint pre-training of text, layout, and images from large amounts of unlabeled data. This approach enables pre-trained models to absorb cross-modal knowledge across various document types. Consequently, when the model is applied to a different domain with different document formats, only a small number of labeled samples are required to fine-tune the generalized model effectively. Next, we discuss these general-purpose, multimodal pre-training methods for document understanding. We review these methods from various viewpoints, considering the various challenges in the field. This includes the integration of layout, image encoding, the pre-training tasks used, the incorporation of positional information, model initialization, and considerations for multilingual and long-range aspects.
 
 % Hence, integrating layout and visual information into the pre-training stage allows for cross-modal alignment via self-supervised, joinHence, layout and visual information can be integrated into the pre-training stage to be jointly learned alongside the text. In particular, researchers and practitioners have been leveraging the Transformer architecture to attain cross-modal alignment via self-supervised, joint multimodal pre-training from large amounts of unlabeled data.
 
 \todo[inline]{Graph taxonomy}
 
-\paragraph{Representing Layout Information} LayoutLM \citep{xu2020layoutlm} is proposed as the pioneer work in multimodal pre-training for document understanding tasks. Layout information is encoded in the form of 2D position embeddings built using embedding layers. A 2D position embedding carries information about the spatial position of a token within the document page, represented by its delineating bounding box $(x_0, y_0, x_1, y_1)$ obtained by an OCR system, where $(x_0, y_0)$ and $(x_1, y_1)$ respectively denote the upper-left and lower-right corners. The coordinates are discretized and normalized to integers in $[0, \ldots, 1000]$. Four embedding tables are used to encode spatial positions: two for the coordinates axes ($x$ and $y$) and the other two for the bounding box size (width and height). The final layout embedding $\bell \in \mathbb{R}^{d_{\ell}}$, for a token located at position $(x_0, y_0, x_1, y_1)$, is defined by:
+\paragraph{Incorporating Layout Information} 
+
+LayoutLM \citep{xu2020layoutlm} is proposed as the pioneer work in multimodal pre-training for document understanding tasks. Layout information is encoded in the form of 2D position embeddings built using embedding layers. A 2D position embedding carries information about the spatial position of a token within the document page. The spatial position of a token is represented by its delineating bounding box $(x_0, y_0, x_1, y_1)$ obtained by an \ac{OCR} system \citep{kay2007tesseract}, where $(x_0, y_0)$ and $(x_1, y_1)$ respectively denote the upper-left and lower-right corners. The coordinates are discretized and normalized to integers in $[0, \ldots, 1000]$. Four embedding tables are used to encode spatial positions: two for the coordinates axes ($x$ and $y$) and the other two for the bounding box size (width and height). The final layout embedding $\bell \in \mathbb{R}^{d_{\ell}}$, for a token located at position $(x_0, y_0, x_1, y_1)$, is defined by:
 
 \begin{equation}
 \begin{split}
@@ -952,18 +953,36 @@ In particular, researchers and practitioners have been leveraging the Transforme
 \end{split}
 \end{equation}
 
-These 2D position embeddings are added to the 1D positional and text embeddings of \ac{BERT}. Via the self-attention mechanism, encoding 2D position features into the language model improves alignment between layout information and semantic representation. 
+\noindent These 2D position embeddings are added to the 1D positional and text embeddings of \ac{BERT}. The resulting input sequence is passed through an encoder similar to \ac{BERT}. Via the self-attention mechanism, encoding 2D position features into the language model improves alignment between layout information and semantic representation. 
 
-DocFormer additionally incorporates the Euclidean distance from each corner of a bounding box to the corresponding corner in the bounding box to its right, as well as the distance between centroids of the bounding boxes. Rather than using embedding layers, BROS \citep{hong2020bros} employs sinusoidal functions encode continuous values for the spatial positions of tokens on the page. Departing from word-level 2D positions, StructuralLM \citep{li2021structurallm} leverages cell-level 2D positions to model the layout information of cells. 
+Building on the groundwork laid by LayoutLM, many works have introduced alternative approaches to encode layout information. BROS \citep{hong2020bros} employs sinusoidal functions as an alternative to embedding layers to encode continuous values for the spatial positions of tokens on the page. In addition to spatial positions, DocFormer \citep{appalaraju2021docformer} incorporates the Euclidean distance from each corner of a bounding box to the corresponding corner in the bounding box to its right, as well as the distance between centroids of the bounding boxes. DocFormer creates separate layout features for visual and language modalities. Layout features are untied from text embeddings and introduced as residual connections to each layer of a Transformer encoder, as opposed to directly adding them to language features. This approach is driven by the consideration that 2D dependencies might differ across layers. Departing from word-level 2D positions, StructuralLM \citep{li2021structurallm} leverages cell-level 2D positions to model the layout information of cells. 
 
-In LAMPreT \citep{wu2021lampret}, the layout is obtained by parsing a document into content blocks, each being assigned a block position, a block type (\textit{e.g.}, header, paragraph, image), and block attributes (\textit{i.e.}, font size, boldness, underline, and italic appearance). The document layout is defined as the structural presentation of the content blocks, and the aforementioned features of the textual contents within a block. The layout is then processed by two cascaded Transformers. The first one deals with the contents of a block, while the second one focuses on how these blocks are spatially structured. Similarly, H-VILA \citep{shen2022vila} parses the document to extract group of tokens, which are then encoded using a hierarchical Transformer.
+% In \ac{LAMPreT} \citep{wu2021\ac{LAMPreT}}, the layout is obtained by parsing a document into content blocks, each being assigned a block position, a block type (\textit{e.g.}, header, paragraph, image), and block attributes (\textit{i.e.}, font size, boldness, underline, and italic appearance). The document layout is defined as the structural presentation of the content blocks, and the aforementioned features of the textual contents within a block. 
+
+Rather than treating layout information as an additional feature, some research works have modified model architectures to align with the specific layout formulation of documents. Specifically, these works favor leveraging information from content blocks (such as header, paragraph, figure) rather than working at the word-level, as contextualization between every word may be redundant and overlook localized context. In \ac{LAMPreT} \citep{wu2021lampret}, the layout is obtained by parsing a document into content blocks using PDF parsing tools. The layout is then defined as the structural presentation of these content blocks, and processed by two cascaded Transformers. The first one deals with the contents of a block, while the second one focuses on how these blocks are spatially structured. Similarly, SelfDoc \citep{li2021selfdoc} uses content blocks obtained with an object detection model, Faster R-CNN \citep{ren2015faster}, trained on semantically meaningful components such as text blocks, titles, lists, tables, and figures. These content blocks are then processed by a Transformer architecture. H-VILA \citep{shen2022vila} parses the document to extract group of tokens, which are then encoded using a hierarchical Transformer.
 
 
-\paragraph{Encoding Visual Elements}
+\paragraph{Encoding Visual Elements} 
 
-Building upon the foundation of LayoutLM, LayoutLMv2 \citep{xu2020layoutlmv2} integrates visual embeddings in the pre-training stage. Following contextualized word embeddings, contextualized image embeddings are expected to capture each image region semantics in the context of its entire visual neighborhood. In addition to the text $(w_1, \ldots, w_n)$ extracted from a document page image via \ac{OCR}, the model introduces visual tokens $(v_1, \ldots, v_{WH})$. These visual tokens are prepended to the text sequence, creating an input sequence $(v_1, \ldots, v_{WH}, w_1, \ldots, w_n)$ that combines visual and textual tokens. Visual tokens are obtained by resizing the document page image and feeding it to a visual encoder, namely ResNeXt-FPN \citep{xie2017aggregated, lin2017feature}. The resulting feature map is average-pooled to a fixed size $W \times H$, then flattened into a visual embedding sequence of length $WH$. A linear projection layer is then applied to each visual token embedding to unify the dimensionality with the text embeddings. 
+To capture appearance features, many research works have leveraged vision models to integrate visual elements into document understanding systems.
 
-\paragraph{Layout-Aware Attention Mechanisms}
+% By leveraging the bounding box information of each word obtained through \ac{OCR}, document images are divided into pieces, aligning one-to-one with the words. Token image embeddings are derived from these pieces using the image regions obtained by Faster R-CNN.
+
+In the fine-tuning stage, optional token embeddings can be added to capture appearance features, \textit{e.g.}, fonts, types, colors. Token visual embeddings are obtained by splitting the document image according to the bounding boxes obtained through \ac{OCR}, and feeding the resulting pieces to Faster-RCNN \citep{ren2015faster}. LayoutLMv2 \citep{xu2020layoutlmv2} extends LayoutLM by integrating visual embeddings in the pre-training stage. Following contextualized word embeddings, contextualized image embeddings are expected to capture each image region semantics in the context of its entire visual neighborhood. In addition to the text $(w_1, \ldots, w_n)$ extracted from a document page image via \ac{OCR}, the model introduces visual tokens $(v_1, \ldots, v_{WH})$. These visual tokens are prepended to the text sequence, creating an input sequence $(v_1, \ldots, v_{WH}, w_1, \ldots, w_n)$ that combines visual and textual tokens. Visual tokens are obtained by resizing the document page image and feeding it to a visual encoder, namely ResNeXt-FPN \citep{xie2017aggregated, lin2017feature}. The resulting feature map is average-pooled to a fixed size $W \times H$, then flattened into a visual embedding sequence of length $WH$. A linear projection layer is then applied to each visual token embedding to unify the dimensionality with the text embeddings. Finally, LayoutLMv2 integrates the embedding of
+each textual and visual token with its corresponding layout embedding. 
+% ERNIE-Layout \citep{peng2022ernie} follows the same procedure to encode visual information.
+
+In DocFormer \citep{appalaraju2021docformer}, ResNet50 \citep{he2016deep} is used to obtain high resolution image features. These features are then flattened and projected to obtain sequence of $n$ $d$-dimensional vectors, where $n$ represents the number of tokens on the page. Unlike LayoutLMv2, where visual and text features are concatenated into a single sequence, DocFormer adopts a different strategy. Here, visual features are disentangled and introduced as residual connections to each layer of a Transformer encoder. This design choice aims to enforce the correlation between language and vision modalities. 
+
+\ac{LAMPreT} \citep{wu2021lampret} feeds the image contents of each text block into a pre-trained \ac{CNN}, followed by a Feedforward Neural Network that projects the visual embedding to the same dimension as textual embeddings. In addition, the model incorporates the visual presentation of the text within each block. Font size is defined as a block attribute, whereas text formatting (bold, italic, underlined) is set as binary-typed attributes. 
+
+SelfDoc \citep{li2021selfdoc} exploits visual and language features at the block-level. For each block detected with Faster R-CNN, visual features are obtained from the same model, while the text is extracted using an \ac{OCR} system and embedded via Sentence-BERT \citep{reimers2019sentence}. The language and visual features are separately passed through a language and a vision Transformer-based encoder, respectively. A cross-modal encoder with cross-attention functions is then used to fuse the language and visual features.  
+
+LayoutLMv3 \citep{huang2022layoutlmv3} takes a different approach to visual feature extraction. Instead of relying on a pre-trained \ac{CNN} or Faster R-CNN backbone, each image patch, obtained by resizing and uniformly splitting the document image, is encoded using linear embeddings. This approach not only saves parameters but also eliminates the need for region annotations.
+
+\ac{DiT} \citep{li2022dit} exclusively relies on visual features for downstream usage on tasks such as image classification and text detection. Document images are divided into patches, added to 1D position embeddings, and passed through a stack of Transformer layers. The resulting contextualized output vectors serve as the representation of image patches.
+
+\paragraph{Layout/Visually-Aware Attention Mechanisms}
 
 In addition to 2D position embeddings, LayoutLMv2 \citep{xu2020layoutlmv2} extends LayoutLM by encoding the 2D relative position as a bias term. This term is added to the attention scores to explicitly capture the relationship between tokens, defining a \textit{spatial-aware attention mechanism}. Formally, the pre-softmax attention scores are defined as follows:
 
@@ -973,18 +992,39 @@ In addition to 2D position embeddings, LayoutLMv2 \citep{xu2020layoutlmv2} exten
 
 \noindent where $\bm{b}^{(1D)}$, $\bm{b}^{(2D_x)}$, and $\bm{b}^{(2D_y)}$ correspond to the sequential, horizontal, and vertical relative position biases, respectively. Likewise, TILT \citep{powalski2021going} incorporates 2D relative positions while entirely discarding the use of absolute 2D positions in its encoding strategy. 
 
-To prevent early merging of distinct types of relative (sequential and spatial) position information, ERNIE-Layout \citep{peng2022ernie} computes attention scores between tokens using \textit{disentangled} matrices on their semantics and relative sequential and spatial positions. Specifically, attention scores are disentangled into four components: text semantics ($s$), relative sequential positions ($1D$), relative horizontal positions ($x$), and relative vertical positions ($y$). Let $\delta_{1D}$, $\delta_x$, and $\delta_y$ be the sequential, horizontal, and vertical relative distance matrices between every pair of tokens in the sequence. Given the query and key projections $\bm{q}^*, \bm{k}^*$, where $* \in \{s, 1D, x, y\}$, the disentangled unscaled pre-softmax attention scores are computed as follows:
+To prevent early merging of distinct types of relative (sequential and spatial) position information, ERNIE-Layout \citep{peng2022ernie} computes attention scores between tokens using \textit{disentangled} matrices on their semantics and relative sequential and spatial positions. Specifically, attention scores are disentangled into four components: language semantics (denoted by the subscript $S$), relative sequential positions ($1D$), relative horizontal positions ($x$), and relative vertical positions ($y$). Let $\delta_{1D}$, $\delta_x$, and $\delta_y$ be the sequential, horizontal, and vertical relative distance matrices between every pair of tokens in the sequence. Given the query and key projections $\bm{q}^\star, \bm{k}^\star$, where $\star \in \{s, 1D, x, y\}$, the disentangled unscaled pre-softmax attention scores are computed as follows:
 
 \begin{equation}
 \begin{aligned}
-    \alpha^{s}_{i,j} &= \bm{q}^{s}_i \cdot \bm{k}^{s}_j \\
-    \alpha^{1D}_{i,j} &= \bm{q}^{s}_i \cdot \bm{k}^{1D}_{\delta_{1D}(i, j)} + \bm{k}^{s}_j  \cdot \bm{q}^{1D}_{\delta_{1D}(j, i)} \\
-    \alpha^{x}_{i,j} &= \bm{q}^{s}_i \cdot \bm{k}^{x}_{\delta_{x}(i, j)} + \bm{k}^{s}_j  \cdot \bm{q}^{x}_{\delta_{x}(j, i)} \\
-    \alpha^{y}_{i,j} &= \bm{q}^{s}_i \cdot \bm{k}^{y}_{\delta_{y}(i, j)} + \bm{k}^{s}_j  \cdot \bm{q}^{y}_{\delta_{y}(j, i)} \\
+    \alpha^{s}_{ij} &= \bm{q}^{s}_i \cdot \bm{k}^{s}_j \\
+    \alpha^{1D}_{ij} &= \bm{q}^{s}_i \cdot \bm{k}^{1D}_{\delta_{1D}(i, j)} + \bm{k}^{s}_j  \cdot \bm{q}^{1D}_{\delta_{1D}(j, i)} \\
+    \alpha^{x}_{ij} &= \bm{q}^{s}_i \cdot \bm{k}^{x}_{\delta_{x}(i, j)} + \bm{k}^{s}_j  \cdot \bm{q}^{x}_{\delta_{x}(j, i)} \\
+    \alpha^{y}_{ij} &= \bm{q}^{s}_i \cdot \bm{k}^{y}_{\delta_{y}(i, j)} + \bm{k}^{s}_j  \cdot \bm{q}^{y}_{\delta_{y}(j, i)} \\
 \end{aligned}
+\label{eq:ernie-layout-attention}
 \end{equation}
 
 \noindent These attention scores are summed up to get the final attention matrix.
+
+Similarly, DocFormer \citep{appalaraju2021docformer} modifies the self-attention mechanism to obtain spatially-aware features. In each Transformer layer, self-attention processes language semantics (denoted by $S$) and visual (denoted by $V$) modalities separately. Given $\star \in \{S, V\}$, let $\bell^{\star} = (\bell^{\star}_1, \ldots, \bell^{\star}_n)$, $\bm{q}^\star$, and $\bm{k}^\star$ be the modality-specific layout features, query and key projections, respectively. Let $\bm{b}^{(1D)}$ represent the sequential relative bias vector, and $\bm{W}^{(2D)}_q$ and $\bm{W}^{(2D)}_k$ be the learnable projection matrices for layout-specific query and key, respectively. The modality-specific unscaled pre-softmax attention score for tokens $i$ and $j$ is re-defined as follows:
+
+\begin{equation}
+    \alpha^{\star}_{ij} = \left(\bm{q}^{\star}_i \cdot \bm{k}^{\star}_j\right) + \left(\bm{q}^{\star}_i \cdot \bm{b}^{(1D)}_{j-i}\right) + \left(\bm{q}^{\star}_j \cdot \bm{b}^{(1D)}_{j-i}\right) + \left(\bell^{\star}_i \cdot \bm{W}^{(2D)}_q \right) \left(\bell^{\star}_j \cdot \bm{W}^{(2D)}_k \right).
+\end{equation}
+
+In SelfDoc \citep{li2021selfdoc}, self-attention in the cross-modal encoder is replaced by two cross-modal attention functions. The first function identifies the alignment between language and visual information, \textit{e.g.}, if the font size in a text is confirmed by the semantic meaning of language features, these features should be amplified. Let $\bm{q}^\star$, $\bm{k}^\star$, and $\bm{v}^\star$ denote the modality-specific query, key and value projections, where $\star \in \{S, V\}$. For the language modality, the first cross-modal attention function is defined as follows:
+
+\begin{equation}
+    f_{1}(\bm{q}^S_i, \bm{k}^V_j, \bm{v}^S_j) = \softmax \left( \dfrac{\bm{q}^S_i \cdot \bm{k}^V_j}{\sqrt{d}}\right) \bm{v}^S_j.
+\end{equation}
+
+\noindent The second attention function uncovers inner-relationships between modalities, \textit{e.g.}, similarity in font style between content blocks can improve the understanding of semantic meaning between these blocks.
+
+\begin{equation}
+    f_{2}(\bm{q}^V_i, \bm{k}^V_j, \bm{v}^S_j) = \softmax \left( \dfrac{\bm{q}^V_i \cdot \bm{k}^V_j}{\sqrt{d}}\right) \bm{v}^S_j.
+\end{equation}
+
+\noindent The vision modality undergoes the same process by swapping $S$ and $V$ in the above equations.
 
 FormNet \citep{lee2022formnet} completely avoids the use of both absolute and relative (sequential and spatial) position embeddings. The underlying idea behind the attention mechanism in FormNet, Rich Attention, is that features such as the order two tokens are in, how many tokens separate them, or how many pixels apart they are, are often relevant to the decision of how strongly a token should attend to another one. Therefore, Rich Attention computes, for every pair of tokens, their order and log-distance with respect to the $x$ and $y$ axes on the grid. For an attention head at a certain layer $l$, the model computes the \textit{actual} \textit{order} $o_{ij}$ and \textit{log-distance} $o_{ij}$ between token representations $\bm{x}^{(l)}_i$ and $\bm{x}^{(l)}_j$:
 
@@ -1000,18 +1040,33 @@ FormNet \citep{lee2022formnet} completely avoids the use of both absolute and re
     \mu_{ij} &= f^{\mu}(\bm{x}^{(l)}_i \mathbin\Vert \bm{x}^{(l)}_j).
 \end{align}
 
-\noindent The predicted and ground-truth orders and log-distances are then compared using binary cross-entropy and L2 loss functions, respectively. The corresponding losses, $s^{o}_{ij}$ and $s^{d}_{ij}$ are then added to the pre-softmax unscaled attention scores:
-
-\begin{equation}
-    \alpha_{ij} = \bm{q}_i \bm{k}_j + s^{o}_{ij} + s^{d}_{ij}.
-\end{equation}
-
-\noindent By penalizing token pairs that violate these soft order/distance constraints, the ability to learn logicial implication rules is incorporated into the model.
+\noindent The predicted and ground-truth orders and log-distances are then compared using binary cross-entropy and L2 loss functions, respectively. The corresponding losses are then added to the attention scores. By penalizing token pairs that violate these soft order/distance constraints, the ability to learn logicial implication rules is incorporated into the model.
 
 
 \paragraph{Pre-training Tasks for Cross-modal Alignment}
 
+LayoutLM \citep{xu2020layoutlm} is pre-trained using two self-supervised pre-training tasks, \textit{\ac{MVLM}} and \textit{Multi-Label Document Classification}. Drawing inspiration from the \ac{MLM} strategy, \ac{MVLM} aims to learn language representation by considering both semantics and spatial clues. \ac{MVLM} randomly masks some tokens while retaining their layout information, as well as layout information and semantics from the remaining tokens. The model is then trained to predict the masked tokens based on the contextual information. Therefore, LayoutLM not only understands language contexts, but also uses the corresponding 2D information, thereby bridging the gap between visual and language modalities. On the other hand, Multi-Label Document Classification improves document-level representations by supervising the pre-training process using the document tags, if available. The objective is for the model to group knowledge from diverse domains, resulting in improved document-level representations. 
+
+On top of the \ac{MVLM} objective, two new pre-training strategies are added to enforce the alignment among modalities in LayoutLMv2 \citep{xu2020layoutlmv2}: \textit{Text-Image Alignment} and \textit{Text-Image Matching}. Text-Image Alignment is a fine-grained cross-modality alignment task, where the image regions of some randomly selected text tokens are covered, and the model has to predict, for each text token, whether it is covered. On the other hand, Text-Image Matching is a coarse-grained cross-modality alignment task, where the model is asked to predict whether an image and a text are from the same document page. 
+
+In SelfDoc \citep{li2021selfdoc}, image features are randomly masked and the model is tasked to predict them. On the other hand, DocFormer \citep{appalaraju2021docformer} is trained to reconstruct the original image by passing its output features through a \ac{CNN}-based image decoder. While this task focuses on local features, DocFormer introduces another task to infuse global information into the model. In this task, DocFormer is trained to predict whether a given piece of text, represented by a pooled representation of the output features, describes a document image. 
+
+In addition to \ac{MVLM} and Text-Image Matching, ERNIE-Layout  \citep{peng2022ernie} introduces two novel pre-training tasks. In ERNIE-Layout, documents are parsed into blocks using an in-house document layout analysis toolkit. Each block includes a series of words and corresponding bounding boxes. Because there is no explicit boundary between blocks in the input fed to the Transformer, the models needs to learn the relationship between layout and reading order. The \textit{Reading Order Prediction} strategy aims to enhance interactions between tokens belonging to the same block. Suppose that the attention score $\alpha_{ij}$, obtained by summing the four attention components in Equation~\ref{eq:ernie-layout-attention}, carries information about the reading order. In other words, it represents the probability that the $j$-th token follows the $i$-th token. Given $g_{ij}$ as the ground-truth value, equal to 1 if the $j$-th token follows the $i$-th token and 0 otherwise, the Reading Order Prediction loss is defined as:
+
+\begin{equation}
+    \mathcal{L}_{\text{ROP}} = - \sum_{1 \leq i \leq n}\sum_{1 \leq j \leq n} g_{ij} \log(\alpha_{ij}).
+\end{equation}
+
+\noindent The Text-Image Matching task introduced in LayoutLMv2 primarily focuses on aligning content at the whole image-text level. However, instances where the image and text are completely unrelated tend to be too easy for the model. Therefore, ERNIE-Layout adopts the \textit{Replaced Regions Prediction} strategy, designed to strengthen alignment between modalities at a fine-grained level. The original image is split into patches, and a percentage of image patches are randomly selected and replaced with a random patch from another image. The processed image is encoded by the visual encoder and fed to ERNIE-Layout. The \texttt{[CLS]} output representation is then used to predict which patches are replaced. 
+
+Inspired by SpanBERT \citep{joshi2020spanbert}, BROS \citep{hong2021bros} extends spans of a one-dimensional text to consecutive text blocks in a two-dimensional space. This approach involves selecting a few regions in the document layout, masking all tokens within text blocks in the selected regions, and predicting the masked tokens. \ac{LAMPreT} \citep{wu2021lampret} introduces higher-level objectives designed to exploit the structural interactions among the contents at the block-level. The model is trained to predict whether two blocks are swapped, allowing the model to learn the spatial ordering of blocks. Furthermore, textual blocks are masked out and the model has to select the most suitable block for the masked position from a set of candidate blocks. The model is also tasked, when presented with masked images, to select the most suitable images from a set of candidate images. 
+
+Most visually-augmented Transformer-based pre-trained models diverge in their pre-training objectives for the vision modality. This discrepancy in pre-training objectives for the vision modality makes multimodal representation learning more challenging. Besides, learning cross-modal alignment, which is essential for effective multimodal representation learning, becomes more difficult due to the differing granularities in images (dense image pixels or contiguous region features) and text (discrete tokens) objectives. To overcome the discrepancy between language and visual representation learning, and facilitate multimodal representation learning, LayoutLMv3 \citep{huang2022layoutlmv3} propose unified discrete token reconstructive objectives. In addition to the \ac{MVLM} strategy, LayoutLMv3 uses \textit{Masked Image Modeling}, a symmetry to \ac{MVLM} that consists in randomly masking image tokens, and reconstructing them using their surrounding context. To learn a fine-grained aligment between text words and image patches, LayoutLMv3 is also pre-trained with a Word-Patch Alignment objective. This objective involves predicting whether the corresponding image patches of a text word are masked. 
+
+
 \paragraph{Incorporating Positional Information}
+
+All document pre-training techniques operate on serialized text. Traditionally, an OCR tool is used to recognize the text and serialize it according to a raster-scan order, which aligns tokens in a sequence from the top-left to the bottom-right corner. However, this arrangement does not always conform to human reading patterns, particularly for documents with complex layouts such as multicolumn texts, tables, and forms. This misalignment with human reading habits can result in suboptimal performance in document understanding tasks. To alleviate this issue, ERNIE-Layout \citep{peng2022ernie} rearranges the token sequence in accordance to the layout knowledge provided by Document-Parser, a document layout analysis toolkit based on Layout-Parser \citep{shen2021layoutparser} that provides layout knowledge based on the spatial distribution of words, pictures, and tables. Enhanced with this knowledge, the serialized tokens can be reorganized in a way that yields a lower perplexity compared to the raster-scan order. This translates into a serialization that aligns better with human reading patterns. 
 
 \paragraph{Model Initialization}
 
@@ -1019,79 +1074,9 @@ FormNet \citep{lee2022formnet} completely avoids the use of both absolute and re
 
 \paragraph{Capturing Long-range Dependencies}
 
-\subsubsection{Layout-augmented Bidirectional Transformers}
-
-Earliest methods to jointly learn textual semantics and layout information in a single framework use the encoder of the Transformer architecture.
-
-\paragraph{LayoutLM}
-
-\citet{xu2020layoutlm} are the first to encode layout information into the Transformer by proposing LayoutLM, a pre-trained multimodal Transformer that adds 2D position embeddings (or \textit{layout embeddings}) to the 1D positional and text embeddings of BERT. A layout embedding carries information about the spatial position of a token within the document page, represented by its delineating bounding box $(x_0, y_0, x_1, y_1)$ obtained by an OCR system, where $(x_0, y_0)$ and $(x_1, y_1)$ respectively denote the upper-left and lower-right corners. The coordinates are discretized and normalized to integers in $[0, \ldots, 1000]$. Four embedding tables are used to encode spatial positions: two for the coordinates axes ($x$ and $y$) and the other two for the bounding box size (width and height). The final layout embedding $\bell \in \mathbb{R}^{d_{\ell}}$, for a token located at position $(x_0, y_0, x_1, y_1)$, is defined by:
-
-\begin{equation}
-\begin{split}
-    \bell & = \text{LayoutEmb}_x(x_0) + \text{LayoutEmb}_y(y_0) \\
-    & + \text{LayoutEmb}_x(x_1) + \text{LayoutEmb}_y(y_1) \\
-    & + \text{LayoutEmb}_w(x_1 - x_0) \\
-    & + \text{LayoutEmb}_h(y_1 - y_0) \\
-\end{split}
-\end{equation}
-
-Via the self-attention mechanism, encoding 2D position features into the language model helps better align the layout information with the semantic representation. 
-
-LayoutLM is pre-trained on the 11 million document image IIT-CDIP \citep{lewis2006building} pre-processed with Tesseract \citep{kay2007tesseract}. The model adopts a multi-task learning objective that includes \ac{MVLM} and \ac{MDC}. \ac{MVLM} helps bridging the gap between visual and language modalities by randomly masking some tokens while retaining layout information. The model is then trained to predict the masked tokens given the contexts. The essence of \ac{MVLM} lies in its ability to capture nearby token features, leveraging both semantics and spatial information. On the other hand, \ac{MDC} improves document-level representations by supervising the pre-training process using the document tags. 
-
-During fine-tuning, optional token image embeddings can be added to capture appearance features, \textit{e.g.}, fonts, types, colors. Token image embeddings are obtained by splitting the document image according to the bounding boxes, and feeding the resulting pieces to Faster-RCNN \citep{ren2015faster}. LayoutLM is evaluated on form understanding, receipt understanding, and document image classification. On each of these tasks, it significantly outperforms several state-of-the-art baselines including \ac{BERT} and \ac{RoBERTa}. 
-
-\paragraph{LayoutLMv2}
-
-Building upon the foundation of LayoutLM, LayoutLMv2 \citep{xu2020layoutlmv2} integrates visual embeddings in the pre-training stage. Following contextualized word embeddings, contextualized image embeddings are expected to capture each image region semantics in the context of its entire visual neighborhood. Given $(w_1, \ldots, w_n)$ the text extracted from a document page image, text, segment, positional, and layout embeddings are computed for $(v_1, \ldots, v_{WH}, w_1, \ldots, w_n)$, where $v_1, \ldots, v_{WH}$ correspond to visual tokens. To obtain such tokens, the document page image is resized and fed into a visual encoder, namely ResNeXt-FPN \citep{xie2017aggregated, lin2017feature}). The resulting feature map is average-pooled to a fixed size $W \times H$, then flattened into a visual embedding sequence of length $WH$. A linear projection layer is then applied to each visual token embedding to unify the dimensionality with the text embeddings. For each visual/text token embedding, a 1D positional embedding (shared with the text embedding layer) and the visual segment embedding of \texttt{[C]} are added to the token embedding. Different from LayoutLM, layout embeddings are computed as follows:
-
-\begin{equation}
-    \begin{split}
-    \bell & = \text{LayoutEmb}_x(x_0) \mathbin\Vert \text{LayoutEmb}_x(x_1) \mathbin\Vert \text{LayoutEmb}_w(x_1 - x_0) \\ 
-    & \mathbin\Vert \text{LayoutEmb}_y(y_0) \mathbin\Vert \text{LayoutEmb}_y(y_1) \mathbin\Vert \text{LayoutEmb}_h(y_1 - y_0) \\
-\end{split}
-\end{equation}
-
-\noindent where $(x_0, y_0, x_0, x_1)$ is the normalized bounding box of the visual/text token. Given $0 \leq i < WH$, the $i$-th visual embedding is thus defined as:
-
-\begin{equation}
-    \bm{v}_i = \text{Proj}\left(\text{VisTokEmb}(I)_i\right) + \text{PosEmb1D}(i) + \text{SegEmb}(\texttt{[C]}),
-\end{equation}
-
-\noindent while the $j$-th text embedding, for $WH \leq j < n$, can be expressed as follows:
-
-\begin{equation}
-    \bm{t}_j = \text{TokenEmb}\left(w_j\right) + \text{PosEmb1D}(j-WH) + \text{SegEmb}(\texttt{[A]}).
-\end{equation}
-
-\noindent To explicitly capture the relationship between input tokens, \citet{xu2020layoutlmv2} jointly model the semantic relative position and spatial relative position as bias terms (resp., $\bm{b}^{\text{(1D)}}$, $\bm{b}^{\text{(2D)}_x}$ and $\bm{b}^{\text{(2D)}_y}$) and explicitly add them to the attention scores. Thus, the spatial-aware attention score $\alpha'_{i,j}$, which captures the correlation between query $\bm{x}_i$ and key $\bm{x}_j$, is defined as follows:
-
-\begin{equation}
-    \alpha'_{i,j} = \dfrac{1}{\sqrt{d}} \bm{Q}_i \cdot \bm{K}_j + \bm{b}^{(1D)}_{j - i} + \bm{b}^{(2D_x)}_{x_j - x_i} + \bm{b}^{(2D_y)}_{y_j - y_i}
-\end{equation}
-
-\noindent On top of the masked visual-language objective, two new pre-training strategies are added to enforce the alignment among modalities: Text-Image Alignment and Text-Image Matching. The former is a fine-grained cross-modality alignment task, where the image regions of some randomly selected text tokens are covered (at the line-level), and the model has to predict whether a text token is covered. The latter is a coarse-grained cross-modality alignment task, where the model is asked to predict whether an image and a text are from the same document page. Experiment results on FUNSD, CORD, SROIE, Kleister-NDA, RVL-CDIP, and DocVQA.
-
-\paragraph{LayoutLMv3}
-
-A plethora of layout and visually-enhanced Transformer-based models have been introduced to tackle Document Understanding tasks. While many use the \ac{MLM} strategy proposed by \ac{BERT} to learn the language model, they diverge in their pre-training objectives for the image modality. DocFormer \citep{appalaraju2021docformer} uses a \ac{CNN} decoder to learn to reconstruct document images, which often results in capturing noisy details rather than high-level structures such as document layouts \citep{ramesh2021zero}. On the other hand, SelfDoc \citep{li2021selfdoc} regresses masked region features, which is more complex and challenging compared to classifying discrete features in a smaller vocabulary \citep{cho2020x}. This discrepancy in pre-training objectives for the image modality makes multimodal representation learning more challenging. Besides, learning cross-modal alignment, which is essential for effective multimodal representation learning, becomes more difficult due to the differing granularities in images (dense image pixels or contiguous region features) and text (discrete tokens) objectives. To overcome these discrepancies and facilitate multimodal representation learning, \citet{huang2022layoutlmv3} propose LayoutLMv3, a pre-trained Transformer-based model with unified text and image masking. LayoutLMv3 does not rely on a pre-trained visual backbone to extract visual features and introduces unified discrete token reconstructive objectives to mitigate the discrepancy between text and image representation learning. In addition, LayoutLMv3 is pre-trained with a word-patch alignment objective to learn cross-modal alignment by predicting whether the corresponding image patch of a text word is masked. Experimental results demonstrate that LayoutLMv3 achieves state-of-the-art performance in both text-centric (form understanding, receipt understanding, document visual question answering) and image-centric (document image classification and document layout analysis) document understanding tasks.
+% The component-level formulation can reduce the input sequence length for a document, hence decreasing the computational complexity at training and inference time 
 
 \paragraph{ERNIE-Layout}
-
-All document pre-training techniques operate on serialized text. Traditionally, an OCR tool is used to recognize the text and serialize it according to a raster-scan order, which aligns tokens in a sequence from the top-left to the bottom-right corner. However, this arrangement does not always conform to human reading patterns, particularly for documents with complex layouts such as multicolumn texts, tables, and forms. This misalignment with human reading habits can result in suboptimal performance in document understanding tasks. To alleviate this issue, ERNIE-Layout \citep{peng2022ernie} rearranges the token sequence in accordance to the layout knowledge provided by Document-Parser, a document layout analysis toolkit based on Layout-Parser \citep{shen2021layoutparser} that provides layout knowledge based on the spatial distribution of words, pictures, and tables. Enhanced with this knowledge, the serialized tokens can be reorganized in a way that yields a lower perplexity compared to the raster-scan order. This translates into a serialization that aligns better with human reading patterns. 
-
-Furthermore, ERNIE-Layout adopts a spatial-aware disentangled attention mechanism to prevent early merging of distinct types of relative position information. Suppose $\bm{X'}$ the input sequence of the layer (the \textit{content}), $k$ the maximum relative distance, and $\bm{R}^p, \bm{R}^x, \bm{R}^y \in \mathbb{R}^{2k \times d}$ the sequential, horizontal, and vertical relative position embedding layers, respectively. We denote $\bm{Q}^z, \bm{K}^z, \bm{V}^z$ the queries, keys, and values obtained from the content $\bm{X'}$ (in which case $z = c$), and the relative positions $\bm{R}^p$ ($z = p$), $\bm{R}^x$ ($z = x$), and $\bm{R}^y$ ($z = y$). Besides the content-based attention matrix $\bm{A}^{cc} = \bm{Q}\bm{K}^{\top}$, attention biases between content and relative position can be computed as follows:
-
-\begin{equation}
-\begin{aligned}
-    \bm{A}^{cp} &= \bm{Q}^c (\bm{K}^p_{\delta_p})^{\top} + \bm{K}^c (\bm{Q}^p_{\delta_p})^{\top} \\
-    \bm{A}^{cx} &= \bm{Q}^c (\bm{K}^x_{\delta_x})^{\top} + \bm{K}^c (\bm{Q}^x_{\delta_x})^{\top} \\
-    \bm{A}^{cy} &= \bm{Q}^c (\bm{K}^y_{\delta_y})^{\top} + \bm{K}^c (\bm{Q}^y_{\delta_y})^{\top}, \\
-\end{aligned}
-\end{equation}
-
-\noindent where $\delta_p, \delta_x, \delta_y$ are, respectively, the sequential, horizontal, and vertical relative distance between every pair of tokens in the input sequence. The output of spatial-aware disentangled attention is $\text{Softmax}\left( \dfrac{\bm{A}^{cc} + \bm{A}^{cp} + \bm{A}^{cx} + \bm{A}^{cy}}{\sqrt{3d}}\right) \bm{V}$.
 
 In addition, ERNIE-Layout uses two novel pre-training strategies: Reading Order Prediction and Replaced Regions Prediction. Because there is no explicit boundary between segments in the sequence processed by the Transformer, Reading Order Prediction aims to enhance intra-segment interactions between tokens. The loss of this task is defined as:
 
@@ -1132,21 +1117,21 @@ Experiment results show that TILT outperforms strong multimodal extractive appro
 
 \subsubsection{Hierarchical Transformers}
 
-\paragraph{LAMPreT} 
+\paragraph{\ac{LAMPreT}} 
 
-To tackle content-rich and layout-flexible articles such as Wikipedia pages and exploit their inherent hierarchy, \citet{wu2021lampret} propose \ac{LAMPreT}, a multimodal hierarchical framework designed to learn layout-aware document representations. LAMPreT consists of two cascaded Transformers, where the lower-level encodes each content block (\textit{e.g.}, text, table, image) and the higher-level aggregates block-level representations.
+To tackle content-rich and layout-flexible articles such as Wikipedia pages and exploit their inherent hierarchy, \citet{wu2021lampret} propose \ac{LAMPreT}, a multimodal hierarchical framework designed to learn layout-aware document representations. \ac{LAMPreT} consists of two cascaded Transformers, where the lower-level encodes each content block (\textit{e.g.}, text, table, image) and the higher-level aggregates block-level representations.
 
 The layout is obtained by an in-house document parsing tool which parses a document into content blocks, each being assigned a block position, a block type (\textit{e.g.}, header, paragraph, image), and block attributes (\textit{i.e.}, font size, boldness, underline, and italic appearance). The document layout is defined as the structural presentation of the content blocks, and the aforementioned features of the textual contents within a block. The content blocks are sorted with respect to their spatial positions, then serialized in a zig-zag fashion.
 
 The textual representation for each token position is the sum of its WordPiece token embedding, the block-segment-id of its block, the element-wise summed embedding from all the textual attributes, and the binary embedding indicating whether the token corresponds to a text or an image. The image contents are fed to a \ac{CNN}, then projected onto the text representation space. 
 
-\citet{wu2021lampret} consider two levels of layout hierarchical formulation for LAMPreT: the lower level refers to the contents of a block (e.g. text, images), while the higher level focuses on how these blocks are spatially structured. The framework consists of two cascaded Transformers taking different levels of inputs of a document, with both levels being associated with their own pre-training objective. The lower-level model is fed the raw parsed content blocks, with each block containing the textual contents and, potentially, a few images. Each block is separated by a block-level \texttt{[CLS]} token. The low-level model is pre-trained using \ac{MVLM} and Image-Text Matching, where the goal is to predict whether some textual contents match an images. The higher-level model then takes as input the block-level representations obtained with the lower-level model at each \texttt{[CLS]} position. It is pre-trained using a Block-Ordering Prediction objective, where the goal is to predict whether two blocks are swapped, a Block-MLM task, which requires the model to select the most suitable block for the masked selection, and an Image fitting strategy, where the model has to find the most suitable images for the masked-out images.
+\citet{wu2021lampret} consider two levels of layout hierarchical formulation for \ac{LAMPreT}: the lower level refers to the contents of a block (e.g. text, images), while the higher level focuses on how these blocks are spatially structured. The framework consists of two cascaded Transformers taking different levels of inputs of a document, with both levels being associated with their own pre-training objective. The lower-level model is fed the raw parsed content blocks, with each block containing the textual contents and, potentially, a few images. Each block is separated by a block-level \texttt{[CLS]} token. The low-level model is pre-trained using \ac{MVLM} and Image-Text Matching, where the goal is to predict whether some textual contents match an images. The higher-level model then takes as input the block-level representations obtained with the lower-level model at each \texttt{[CLS]} position. It is pre-trained using a Block-Ordering Prediction objective, where the goal is to predict whether two blocks are swapped, a Block-MLM task, which requires the model to select the most suitable block for the masked selection, and an Image fitting strategy, where the model has to find the most suitable images for the masked-out images.
 
 In addition, \citet{wu2021lampret} propose two novel downstream tasks to evaluate the layout-awareness of the learned document representations: Text Block Filling, where blocks are randomly masked out and the model has to predict them from a set of candidates, and Image Suggestion, where the model is given the content blocks of a document and has to retrieve the correct image given a set of candidates.
 
-%To model the inherent hierarchical formulation of a document layout, LAMPReT uses two cascaded Transformers. The lower-level Transformer encodes each contents block (e.g. text, table, image), while the higher-level Transformer aggregates the block-level representations and connections obtained. To train the higher-level model, the authors design structure-exploiting pre-training objectives: (1) block-order predictions, (2) masked block predictions, and (3) image fitting predictions. 
+%To model the inherent hierarchical formulation of a document layout, \ac{LAMPreT} uses two cascaded Transformers. The lower-level Transformer encodes each contents block (e.g. text, table, image), while the higher-level Transformer aggregates the block-level representations and connections obtained. To train the higher-level model, the authors design structure-exploiting pre-training objectives: (1) block-order predictions, (2) masked block predictions, and (3) image fitting predictions. 
 
-% LAMPRET, VILA
+% \ac{LAMPreT}, VILA
 
 \subsubsection{Graph Learning}
 
