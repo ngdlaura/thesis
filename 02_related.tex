@@ -1040,10 +1040,10 @@ LayoutLMv3 \citep{huang2022layoutlmv3} takes a different approach to visual feat
 
 \paragraph{Layout-aware Attention Mechanisms}
 
-In addition to 2D position embeddings, LayoutLMv2 \citep{xu2020layoutlmv2} extends LayoutLM by encoding the 2D relative position as a \textit{bias} term. This term is added to the attention scores to explicitly capture the relationship between tokens, defining a \textit{spatial-aware attention mechanism}. Formally, the pre-softmax attention scores are defined as follows:
+In addition to 2D position embeddings, LayoutLMv2 \citep{xu2020layoutlmv2} extends LayoutLM by encoding the 2D relative position as \textit{bias} terms. These terms are added to the attention scores to explicitly capture the relationship between tokens, defining a \textit{spatial-aware attention mechanism}. Formally, the pre-softmax attention scores are defined as follows:
 
 \begin{equation}
-    \alpha_{i,j} = \dfrac{1}{\sqrt{d}} \bm{q}_i \cdot \bm{k}_j + \bm{b}^{(1D)}_{j - i} + \bm{b}^{(2D_x)}_{x_j - x_i} + \bm{b}^{(2D_y)}_{y_j - y_i},
+    \alpha_{i,j} = \dfrac{1}{\sqrt{d}} \bm{q}_i \cdot \bm{k}_j + b^{(1D)}_{j - i} + b^{(2D_x)}_{x_j - x_i} + b^{(2D_y)}_{y_j - y_i},
 \end{equation}
 
 \noindent where $\bm{b}^{(1D)}$, $\bm{b}^{(2D_x)}$, and $\bm{b}^{(2D_y)}$ correspond to the sequential, horizontal, and vertical relative position biases, respectively. Likewise, TILT \citep{powalski2021going} incorporates 2D relative positions while entirely discarding the use of absolute 2D positions in its encoding strategy. 
@@ -1065,8 +1065,10 @@ To prevent early merging of distinct types of relative (sequential and spatial) 
 Similarly, DocFormer \citep{appalaraju2021docformer} modifies the self-attention mechanism to obtain spatially-aware features. In each Transformer layer, self-attention processes language semantics (denoted by $S$) and visual (denoted by $V$) modalities separately. Given $\star \in \{S, V\}$, let $\bell^{\star} = (\bell^{\star}_1, \ldots, \bell^{\star}_n)$ be the modality-specific layout features, and $\bm{q}^\star$, $\bm{k}^\star$, the query and key projections. Let $\bm{b}^{(1D)}$ represent the sequential relative position bias vector, and $\bm{W}^{(2D)}_q$ and $\bm{W}^{(2D)}_k$ be the learnable projection matrices for layout-specific query and key, respectively. The modality-specific attention score\footnote{For the sake of clarity, we omit the scaling and softmax operations.} for tokens $i$ and $j$ is disentangled as follows:
 
 \begin{equation}
-    \alpha^{\star}_{ij} = \left(\bm{q}^{\star}_i \cdot \bm{k}^{\star}_j\right) + \left(\bm{q}^{\star}_i \cdot \bm{b}^{(1D)}_{j-i}\right) + \left(\bm{q}^{\star}_j \cdot \bm{b}^{(1D)}_{j-i}\right) + \left(\bell^{\star}_i \cdot \bm{W}^{(2D)}_q \right) \left(\bell^{\star}_j \cdot \bm{W}^{(2D)}_k \right).
+    \alpha^{\star}_{ij} = \left(\bm{q}^{\star}_i \cdot \bm{k}^{\star}_j\right) + \left(\bm{q}^{\star}_i \cdot \bm{W}^{(1D)}_{j-i}\right) + \left(\bm{q}^{\star}_j \cdot \bm{W}^{(1D)}_{j-i}\right) + \left(\bell^{\star}_i \cdot \bm{W}^{(2D)}_q \right) \left(\bell^{\star}_j \cdot \bm{W}^{(2D)}_k \right),
 \end{equation}
+
+\noindent where $\bm{W}^{(1D)}_{j-i}$ denotes the 1D relative position embedding between tokens $i$ and $j$.
 
 % In SelfDoc \citep{li2021selfdoc}, self-attention in the cross-modal encoder is replaced by two cross-modal attention functions. The first function identifies the alignment between language and visual information, \textit{e.g.}, if the font size in a text is confirmed by the semantic meaning of language features, these features should be amplified. Let $\bm{q}^\star$, $\bm{k}^\star$, and $\bm{v}^\star$ denote the modality-specific query, key and value projections, where $\star \in \{S, V\}$. For the language modality, the first cross-modal attention function is defined as follows:
 

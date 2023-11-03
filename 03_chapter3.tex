@@ -26,7 +26,7 @@
 
 % Despite their effectiveness, multimodal pre-training techniques are not motivated by an efficiency perspective. Layout and visual signals are mostly viewed as additional features that boost performance, and each token is still contextualized with respect to the entire input sequence. However, prior works in cognitive sciences have shown that humans use the layout as a strategy to retrieve information faster, while expending less effort \citep{britton1982effects, olive2017processing}. In this chapter, draw insights from these discoveries and exploit layout in a manner akin to humans, as this can be key to a successful model coping with long and complex documents. We raise two research questions: (RQ1) Is it possible to learn attention using layout only? (RQ2) Can layout help reduce the complexity of self-attention? 
 
-As seen in Section~\ref{subsection:chapter2-deep-fusion}, Transformer-based joint pre-training of text, layout and images has allowed models to reach state-of-the-art performance in a number of document understanding tasks. However, multimodal pre-trained models suffer from very high computational and memory costs due to the quadratic complexity inherent to Transformers, making them enable to process long documents. In most approaches, layout and visual signals are viewed as additional features that boost performance, and each token is still contextualized with respect to the entire input sequence.
+As seen in Section~\ref{subsection:chapter2-deep-fusion}, Transformer-based joint pre-training of text, layout and images has allowed models to reach state-of-the-art performance in a number of document understanding tasks. However, multimodal pre-trained models suffer from very high computational and memory costs due to the quadratic complexity inherent to Transformers, making them enable to process long documents. In most approaches, layout is considered an additional feature (\textit{e.g.}, integrating 2D coordinates as an extension of 1D positions) that enhances performance, and each token is still contextualized with respect to the entire input sequence. Yet, layout stands as a distinct modality alongside language. The conventional approach of treating layout as a special positional feature leads to a lack of cross-modal interaction between layout and text. This limitation has the potential to impede the model's understanding of the role that layout plays in semantic expression.
 
 % The layout of a document has a significant impact on readers' behavior and understanding \citep{wright1999psychology, kendeou2007effects, olive2017processing}.
 It has been shown that a well-designed layout results in less cognitive effort \citep{britton1982effects, olive2017processing} and facilitates comprehension of the conveyed information by helping identify the document type and its constituents, as well as providing cues regarding relationships between elements \citep{wright1999psychology}. Semiotic research assumes that readers scan the document before taking a closer look at certain units \citep{kress1996reading}, a claim supported by eye-tracking experiments on newspapers \citep{leckner2012presentation}.  Inspired by these research findings, we claim that one does not need to have read each word in a document page to be able to understand a specific paragraph. Therefore, we argue that, to efficiently process long documents, it is a waste of effort and computation to contextualize a token with respect to the entire input sequence. To shift towards processing long documents with awareness of their structure, we propose to leverage layout in a more intuitive and efficient way, resembling human cognition. We argue that this approach can be key to a model coping with long and complex documents.
@@ -40,6 +40,8 @@ In this chapter, we first present a brief cognitive experiment that highlights t
 \label{section:chapter3-human-evaluation}
 
 How much does the document layout help in comprehending long textual contents? How faster is it for humans to find information in documents when layout is provided? To answer these questions, we conduct a simple cognitive experiment wherein we measure the amount of time needed for human annotators to extract information from both formatted and plain-text documents. We hand-pick four document pages from the DocBank dataset \citep{li2020docbank}, and create a plain-text version out of each of these documents by serializing them. We create two basic questions for each document, and ask four annotators to answer them. Half of the time, annotators are given access to the full layout, while the other half, they are limited to plain text only (i.e., no layout nor formatting).
+
+\todo[inline]{add example}
 
 Table~\ref{tab:chapter3-human-eval} reports the average time needed to retrieve information from the documents. We find that it is 2.5 times faster to answer questions from the formatted documents, and that the variability in the results is much lower in this case. These results support the hypothesis that \emph{less cognitive effort} is spent when the document is formatted, emphasizing the importance of layout information in reading comprehension.
 
@@ -69,7 +71,7 @@ Our novel attention mechanism, Skim-Attention, views documents as collections of
 
 \subsubsection{Layout Embeddings}
 
-Layout embeddings carry information about the spatial position of the tokens. Following LayoutLM \citep{xu2020layoutlm}, the spatial position of a token is represented by its bounding box in the document page image, $(x_0, y_0, x_1, y_1)$, where $(x_0, y_0)$ and $(x_1, y_1)$ respectively denote the coordinates of the top left and bottom right corners. We discretize and normalize them to integers in $[0, ..., 1000]$. Four embedding tables are used to encode spatial positions: two for the coordinate axes ($x$ and $y$), and the other two for the bounding box size (width and height). The final layout embedding of a token, $\bell \in \mathbb{R}^{d_{\ell}}$, located at position $(x_0, y_0, x_1, y_1)$ is defined by:
+Layout embeddings carry information about the spatial position of the tokens. Following LayoutLM \citep{xu2020layoutlm}, the spatial position of a token is represented by its bounding box in the document page image, $(x_0, y_0, x_1, y_1)$, where $(x_0, y_0)$ and $(x_1, y_1)$ respectively denote the coordinates of the top-left and bottom-right corners. We discretize and normalize them to integers in $[0, ..., 1000]$. Four embedding tables are used to encode spatial positions: two for the coordinate axes ($x$ and $y$), and the other two for the bounding box size (width and height). The final layout embedding of a token, $\bell \in \mathbb{R}^{d_{\ell}}$, located at position $(x_0, y_0, x_1, y_1)$ is defined by:
 \vspace{-0.5cm}
 
 \begin{equation}
@@ -84,7 +86,7 @@ Layout embeddings carry information about the spatial position of the tokens. Fo
 \subsubsection{Skim-Attention Mechanism}
 
 % We propose Skim-Attention, an attention mechanism that leverages document layout in a novel way. 
-A standard self-attention mechanism works by comparing every token in the sequence to every other token in the sequence, and reweighing the embeddings of each token to include contextual relevance. Skim-Attention diverges from vanilla self-attention as it operates independently from text semantics (\textit{i.e.}, token representations). Instead, Skim-Attention computes attention  using \emph{only} the spatial positions of tokens, \textit{i.e.}, their layout embeddings $\bell$.
+A standard self-attention mechanism works by comparing every token in the sequence to every other token in the sequence, and reweighing the embeddings of each token to include contextual relevance. Skim-Attention diverges from vanilla self-attention as it operates independently from text semantics (\textit{i.e.}, token representations). Instead, Skim-Attention computes attention using \emph{only} the spatial positions of tokens, \textit{i.e.}, their layout embeddings $\bell$.
 
 Formally, let $\textbf{X}^{\ell} =  \{\bell_0, \bell_1, \ldots, \bell_n\}$ be an input sequence of layout embeddings, and $\textbf{Q}^{\ell} = \textbf{W}^{\ell}_q \textbf{X}^{\ell}, \textbf{K}^{\ell} =  \textbf{W}^{\ell}_k \textbf{X}^{\ell}$, the Queries and Keys obtained by linear transformations of the layout embeddings. For a single attention head, the Skim-Attention matrix is defined as:
 
@@ -115,7 +117,7 @@ We present two approaches to exploit Skim-Attention:
 
 \emph{Skimformer} is designed to answer the first research question: \textit{Is it possible to learn attention using layout only ?} Skimformer is a two-stage Transformer that replaces vanilla self-attention with Skim-Attention. Drawing inspiration from insights in cognitive science, the intuition behind this approach is to mimic how humans process a document by \emph{i)} skimming through the document to extract its structure, and \emph{ii)}  reading the contents based on the prior structural understanding. 
 
-Skimformer is fed with a sequence of token embeddings and the corresponding sequence of layout embeddings. The model adopts a two-step approach: first, it computes the skim-attention scores once and only once using layout information alone; then it uses these attention scores across all layers of a Transformer encoder. The architecture of Skimformer is depicted in Figure~\ref{fig:chapter3-skimformer-architecture}.
+Skimformer is fed with a sequence of token embeddings and the corresponding sequence of layout embeddings. Because layout information implicitly reflect the reading order of documents, we do not encode the sequential positions of tokens. The model adopts a two-step approach: first, it computes the skim-attention scores once and only once using layout information alone; then it uses these attention scores across all layers of a Transformer encoder. The architecture of Skimformer is depicted in Figure~\ref{fig:chapter3-skimformer-architecture}.
 
 For a given encoder layer $k$ and a single head, the traditional self-attention operation becomes:
 
@@ -155,7 +157,7 @@ It is worth nothing that Skimming Mask introduces a new way to cluster tokens: t
 
 \section{Experiments and Results}
 
-We first present the data used to pre-train and evaluate our models, and provide details on the experimental settings. Then, we discuss the results obtained on \ac{MVLM} and \ac{DLA}, before exploring the attention maps obtained by Skimformer.
+We first present the data used to pre-train and evaluate our models, and provide details on the experimental settings. Then, we discuss the results obtained on language modeling and document layout analysis, before exploring the attention maps obtained by Skimformer.
 
 \subsection{Data}
 
@@ -177,7 +179,7 @@ PubLayNet comprises over 360 thousand document images from PubMed Central\textsu
 
 \subsubsection{Dataset for Document Layout Analysis}
 
-In addition to perplexity, we evaluate our approach on a downstream task, \ac{DLA}, which consists in associating each token with its corresponding category. We use a subset of the full DocBank dataset, where the categories are: abstract, author, caption, date, equation, footer, list, paragraph, reference, section, table, title and figure.\footnote{We actually discard the \textit{Figure} label, as 1) our models do not take image features into account, and 2) the text associated with such elements is always the same, making the task trivial.}
+In addition to perplexity, we evaluate our approach on a downstream task, document layout analysis, which consists in associating each token with its corresponding category. We use a subset of the full DocBank dataset, where the categories are: abstract, author, caption, date, equation, footer, list, paragraph, reference, section, table, title and figure.\footnote{We actually discard the \textit{Figure} label, as 1) our models do not take image features into account, and 2) the text associated with such elements is always the same, making the task trivial.}
 
 The subset is created by selecting 10k document pages (distinct from the ones used for pre-training): 8,000 from the full training set, 1,000 from the validation set and 1,000 from the test set. We refer to this dataset as \textit{DocBank-LA}. Each document page is organized as a list of words with bounding boxes, colors, fonts and labels. We use the precision, recall and F1 score defined by \citet{li2020docbank}.
 
