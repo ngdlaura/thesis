@@ -123,9 +123,9 @@ For each corpus, we use the 95th percentile of the page distribution as an upper
 
 \subsection{Datasets Statistics}
 
-The statistics of our proposed datasets, along with those computed on existing summarization datasets of long documents \citep{cohan2018discourse, sharma2019bigpatent} are reported in Table~\ref{tab:chapter5-datasets-stats}. We see that document lengths are comparable or greater than for the arXiv, PubMed and BigPatent datasets.  
+The statistics of our proposed datasets, along with those computed on existing summarization datasets of long documents \citep{cohan2018discourse, sharma2019bigpatent} are reported in Table~\ref{tab:datasets-stats}. We see that document lengths are comparable or greater than for the arXiv, PubMed and BigPatent datasets.  
 
-For arXiv-Lay and PubMed-Lay, we retain the original train/validation/splits and try to reconstruct them as faithfully to the originals as possible. For the new datasets, we order documents based on their publication dates and provide splits following a chronological ordering. For HAL and KoreaScience, we retain 3\% of the articles as validation data, 3\% as test, and the remaining as training data. To match the number of validation/test documents in HAL and KoreaScience, we split the data into 90\% for training, 5\% for validation and 5\% for test, for both SciELO datasets. The statistics of our splits are provided in Table~\ref{tab:chapter5-splits-stats}
+For arXiv-Lay and PubMed-Lay, we retain the original train/validation/splits and try to reconstruct them as faithfully to the originals as possible. For the new datasets, we order documents based on their publication dates and provide splits following a chronological ordering. For HAL and KoreaScience, we retain 3\% of the articles as validation data, 3\% as test, and the remaining as training data. To match the number of validation/test documents in HAL and KoreaScience, we split the data into 90\% for training, 5\% for validation and 5\% for test, for both SciELO datasets. The statistics of our splits are provided in Table~\ref{tab:splits-stats}
 
 \begin{table}
 \centering
@@ -151,7 +151,7 @@ KoreaScience & 37,498  & 3,192 &  95 \\
 \end{tabular}
 % }
 \caption{Datasets statistics. Article and summary lengths are computed in words. For KoreaScience, words are obtained via white-space tokenization. Difference between arXiv and arXiv-Lay is due to the fact that we retain the whole document, while \citet{cohan2018discourse} truncate it after the conclusion.}
-\label{tab:chapter5-datasets-stats}
+\label{tab:datasets-stats}
 \end{table}
 
 \begin{table}[]
@@ -179,7 +179,7 @@ KoreaScience         & & 35,248                    & 1,125                   & 1
 \end{threeparttable}
 }
 \caption{Datasets splits and statistics. Input and output lengths are computed in tokens, obtained using Pegasus and mBART-50's tokenizers for the English and non-English datasets, respectively.}
-\label{tab:chapter5-splits-stats}
+\label{tab:splits-stats}
 \end{table}
 
 The distribution of research areas in arXiv-Lay and HAL are provided in Figures~\ref{fig:chapter5-arxiv-research-areas} and ~\ref{fig:chapter5-hal-research-areas}, respectively. Such distributions are not available for the other datasets, as we did not have access to topic information during extraction.
@@ -248,7 +248,7 @@ Models were implemented in Python using PyTorch \citep{paszke2017automatic} and 
 % \begin{table}[ht]
 % \centering
 % \small
-% \begin{tabular}{lccc}
+% \begin{tabular}{lccc}z
 % \toprule
 % \multicolumn{1}{c}{\textbf{Model}} & \textbf{\# Params} & \shortstack{\textbf{arXiv/} \\ \textbf{arXiv-Lay}} & \shortstack{\textbf{PubMed/} \\ \textbf{PubMed-Lay}} \\  
 % \midrule
@@ -267,7 +267,7 @@ Models were implemented in Python using PyTorch \citep{paszke2017automatic} and 
 % \end{tabular}
 % % }
 % \caption{ROUGE-L scores on arXiv-Lay and PubMed-Lay. Reported results obtained by Pegasus and BigBird-Pegasus on the original arXiv and PubMed are reported with a gray background. The best results obtained on arXiv-Lay and PubMed-Lay are denoted in bold.}
-% \label{tab:chapter5-rl-scores-arxiv-pubmed}
+% \label{tab:rl-scores-arxiv-pubmed}
 % \end{table}
 
 \begin{table}[ht]
@@ -292,7 +292,7 @@ BigBird-Pegasus+Layout            & 581M & \textbf{46.02}	& \textbf{18.95}	& \te
       
 \end{tabular}
 \caption{ROUGE scores on arXiv-Lay and PubMed-Lay. Reported results obtained by Pegasus and BigBird-Pegasus on the original arXiv and PubMed are highlighted with a gray background. The best results obtained on arXiv-Lay and PubMed-Lay are denoted in bold.}
-\label{tab:chapter5-results-arxiv-pubmed}
+\label{tab:results-arxiv-pubmed}
 \end{table}
 
 \begin{table}[ht]
@@ -315,7 +315,7 @@ BigBird-Pegasus+Layout            & 581M & \textbf{46.02}	& \textbf{18.95}	& \te
 \end{tabular}
 }
 \caption{Absolute ROUGE-L score differences between each pair of models, on arXiv-Lay/PubMed-Lay.}
-\label{tab:chapter5-rouge-l-improvements-arxiv-pubmed}
+\label{tab:rouge-l-improvements-arxiv-pubmed}
 \end{table}
 
 \begin{table}[h]
@@ -335,7 +335,7 @@ $\sigma$ of bounding box height & &     3.37 &     1.34 & &    3.98 &    1.73 & 
 \end{tabular}
 }
 \caption{Quartiles calculated from the distributions of article lengths, summary lengths, and variation in the height of bounding boxes, for arXiv-Lay and PubMed-Lay.}
-\label{tab:chapter5-quartiles}
+\label{tab:quartiles}
 \end{table}
 
 % \begin{table}[ht]
@@ -353,10 +353,10 @@ $\sigma$ of bounding box height & &     3.37 &     1.34 & &    3.98 &    1.73 & 
                             
 % \end{tabular}
 % \caption{ROUGE-L scores on the non-English datasets. The best results for each dataset are reported in bold. }
-% \label{tab:chapter5-rl-scores-multilingual}
+% \label{tab:rl-scores-multilingual}
 % \end{table}
 
-In Table~\ref{tab:chapter5-rl-scores-arxiv-pubmed}, we report the ROUGE scores obtained on arXiv and PubMed datasets (reported by \citet{zaheer2020big}), as well as on the corresponding layout-augmented counterparts we release. On arXiv-Lay and PubMed-Lay, we observe that, while the addition of layout to Pegasus does not improve the ROUGE-L scores, there are gains in integrating layout information into BigBird-Pegasus. To assess whether these gains are significant, we perform significance analysis at the 0.05 level using bootstrap, and estimate a ROUGE-L threshold that predicts when improvements are significant. ROUGE-L improvements between each pair of models are reported in Table~\ref{tab:chapter5-rouge-l-improvements-arxiv-pubmed}. On arXiv-Lay, we compute a threshold of 1.48 ROUGE-L, showing that BigBird-Pegasus+Layout significantly outperforms all Pegasus-based models. In particular, we find a 1.56 ROUGE-L improvement between BigBird-Pegasus and its layout-augmented counterpart, demonstrating that the addition of layout to long-range modeling significantly improves summarization. On PubMed-Lay, we compute a threshold of 1.77. Hence, the 0.96 ROUGE-L improvement from BigBird-Pegasus to its layout-augmented counterpart is not significant. However, the variance in font sizes in PubMed-Lay is much smaller compared to arXiv-Lay (see Table~\ref{tab:chapter5-quartiles}, which lists the quartiles computed from the distributions of article lengths, summary lengths, and variation in the height of bounding boxes, for arXiv-Lay and PubMed-Lay). This reflects an overall more simplistic layout. Therefore, we argue that layout integration has a lesser impact in PubMed-Lay, which can explain the non-significance of results. In addition, we find that BigBird-Pegasus significantly outperforms Pegasus and Pegasus+Layout only when augmented with layout, with an improvement of, respectively, 2.3 and 2.2 points. This demonstrates the importance of combining layout and long-range modeling. 
+In Table~\ref{tab:results-arxiv-pubmed}, we report the ROUGE scores obtained on arXiv and PubMed datasets (reported by \citet{zaheer2020big}), as well as on the corresponding layout-augmented counterparts we release. On arXiv-Lay and PubMed-Lay, we observe that, while the addition of layout to Pegasus does not improve the ROUGE-L scores, there are gains in integrating layout information into BigBird-Pegasus. To assess whether these gains are significant, we perform significance analysis at the 0.05 level using bootstrap, and estimate a ROUGE-L threshold that predicts when improvements are significant. ROUGE-L improvements between each pair of models are reported in Table~\ref{tab:rouge-l-improvements-arxiv-pubmed}. On arXiv-Lay, we compute a threshold of 1.48 ROUGE-L, showing that BigBird-Pegasus+Layout significantly outperforms all Pegasus-based models. In particular, we find a 1.56 ROUGE-L improvement between BigBird-Pegasus and its layout-augmented counterpart, demonstrating that the addition of layout to long-range modeling significantly improves summarization. On PubMed-Lay, we compute a threshold of 1.77. Hence, the 0.96 ROUGE-L improvement from BigBird-Pegasus to its layout-augmented counterpart is not significant. However, the variance in font sizes in PubMed-Lay is much smaller compared to arXiv-Lay (see Table~\ref{tab:quartiles}, which lists the quartiles computed from the distributions of article lengths, summary lengths, and variation in the height of bounding boxes, for arXiv-Lay and PubMed-Lay). This reflects an overall more simplistic layout. Therefore, we argue that layout integration has a lesser impact in PubMed-Lay, which can explain the non-significance of results. In addition, we find that BigBird-Pegasus significantly outperforms Pegasus and Pegasus+Layout only when augmented with layout, with an improvement of, respectively, 2.3 and 2.2 points. This demonstrates the importance of combining layout and long-range modeling. 
 
 While T5 and LED obtain competitive results, we find that the gain in adding layout to LED is minor. However, the models we consider have all been pre-trained only on plain text. As a result, the layout representations are learnt from scratch during fine-tuning. Similarly to us, \citet{borchmann2021due} show that their layout-augmented T5 does not necessarily improve the scores, and that performance is significantly enhanced only when the model has been pre-trained on layout-rich data.  
 
@@ -381,7 +381,7 @@ BigBird-MBART+Layout  & \textbf{49.99} & 25.20 & \textbf{45.20} & & \textbf{45.6
 \end{tabular}
 }
 \caption{ROUGE scores on the non-English datasets. The best results for each dataset are reported in bold.}
-\label{tab:chapter5-results-multilingual}
+\label{tab:results-multilingual}
 \end{table}
 
 \begin{table}[ht]
@@ -401,7 +401,7 @@ KoreaScience (ko) & 73.53                     & 70.26                          &
 \label{table:chapter5-percentage-main-lang}
 \end{table}
 
-Table \ref{tab:chapter5-results-multilingual} presents the ROUGE scores reported on the non-English datasets. 
+Table \ref{tab:results-multilingual} presents the ROUGE scores reported on the non-English datasets. 
 On HAL, we note that BigBird-MBART does not benefit from layout. After investigation, we hypothesize that this is due to the larger presence of single-column and simple layouts, which makes layout integration less needed.
 On both SciELO datasets, we notice that combining layout with long-range modeling brings substantial improvements over MBART.
 Further, we find that the plain-text BigBird models do not improve over the layout-aware Pegasus and MBART on arXiv-Lay and SciELO-ES, demonstrating that simply capturing more context does not always suffice. 
@@ -436,13 +436,13 @@ Flow \%             &   30.75 \scriptsize{(0.68)}          &    33.02 \scriptsiz
 \bottomrule
 \end{tabular}
 \caption{Average human judgement scores obtained by comparing gold-truth abstracts and summaries generated by BigBird and BigBird+Layout from 50 documents sampled from arXiv-Lay and HAL. Inter-rater agreement	is computed using Krippendorff's alpha coefficient, and enclosed between parentheses.}
-\label{tab:chapter5-human-eval-scores}
+\label{tab:human-eval-scores}
 \end{table}
 
 To gain more insight into the effect of document layout for summarizing long textual content, we conduct a human evaluation of summaries generated by BigBird-Pegasus/BigBird-MBART and their layout-aware counterparts. We choose the BigBird-based models over the LED ones, as the gain in augmenting BigBird with layout is much more apparent. We evenly sample 50 documents from arXiv-Lay and HAL test sets, filtering documents by their topics (computer science) to match the judgment capabilities of the three human annotators. 
 Using the Streamlit\footnote{\url{https://streamlit.io/}} framework, we design and develop an interface to aid human evaluation of summarization models.\footnote{The code is publicly available at \url{https://anonymous.4open.science/r/loralay-eval-interface-C20D}.} A preview of the interface is presented in Figure~\ref{fig:chapter5-loralay-eval-interface}.
 For each sentence $s_i$ in the generated summary, we ask the annotators to highlight the relevant tokens in $s_i$, along with the equivalent parts in the ground-truth abstract (denoted $h_i$). Further, we ask them to rate the summary in terms of coherence and fluency, on a scale of 0 to 5, following the DUC quality guidelines \citep{dang2005overview}. Finally, annotators are asked to penalize summaries with hallucinated facts. The highlighting process allows us to compute precision and recall as the percentage of highlighted information in the generated summary and the ground-truth abstract, respectively. Moreover, we can compute an overlap ratio as the percentage of highlighted information that appears several times in the generated summary. Lastly, we calculate a flow percentage that evaluates how well the order of the ground-truth information is preserved by computing the percentage of times where the highlighted text $h_i$ in the gold summary for one generated sentence $s_i$ follows the highlighted text $h_{i-1}$ for the previous sentence $s_{i-1}$ (i.e. where any token from $h_i$ occurs after a token in $h_{i-1}$).
-Table~\ref{tab:chapter5-human-eval-scores} reports the scores for each metric and model, averaged over all 50 documents, along with inter-rater agreements, computed using Krippendorff's alpha coefficient. We find that adding layout to the models significantly improves precision and recall, results in less overlap (repetition), and is more in line with the ground truth order. Further, annotators did not encounter any hallucinated fact in the 50 generated summaries. To conclude, reported results show that human annotators strongly agree that adding layout generates better summaries, further validating our claim that layout provides vital information for summarization tasks.
+Table~\ref{tab:human-eval-scores} reports the scores for each metric and model, averaged over all 50 documents, along with inter-rater agreements, computed using Krippendorff's alpha coefficient. We find that adding layout to the models significantly improves precision and recall, results in less overlap (repetition), and is more in line with the ground truth order. Further, annotators did not encounter any hallucinated fact in the 50 generated summaries. To conclude, reported results show that human annotators strongly agree that adding layout generates better summaries, further validating our claim that layout provides vital information for summarization tasks.
 
 \subsection{Case Studies}
 
@@ -481,11 +481,11 @@ $\sigma$ of bounding box height & &     3.37 &     1.34 & &    3.98 &    1.73 & 
 \end{tabular}
 }
 \caption{Quartiles calculated from the distributions of article lengths, summary lengths, and variation in the height of bounding boxes, for arXiv-Lay and PubMed-Lay.}
-\label{tab:chapter5-quartiles}
+\label{tab:quartiles}
 \end{table}
 
 To have a better understanding of the previous results, we focus on uncovering the cases in which layout is most helpful. To this end, we identify features that relate to the necessity of having layout: 1) article length, as longer texts are intuitively easier to understand with layout, 2) summary length, as longer summaries are likely to cover more salient information, and 3) variance in font sizes (using the height of the bounding boxes), and, as such, the complexity of the layout.
-The benefit of using layout is measured as the difference in ROUGE-L scores between BigBird-Pegasus+Layout and its purely textual counterpart, on arXiv-Lay and PubMed-Lay. We compute quartiles from the distributions of article lengths, ground-truth summary lengths, and variance in the height of bounding boxes. The quartiles are provided in Table~\ref{tab:chapter5-quartiles}. Based on the aforementioned factors, the scores obtained by each model are then grouped by quartile range, and averaged over each range, see Figure~\ref{fig:chapter5-analysis-quartiles}. On arXiv-Lay, we find that layout brings most improvement when dealing with the 25\% longest documents and summaries, while, for both datasets, layout is least beneficial for the shortest documents and summaries. These results corroborate our claim that layout can bring important information about long-range context. Concerning the third factor, we see, on PubMed-Lay, that layout is most helpful for documents that have the widest ranges of font sizes, showcasing the advantage of using layout to capture salient information. 
+The benefit of using layout is measured as the difference in ROUGE-L scores between BigBird-Pegasus+Layout and its purely textual counterpart, on arXiv-Lay and PubMed-Lay. We compute quartiles from the distributions of article lengths, ground-truth summary lengths, and variance in the height of bounding boxes. The quartiles are provided in Table~\ref{tab:quartiles}. Based on the aforementioned factors, the scores obtained by each model are then grouped by quartile range, and averaged over each range, see Figure~\ref{fig:chapter5-analysis-quartiles}. On arXiv-Lay, we find that layout brings most improvement when dealing with the 25\% longest documents and summaries, while, for both datasets, layout is least beneficial for the shortest documents and summaries. These results corroborate our claim that layout can bring important information about long-range context. Concerning the third factor, we see, on PubMed-Lay, that layout is most helpful for documents that have the widest ranges of font sizes, showcasing the advantage of using layout to capture salient information. 
 
 \section{Conclusion}
 
