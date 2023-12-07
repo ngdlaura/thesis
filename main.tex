@@ -77,7 +77,10 @@
 \let\oldleftmark=\leftmark
 
 \newboolean{skipIntro}
-\newboolean{skipRelated}
+\newboolean{skipRelated0}
+\newboolean{skipRelated1}
+\newboolean{skipRelated2}
+\newboolean{skipRelated3}
 \newboolean{skipCh3}
 \newboolean{skipCh4}
 \newboolean{skipCh5}
@@ -111,7 +114,22 @@
 	\cleardoublepage
 
 	\acresetall
-	\input{02_related.tex} 
+	\input{02_0_related.tex} 
+	\cleardoublepage
+	\let\leftmark=\oldleftmark
+
+	\acresetall
+	\input{02_1_related.tex} 
+	\cleardoublepage
+	\let\leftmark=\oldleftmark
+
+	\acresetall
+	\input{02_2_related.tex} 
+	\cleardoublepage
+	\let\leftmark=\oldleftmark
+
+	\acresetall
+	\input{02_3_related.tex} 
 	\cleardoublepage
 	\let\leftmark=\oldleftmark
 	
