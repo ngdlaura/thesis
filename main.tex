@@ -77,13 +77,10 @@
 \let\oldleftmark=\leftmark
 
 \newboolean{skipIntro}
-\newboolean{skipRelated0}
-\newboolean{skipRelated1}
-\newboolean{skipRelated2}
-\newboolean{skipRelated3}
-\newboolean{skipCh3}
-\newboolean{skipCh4}
-\newboolean{skipCh5}
+\newboolean{skipRelated}
+\newboolean{skipCh6}
+\newboolean{skipCh7}
+\newboolean{skipCh8}
 
 % Permet de ne compiler que certains chapitres
 % \setboolean{skipIntro}{true}
@@ -114,57 +111,57 @@
 	\cleardoublepage
 
 	\acresetall
-	\input{02_0_related.tex} 
+	\input{02_related.tex} 
 	\cleardoublepage
 	\let\leftmark=\oldleftmark
 
 	\acresetall
-	\input{02_1_related.tex} 
+	\input{03_related.tex} 
 	\cleardoublepage
 	\let\leftmark=\oldleftmark
 
 	\acresetall
-	\input{02_2_related.tex} 
+	\input{04_related.tex} 
 	\cleardoublepage
 	\let\leftmark=\oldleftmark
 
 	\acresetall
-	\input{02_3_related.tex} 
+	\input{05_related.tex} 
 	\cleardoublepage
 	\let\leftmark=\oldleftmark
 	
 	\acresetall
-	\input{03_chapter3.tex}
+	\input{06_chapter6.tex}
 	\cleardoublepage
 	\let\leftmark=\oldleftmark
 
 	\acresetall
-	\input{04_chapter4.tex}
+	\input{07_chapter7.tex}
 	\cleardoublepage
 	\let\leftmark=\oldleftmark
 
         \acresetall
-	\input{05_chapter5.tex}
+	\input{08_chapter8.tex}
 	\cleardoublepage
 	\let\leftmark=\oldleftmark
 
 	\acresetall
-	\input{06_conclusion.tex}
+	\input{09_conclusion.tex}
 	\cleardoublepage
 
 	{
 	\backmatter
-	\input{07_bibliography.tex}
+	\input{10_bibliography.tex}
 	\cleardoublepage
 	}
 
 	\appendix
 	\acresetall
-	\input{10_appendix1.tex}
+	\input{11_appendix1.tex}
 	\cleardoublepage
 
 	\acresetall
-	\input{11_appendix2.tex}
+	\input{12_appendix2.tex}
 	\cleardoublepage
 
 	\printbibliography

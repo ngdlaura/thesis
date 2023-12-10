@@ -7,10 +7,64 @@
 
 \ifthenelse{\boolean{skipIntro}}{\endinput}{}
 
+% 1. Opening paragraph: grab the reader's attention
+
+Driven by factors such as increased digitization, the adoption of electronic communication, and the expansion of online platforms, the past two decades have seen an unprecedented and ever-increasing trend in data production \citep{hilbert2011world, clissa2022survey}. Notably, it is estimated that the stock of textual data is currently expanding at a rate of 7\% per year \citep{villalobos2022will}. In a world saturated with information, where the volume of electronic documents keeps growing, the ability of machines to \textit{read, understand and interpret documents} with human-like proficiency becomes increasingly crucial. This question forms the core focus of our investigation into improving the automated process of reading, interpreting, and extracting meaningful information from documents, \textit{i.e.}, \emph{Document Understanding}.
+
+% 2. Background and context: establish the problem space
+%   Provide a brief overview of the broader field of document understanding and its significance. 
+%   Introduce the challenges and complexities associated with traditional methods of document analysis and comprehension.
+%   Discuss the increasing importance of effective document understanding in various domains and industries. 
+
+The foundation of digital transformation lies in automated information processing, with escalating demands for increased processing power, speed, and accuracy across multiple domains and industries such as law, business, and healthcare. In the business field, electronic documents play a central role. Ranging from purchase receipts and industry reports to sales contracts and financial statements, business documents encapsulate a plethora of complex information. In this context, hyperautomation has emerged as a highly-demanded\footnote{\url{https://www.gartner.com/en/documents/4019586}} approach to automate and optimize business document processing by introducing \ac{AI} technologies. Examples of successful products that have empowered a range of industries with hyperautomation technologies include Microsoft Azure AI Document Intelligence,\footnote{\url{https://azure.microsoft.com/en-us/products/ai-services/ai-document-intelligence/}} Amazon Textract,\footnote{\url{https://aws.amazon.com/fr/textract/}} and Google Document AI,\footnote{\url{https://cloud.google.com/document-ai?hl=en}} among others. At the core of hyperautomation lies Document Understanding, also known as \textit{Document Intelligence}.\footnote{\url{https://document-intelligence.github.io/DI-2022/}} Encompassing the techniques used to automatically analyze and understand documents, Document Understanding is challenging due to the complex structures and varied formats of documents, the quality of scans and \ac{OCR} systems used, and the diversity of knowledge domains.
+
+In contrast to mainstream \ac{NLP}, which typically deals with plain text documents, the content encountered in real-world documents—such as scientific articles, news reports, or emails—is rarely strictly sequential. When creating documents, writers rely on the assumption that structured and visual formats, such as tables, graphs, or infographics, are more understandable to readers than sequential text. This preference is grounded in human visual perception and our ability to comprehend spatial context within a text. In other words, the appearance of a document, and especially its layout—defined as the spatial arrangement and organization of both graphical and textual elements—guides our reading process and conveys rich semantic information. Therefore, conventional \ac{NLP} approaches fall short in handling real-world documents, highlighting the importance for document understanding systems to incorporate the layout and visual appearance of documents.
+
+Addressing the challenges posed by Document Understanding requires a \textit{multi-disciplinary} approach, extending beyond \ac{NLP} to include fields like Computer Vision, Knowledge Representation, Information Retrieval, and more. Over the past thirty years, document understanding systems have incorporated a fundamental aspect of \textit{multimodality}, evolving from rule-based heuristics and Machine Learning approaches to methods based on \textit{Deep Learning}. Notably, a significant breakthrough in the field has been observed with the widespread adoption of large-scale multimodal pre-training for general document-level understanding \citep{vaswani2017attention, xu2020layoutlm}. This versatile framework produces powerful \textit{language models} with general knowledge, making them easily adaptable for various applications. Large-scale pre-training has become a cornerstone for document understanding systems, leading to a remarkable leap in performance across various tasks in the field. Yet, despite its importance for digitization, the academic literature on resources and methodologies for addressing Document Understanding remains relatively scarce. Furthermore, the field faces critical limiting factors for achieving satisfying results in practical applications. One main challenge lies in the limitation of the input length of current large-scale pre-trained language models, hindering effective multi-page and cross-page understanding of long and complex documents. Furthermore, the discrepancy between annotated training data and real-world documents, commonly obtained from scanning equipment and exhibiting lower quality, can result in sub-optimal performance. Besides, document understanding systems face challenges in practical applications due to insufficient computing resources and labeled training samples. In addition, existing document understanding tasks are often treated independently, lacking effective leveraging of correlations between tasks. Finally, accuracy in text recognition and word ordering (\textit{i.e.}, serialization) from \ac{OCR} and PDF-parsing engines plays a pivotal role in downstream tasks, sometimes even more than the choice of model architecture \citep{borchmann2021due}.
+
+Aligning with the current trend in the field, this thesis explores the use of Deep Learning methods, with a particular emphasis on general-purpose pre-training techniques, to advance automatic document understanding. Within the scope of this thesis, we cover two key challenges in the field: 1) Developing efficient methods for processing \textit{long and complex} documents with consideration for their \textit{visual appearance}. 2) Establishing \textit{robustness} against \ac{OCR}-induced \textit{serialization errors}, particularly when dealing with visually-rich documents with \textit{complex layouts}.
+
+The thesis organization is outlined as follows: Chapters~\ref{chapter:related-language-modeling} to~\ref{chapter:related-document-understanding} review existing literature and works relevant to our research. Chapter~\ref{chapter:related-language-modeling} explores the extensive literature that forms the foundation of language models, tracing their evolution from the early era of statistical language models to the emergence of neural language models. Chapter~\ref{chapter:related-pretrained-language-models} centers on the Transformer architecture \citep{vaswani2017attention} and its application in creating powerful pre-trained language models. Focusing on long documents, Chapter~\ref{chapter:related-long-range-modeling} delves into modeling advances and architectural innovations that tackle the quadratic complexity issue of the Transformer. Chapter~\ref{chapter:related-document-understanding} offers an overview of the field of Document Understanding, exploring recent advancements driven by pre-training techniques for deep fusion of modalities. In Chapters~\ref{chapter:skim-attention} to~\ref{chapter:loralay}, we present our contributions to the field. Chapter~\ref{chapter:skim-attention} introduces \textit{Skim-Attention}, a novel attention mechanism that mirrors human reading strategies by efficiently exploiting document structure. Chapter~\ref{chapter:layout2pos} presents \textit{Layout2Pos}, an attention-based module that learns 1D position embeddings from token spatial positions, addressing serialization errors by avoiding the use of sequential position information. Finally, Chapter~\ref{chapter:loralay} introduces \textit{LoRaLay}, a multilingual corpus of datasets designed for long-range summarization. These datasets, enriched with visual and layout information, along with baselines merging layout-aware and long-range models, provide valuable resources for exploring the use of multimodal information in long document modeling. Collectively, these contributions offer innovative solutions to challenges in Document Understanding, augmenting the practical utility of document understanding models.
+
+% The research undertaken in addressing these limitations holds significant potential impact. Enhancing the efficiency of processing long and complex documents can benefit sectors relying on extensive document analysis, such as legal, healthcare, and research. Robustness against serialization errors is crucial for maintaining the integrity of extracted information, especially in visually-rich documents. 
+
+% Therefore, documents come in a variety of layouts to cater to diverse sets of information for varied audiences. Therefore, understanding documents with rich layouts plays a vital role in digitization and hyper-automation.
+
+% Language serves as a sophisticated means of human expression, guided by complex grammatical rules. Individuals harness language to compose documents, thereby facilitating the transmission and preservation of information.
+
+% Language is essentially a complex, intricate system of human expressions governed by grammatical rules. 
+
+% Humans compose documents to record and preserve information. As information carrying vehicles, documents are written using different layouts to represent diverse sets of information for a variety of different consumers.
+
 % To effectively convey information to readers, writers commonly rely on the assumption that structured formats like tables, graphs, or infographics are more comprehensible than sequential text. This is attributed to human visual perception and our capacity to grasp a text's spatial context.
+
+% 3. Identify the research gap
+%   Highlight the limitations or gaps in existing approaches to document understanding.
+%   Discuss why current methods may fall short and emphasize the need for advanced techniques
+
+
+
+% 4. State the Research Problem
+%   Clearly articulate the main research question or problem your thesis aims to address.
+%   Define the specific objectives of your research and the contributions it intends to make to the field of document understanding.
+
+% 5. Justify the research
+%   Explain the potential impact and significance of your research in addressing the identified gap.
+%   Discuss how advancements in document understanding can have practical applications and benefit various sectors.
+
+% 6. Scope and Limitations
+%   Clearly define the scope of your study, specifying what aspects of document understanding your research will cover.
+%   Acknowledge any limitations or constraints that might affect the generalizability of your findings.
+
+% 7. Research methodology 
+
+% 8. Outline the structure
+
 
 % draw inspi from due paper
 
 % The layout of a document, which refers to the arrangement and organization of its visual and textual elements,
 
 % draw inspi from DOCUMENT AI: BENCHMARKS, MODELS AND APPLICATIONS
+
+% Modeling long texts has been an essential technique in the field of natural language processing (NLP).

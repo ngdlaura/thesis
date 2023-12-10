@@ -4,12 +4,12 @@
 
 \renewcommand{\leftmark}{\spacedlowsmallcaps{Language Modeling}}
 
-\ifthenelse{\boolean{skipRelated0}}{\endinput}{}
+\ifthenelse{\boolean{skipRelated}}{\endinput}{}
 
 \minitoc
 
-\chapterwithfigures{\nameref*{chapter:related-0}}
-\chapterwithtables{\nameref*{chapter:related-0}}
+\chapterwithfigures{\nameref*{chapter:related-language-modeling}}
+\chapterwithtables{\nameref*{chapter:related-language-modeling}}
 
 
 % "Language is essentially a complex, intricate system of human expressions governed by grammatical rules. It poses a significant challenge to develop capable artificial intelligence (AI) algorithms for comprehending and grasping a language. As a major approach, language modeling has been widely studied for language understanding and generation in the past two decades." (https://browse.arxiv.org/pdf/2303.18223.pdf)
@@ -20,7 +20,7 @@
 
 % The contemporary landscape of natural language processing (NLP) has witnessed a paradigm shift, propelled by advancements in language models
 
-Language, a complex and intricate system guided by grammatical rules, stands out as a distinctive human ability that develops in early childhood and undergoes continuous evolution throughout a lifetime \citep{hauser2002faculty}. However, unlike humans, comprehending and communicating in human language poses a significant challenge for \ac{AI} algorithms. Achieving this goal has been a longstanding research challenge, aiming to empower machines with the capability to read, write, and communicate in a manner akin to humans. In particular, \textit{language modeling} has emerged as a major approach, extensively studied for language understanding and generation over the past two decades. Since their emergence, language models have consistently pushed the boundaries of state-of-the-art performance across various \ac{NLP} benchmarks. In this chapter, we delve into the extensive literature that underpins the evolution of language models, tracing their trajectory from the early era of statistical language models to the advent of neural language models. 
+Language, a complex and intricate system guided by grammatical rules, stands out as a distinctive human ability that develops in early childhood and undergoes continuous evolution throughout a lifetime \citep{hauser2002faculty}. However, unlike humans, comprehending and communicating in human language poses a significant challenge for \ac{AI} algorithms. Achieving this goal has been a longstanding research challenge, originating from the proposal of the Turing test in the 1950s \citep{turing2009computing}. The aim is to empower machines with the capability to read, write, and communicate in a manner akin to humans. In particular, \textit{language modeling} has emerged as a major approach, extensively studied for language understanding and generation over the past two decades. Since their emergence, language models have consistently pushed the boundaries of state-of-the-art performance across various \ac{NLP} benchmarks. In this chapter, we delve into the extensive literature that underpins the evolution of language models, tracing their trajectory from the early era of statistical language models to the advent of neural language models. 
 
 % In recent years, \textit{foundation models}, notably represented by the ascent of language models \citep{peters-etal-2018-deep, devlin2018bert, brown2020language}, stand out as a category of \ac{AI} technology that has arguably witnessed the most significant advancements. As a key application area, Document Understanding, \textit{i.e.}, automated information processing, emerges as a critical domain where these advancements find substantial utility.
 
@@ -88,7 +88,7 @@ We begin by discussing text representation units and the methods employed to obt
 
 \subsubsection{Text Representation Units}
 
-Natural language inputs can be commonly modeled as sequences of tokens, with various levels of granularities — characters, words, sentences, and more. To process these sequences, text is usually tokenized. Tokenization is a crucial pre-processing step that consists in splitting the input text into smaller units, \textit{i.e.}, tokens. Tokens serve as the fundamental components of language modeling, and all models operate on raw text at the token level. These tokens are used to build the vocabulary, which represents a set of unique tokens within a corpus. A token can be a character, a word, or a subword. Various algorithms adopt distinct processes to perform tokenization. 
+Natural language inputs can be commonly modeled as sequences of tokens, with various levels of granularities—characters, words, sentences, and more. To process these sequences, text is usually tokenized. Tokenization is a crucial pre-processing step that consists in splitting the input text into smaller units, \textit{i.e.}, tokens. Tokens serve as the fundamental components of language modeling, and all models operate on raw text at the token level. These tokens are used to build the vocabulary, which represents a set of unique tokens within a corpus. A token can be a character, a word, or a subword. Various algorithms adopt distinct processes to perform tokenization. 
 
 \paragraph{Word-based Tokenization} divides a text into words using a delimiter, with space and punctations being the most commonly employed in English. Rules are added into the tokenization process to deal with special cases such as negative forms (for instance, space and punctuation-based tokenization generates three tokens for the word "don't":  "don", "'", and "t", whereas a more effective tokenization using specific rules would  break it into "do", and "n't").
 

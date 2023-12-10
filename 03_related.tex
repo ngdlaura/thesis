@@ -4,12 +4,12 @@
 
 \renewcommand{\leftmark}{\spacedlowsmallcaps{Pre-trained Language Models}}
 
-\ifthenelse{\boolean{skipRelated1}}{\endinput}{}
+\ifthenelse{\boolean{skipRelated}}{\endinput}{}
 
 \minitoc
 
-\chapterwithfigures{\nameref*{chapter:related-1}}
-\chapterwithtables{\nameref*{chapter:related-1}}
+\chapterwithfigures{\nameref*{chapter:related-pretrained-language-models}}
+\chapterwithtables{\nameref*{chapter:related-pretrained-language-models}}
 
 
 Prior to the works of \citet{peters-etal-2018-deep}, \ac{NLP} models were commonly trained \textit{from scratch} in a supervised manner to perform specific tasks, based on (limited) training. As a result, training deep neural networks on such small datasets led to overfitting, making the models sensitive to even slight shifts in the data distribution. 
@@ -77,7 +77,7 @@ The attention weights $\alpha$ determine the relevance between each encoder hidd
 
 The attention mechanism can be reformulated into a general form where the alignment does not inherently rely on the hidden \ac{RNN} states. The \textit{generalized attention} model \citep{chaudhari2021attentive} extends the attention mechanism of \citet{bahdanau2014neural} by allowing for more flexibility and adaptability in capturing dependencies between different parts of the input and output sequences. While the original attention mechanism focuses on aligning parts of the input sequence with the current position in the output sequence, the generalized attention model introduces parameters and mechanisms to customize and control the attention process. In the generalized attention model, attention weights are not solely determined by the relevance between the current decoder hidden state and the encoder hidden states. Instead, the model introduces learnable parameters and scoring functions that can be adjusted to capture different types of relationships. This allows the attention mechanism to consider various aspects, such as semantic similarity, positional information, or other task-specific factors.
 
-A generalized attention model is characterized by three components: the queries $\bm{Q}$, the keys $\bm{K}$, and the values $\bm{V}$, all derived from the input sequence using learnable weight matrices $\bm{W}^{(q)}$, $\bm{W}^{(k)}$, and $\bm{W}^{(v)}$. Queries indicate which information is requested from the input sequence, keys are vectors associated with each element in the input sequence and determine which elements are relevant for the queries, and values contain the information to be propagated. Given a set of key-value pairs $(\bm{K}, \bm{V})$ and a query $\bm{q}_i$, generalized attention is defined as follows:
+A generalized attention model is characterized by three components: the queries $\bm{Q}$, the keys $\bm{K}$, and the values $\bm{V}$, all derived from the input sequence using learnable weight matrices $\bm{W}^{(q)}$, $\bm{W}^{(k)}$, and $\bm{W}^{(v)}$. Queries indicate which information is requested from the input sequence, keys are vectors associated with each element in the input sequence and determine which elements are relevant for the queries, while values contain the information to be propagated. Given a set of key-value pairs $(\bm{K}, \bm{V})$ and a query $\bm{q}_i$, generalized attention is defined as follows:
 
 % \begin{equation}
 %     A(\bm{q}, \bm{K}, \bm{V}) = \sum_i p(a(\bm{q}, \bm{k}_i)) \cdot \bm{v}_i
@@ -97,7 +97,7 @@ A generalized attention model is characterized by three components: the queries 
     \alpha_{ij} = p(a(\bm{q}_i, \bm{k}_j)).
 \end{equation}
 
-\noindent The alignment function $a$ dictates the combination of keys and queries, such as through dot product or cosine similarity. The query vector is compared with each key to compute alignment scores. The distribution function $p$ takes these scores as input and ensures that the attention weights lie between 0 and 1 and are normalized to sum to 1, achieved through mechanisms like logistic sigmoid or softmax function.
+\noindent The alignment function $a$ dictates the combination of keys and queries, such as through dot product or cosine similarity. The query vector is compared with each key to compute alignment (or similarity) scores. The distribution function $p$ takes these scores as input and ensures that the attention weights lie between 0 and 1 and are normalized to sum to 1, achieved through mechanisms like logistic sigmoid or softmax function. The final vector $A(\bm{q}_i, \bm{K}, \bm{V})$ is formulated as a weighted sum of all value vectors $\{\bm{v}_j\}$ and their corresponding attention weights $\{\alpha_{ij}\}$.
 
 The attention mechanism of \citet{bahdanau2014neural} can be seen as a special case of generalized attention where the queries and values are analogous to the encoded outputs, \textit{i.e.}, $\bm{K} = \bm{V} = \{\bm{h}_j\}_{j=1, \ldots, n}$, and the query is analogous to the previous decoder output, \textit{i.e.}, $\bm{q} = \bm{s}_{i-1}$. 
 % Then, $e = a(\bm{K}, \bm{q})$ and $\alpha = p(e)$.
@@ -350,19 +350,19 @@ Although absolute positional encodings show satisfactory performance, they still
     \alpha'_{ij} = \mathrm{Softmax}\left(\frac{{(\bm{q}_i}^{\top} \bm{k}_j) + \bm{b}_{ij}}{\sqrt{d_k}}\right).
 \end{equation}
 
-\noindent To build the relative position bias $\bm{b}_{ij}$, the distance $\delta_{ij}$ between tokens at positions $i$ and $j$ is first mapped to a bucket index $b \in [0, \ldots, B]$, where $B$ is a hyperparameter specifying the number of buckets. This mapping is achieved through a bucketing function $f$. The bucket $b$ is then mapped to a scalar using an embedding matrix. Hence, distances belonging to the same bucket share the same embedding. For any pair of positions $(i, j)$, the bucketing function is expressed as:
+\noindent To build the relative position bias $\bm{b}_{ij}$, the distance $\delta_{ij}$ between tokens at positions $i$ and $j$ is first mapped to a bucket index $b \in [0, \ldots, B]$ using a bucketing function $f$, where $B$ is a hyperparameter specifying the number of buckets. The bucket $b$ is then mapped to a scalar using an embedding matrix. Hence, distances belonging to the same bucket share the same embedding. For any pair of positions $(i, j)$, the bucketing function $f$ is expressed as:
 
 \begin{equation}
     f(\delta_{ij}) = 
     \begin{cases}
-        g\left(-\delta_{ij}, \frac{B}{2}\right), & \text{if } l \leq 0 \\
+        g\left(-\delta_{ij}, \frac{B}{2}\right), & \text{if } \delta_{ij} \leq 0 \\
         g\left(\delta_{ij}, \frac{B}{2}\right) + \frac{B}{2}, & \text{otherwise.} \\
         % d, & \text{if } 0 \leq d < \dfrac{K}{2} \\
         % \min \left(\dfrac{K}{2} + \left\lfloor \dfrac{\log 2d - \log K}{\log 2M - \log K} \cdot \dfrac{K}{2}\right\rfloor, K-1 \right), & \text{otherwise.}
     \end{cases}
 \end{equation}
 
-\noindent If attention is unidirectional, the bucket index is set to $0$ for positions $(i, j)$ where $j > i$. Given an integer $M > B$ and a distance $d$, $g$ is defined as:
+\noindent If attention is unidirectional, the bucket index is set to $0$ for positions $(i, j)$ where $j > i$. Given an integer $M > B$ and a distance $d$, the function $g$ is defined as:
 
 \begin{equation}
     g(d, K) = 
@@ -491,11 +491,12 @@ Encoder-decoder Transformer-based Pre-trained Language Models use the original T
 
 \paragraph{T5} \ac{T5} \citep{raffel2020exploring} converts all \ac{NLP} tasks into a sequence-to-sequence problem: for any task, the input of the encoder is a task-specific prefix (\textit{e.g.}, \say{Summarize:}) followed by the task's input (\textit{e.g.}, a sequence of tokens from an article), and the decoder predicts the task's output (\textit{e.g.}, a sequence of tokens summarizing the input article). The pre-training includes a mixture of both supervised and unsupervised tasks. Supervised pre-training is conducted on downstream tasks (translation, question answering, and more). Unsupervised pre-training uses corrupted tokens, by randomly removing 15\% of the tokens and replacing them with individual (sentinel) tokens. Given the corrupted sequence encoded by the encoder and the original sequence fed to the decoder, \ac{T5} has to reconstruct the dropped out tokens. Casting all \ac{NLP} tasks into the same sequence-to-sequence problem allows for the use of the same model, loss function, and hyperparameters across a diverse set of tasks. 
 
+\paragraph{Limitations of encoder-decoder models} Tasks such as machine translation and summarization commonly favor encoder-decoder models, as  a holistic understanding of the input sequence is crucial for generating accurate and coherent outputs. However, encoder-decoder models face several challenges compared to decoder-only models. The introduction of an encoder adds more parameters to the model, which can be a limitation in scenarios where model size is a critical consideration. Furthermore, the incorporation of bidirectional self-attention and cross-attention introduces additional computational overhead. The interaction between the encoder and decoder can render training more complex, potentially making the model more susceptible to overfitting. Lastly, the encoder may encode redundant or irrelevant information from the input sequence, and the decoder has to learn to filter and use this information effectively.
+
 \subsection{Decoder-only Models}
 
-Tasks such as machine translation and summarization commonly favor encoder-decoder models, as  a holistic understanding of the input sequence is crucial for generating accurate and coherent outputs. However, encoder-decoder models face several challenges compared to decoder-only models. The introduction of an encoder adds more parameters to the model, which can be a limitation in scenarios where model size is a critical consideration. Furthermore, the incorporation of bidirectional self-attention and cross-attention introduces additional computational overhead. The interaction between the encoder and decoder can render training more complex, potentially making the model more susceptible to overfitting. Lastly, the encoder may encode redundant or irrelevant information from the input sequence, and the decoder has to learn to filter and use this information effectively. 
 
-Therefore, the use of decoder-only Transformer architectures in Pre-trained Language Models has seen a recent surge, with several groundbreaking models \citep{radford2018improving, brown2020language, ouyang2022training, touvron2023llama} emerging. Decoder-only Pre-trained Language Models, also referred to as \textit{autoregressive} or \textit{causal} language models, remove the Transformer encoder and cross-attention layers. Each source sequence is concatenated with the corresponding target sequence to form a single input sequence, which is then used to train a language model. This design significantly simplifies the architecture and provides potential advantages in computational efficiency and ease of training. 
+The use of decoder-only Transformer architectures in Pre-trained Language Models has seen a recent surge, with several groundbreaking models \citep{radford2018improving, brown2020language, ouyang2022training, touvron2023llama} emerging. Decoder-only Pre-trained Language Models, also referred to as \textit{autoregressive} or \textit{causal} language models, remove the Transformer encoder and cross-attention layers. Each source sequence is concatenated with the corresponding target sequence to form a single input sequence, which is then used to train a language model. This design significantly simplifies the architecture and provides potential advantages in computational efficiency and ease of training. 
 
 Among the most performant generative models of the decade is the series of \ac{GPT} models introduced by \citep{radford2018improving}. \ac{GPT} is the first autoregressive language model that uses a Transformer decoder as its backbone. It learns to predict the next word in a sequence using an autoregressive language modeling. Suppose $\bm{w} = \{w_1, \ldots, w_n\}$ an unsupervised corpus of tokens, $k$ the size of the context window, and $\theta$ the parameters of the decoder. 
 \ac{GPT} uses the following approximation:
