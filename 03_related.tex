@@ -66,12 +66,12 @@ To alleviate these challenges, \citet{bahdanau2014neural} introduce the attentio
 The attention weights $\alpha$ determine the relevance between each encoder hidden state and each decoder hidden state. Each attention weight $\alpha_{ij}$ is computed as a function of the encoder hidden state $\bm{h}_j$ and the decoder hidden state $\bm{s}_{i-1}$, defined as follows:
 
 \begin{equation}
-    \alpha_{ij} = \textrm{softmax}\bigl(a(\bm{s}_{i-1}, \bm{h}_j)\bigr),
+    \alpha_{ij} = \textrm{softmax}_j\bigl(a(\bm{s}_{i-1}, \bm{h})\bigr) = \frac{\exp(a(\bm{s}_{i-1}, \bm{h}_j))}{\sum_k \exp(a(\bm{s}_{i-1}, \bm{h}_k))},
 \end{equation}
 
 % \noindent where $a$ is an alignment function implemented as a feed-forward network, and $p$ is a distribution function. The alignment score $a(\bm{s}_{j-1}, \bm{h}_i)$ defines how relevant $\bm{h}_i$ is for $\bm{s}_{j-1}$.
 
-\noindent where $a$ is an alignment function implemented as a feed-forward network. The alignment score $a(\bm{s}_{i-1}, \bm{h}_j)$ indicates how well the element $\bm{h}_j$ of the input sequence aligns with the current output $\bm{s}_{i-1}$.
+\noindent where $a$ is an alignment function implemented as a feed-forward network. The alignment score $a(\bm{s}_{i-1}, \bm{h}_j)$ indicates how well the element $\bm{h}_j$ of the input sequence aligns with the current output $\bm{s}_{i-1}$. 
 
 \subsubsection{Generalized Attention} 
 
@@ -88,7 +88,7 @@ A generalized attention model is characterized by three components: the queries 
 % \end{equation}
 
 \begin{equation}
-    A(\bm{q}_i, \bm{K}, \bm{V}) = \sum_j \alpha_{ij} \cdot \bm{v}_j,
+    A(\bm{q}_i, \bm{K}, \bm{V}) = \sum_j \alpha_{ij} \bm{v}_j,
 \end{equation}
 
 \noindent where:
@@ -104,11 +104,30 @@ The attention mechanism of \citet{bahdanau2014neural} can be seen as a special c
 
 
 \subsubsection{Self-Attention} 
+\label{subsubsection:related-pretrained-language-models-sa}
 
-One common form of the generalized attention model is \textit{self-attention}, or scaled dot-product attention, introduced by \citet{vaswani2017attention} in the Transformer architecture. The alignment function $a$ is defined by a scaled dot product, while the distribution function $p$ corresponds to the softmax. The scaled dot product between query and key is passed through a softmax function to obtain the final attention weights. Self-attention is defined as follows:
+One common form of the generalized attention model is \textit{self-attention}, or scaled dot-product attention, introduced by \citet{vaswani2017attention} in the Transformer architecture. The alignment function $a$ is defined by a scaled dot product, \textit{i.e.}: 
 
 \begin{equation}
-    A(\bm{q}_i, \bm{K}, \bm{V}) = \sum_j \textrm{softmax}\left(\frac{\bm{q}_i^{\top} \bm{k}_j}{\sqrt{d}_k}\right) \cdot \bm{v}_j,
+\label{equation:related-pretrained-language-models-sa-alignment}
+    a(\bm{q}_i, \bm{k}_j) = \frac{\bm{q}_i^{\top} \bm{k}_j}{\sqrt{d_k}}, 
+\end{equation}
+
+% The scaled dot product between query and key is passed through a softmax function to obtain the final attention weights. 
+\noindent while the distribution function $p$, used to obtain the final attention weights, corresponds to the softmax: 
+
+\begin{equation}
+    \begin{aligned}
+        \alpha_{ij} &= p(a(\bm{q}_i, \bm{k}_j)) \\
+                    &= \textrm{softmax}_j (a(\bm{q}_i, \bm{K})) \\ 
+                    &= \frac{\exp(a(\bm{q}_{i}, \bm{k}_j))}{\sum_{j'} \exp(a(\bm{q}_{i}, \bm{k}_{j'}))}. \\
+\end{aligned}
+\end{equation}
+
+\noindent Self-attention is therefore defined as follows:
+
+\begin{equation}
+    A(\bm{q}_i, \bm{K}, \bm{V}) = \sum_j \textrm{softmax}_j\left(\frac{\bm{q}_i^{\top} \bm{K}}{\sqrt{d_k}}\right) \cdot \bm{v}_j,
 \label{equation:self-attention}
 \end{equation}
 
@@ -117,7 +136,7 @@ One common form of the generalized attention model is \textit{self-attention}, o
 % \label{equation:self-attention}
 % \end{equation}
 
-\noindent where $d$ is the dimensionality of the key vectors. The alignment score $\dfrac{\bm{q}_i^{\top} \bm{k}_j}{\sqrt{d_k}}$ indicate how to weigh the value $\bm{v}_j$ based on the query vector $\bm{q}_i$. The more similar a key vector $\bm{k}_j$ is to $\bm{q}_i$, the more important is the corresponding value vector $\bm{v}_j$ for the output vector. 
+\noindent where $d_k$ is the dimensionality of the key vectors. The alignment score $\dfrac{\bm{q}_i^{\top} \bm{k}_j}{\sqrt{d_k}}$ indicate how to weigh the value $\bm{v}_j$ based on the query vector $\bm{q}_i$. The more similar a key vector $\bm{k}_j$ is to $\bm{q}_i$, the more important is the corresponding value vector $\bm{v}_j$ for the output vector. 
 
 % attention scores are computed by taking the dot product of the query (decoder hidden state) and key (encoder hidden state) vectors
 
@@ -327,27 +346,31 @@ An alternative form of absolute positional encoding involves learning position e
 
 \paragraph{Relative Position Encodings}
 
-Although absolute positional encodings show satisfactory performance, they still face limitations. First, absolute positional encodings do not generalize well to sequences of lengths not seen at training time \citep{dai2019transformer}. Another limitation of absolute positional encoding lies in its lack of translation invariance. Shifting the same sequence alters the absolute positions, leading to different attention patterns. In the case of learned positional encodings,  there is a restriction on the number of tokens a model can handle. For instance, if a language model can only encode up to 1,024 positions, any sequence longer than 1,024 tokens cannot be processed by the model. Relative positional encoding address these issues by using a different vector for each pair of tokens, based on their relative distance \citep{shaw2018self, huang2018music, ke2020rethinking}. \citet{shaw2018self} are the first to leverage pairwise distances to create positional encodings. To account for pairwise distances when computing alignment scores, the relative position embeddings representing the distance between tokens $\bm{x}_i$ and $\bm{x}_j$ is added to the keys as follows:
+Although absolute positional encodings show satisfactory performance, they still face limitations. First, absolute positional encodings do not generalize well to sequences of lengths not seen at training time \citep{dai2019transformer}. Another limitation of absolute positional encoding lies in its lack of translation invariance. Shifting the same sequence alters the absolute positions, leading to different attention patterns. In the case of learned positional encodings,  there is a restriction on the number of tokens a model can handle. For instance, if a language model can only encode up to 1,024 positions, any sequence longer than 1,024 tokens cannot be processed by the model. Relative positional encoding address these issues by using a different vector for each pair of tokens, based on their relative distance \citep{shaw2018self, huang2018music, ke2020rethinking}. \citet{shaw2018self} are the first to leverage pairwise distances to create positional encodings. To account for pairwise distances when computing alignment scores, the relative position embedding $\bm{b}^K_{ij} \in \mathbb{R}^{d_k}$ representing the distance between tokens $t_i$ and $t_j$ is added to the keys as follows:
+
+% \begin{equation}
+%     \alpha'_{ij} = \mathrm{softmax}_j\left(\frac{{\bm{q}_i}^{\top} (\bm{K} + \bm{b}^K_{i})}{\sqrt{d_k}}\right).
+% \end{equation}
 
 \begin{equation}
-    \alpha'_{ij} = \mathrm{Softmax}\left(\frac{{\bm{q}_i}^{\top} (\bm{k}_j + \bm{b}^K_{ij})}{\sqrt{d_k}}\right).
+    a(\bm{q}_i, \bm{k}_j) = \frac{{\bm{q}_i}^{\top} (\bm{k}_j + \bm{b}^K_{ij})}{\sqrt{d_k}}.
 \end{equation}
 
 \noindent Pairwise distances are clipped beyond a maximum distance to allow for generalization to sequence lengths not seen during training. The relative position embedding $\bm{b}^K_{ij}$ is expressed as:
 
 \begin{equation}
 \begin{aligned}
-    b^K_{ij} &= \bm{w}^K_{\text{clip}(j-i, k)} \\
+    \bm{b}^K_{ij} &= \bm{w}^K_{\text{clip}(j-i, k)} \\
     \text{clip}(x, k) &= \text{max}(-k, \text{min}(k, x)),
 \end{aligned}
 \end{equation}
 
 \noindent where $\bm{w}^K = (\bm{w}^K_{-k}, \ldots, \bm{w}^K_{k}) \in \mathbb{R}^{2k \times d_a}$ is a learned vector.
 
-\citet{raffel2020exploring} introduce a simplified form of relative position embeddings where the distance between every pair of tokens is mapped to a scalar and added to the corresponding logit used for computing the attention weights. Formally:
+\citet{raffel2020exploring} introduce a simplified form of relative position embeddings where the distance between every pair of tokens $(t_i, t_j)$ is mapped to a scalar $\bm{b}_{ij} \in \mathbb{R}$ and added to the corresponding logit used for computing the attention weights. Alignment scores are re-defined as follows:
 
 \begin{equation}
-    \alpha'_{ij} = \mathrm{Softmax}\left(\frac{{(\bm{q}_i}^{\top} \bm{k}_j) + \bm{b}_{ij}}{\sqrt{d_k}}\right).
+    a(\bm{q}_i, \bm{k}_j) = \frac{(\bm{q}_i^{\top} \bm{k}_j) + \bm{b}_{ij}}{\sqrt{d_k}}.
 \end{equation}
 
 \noindent To build the relative position bias $\bm{b}_{ij}$, the distance $\delta_{ij}$ between tokens at positions $i$ and $j$ is first mapped to a bucket index $b \in [0, \ldots, B]$ using a bucketing function $f$, where $B$ is a hyperparameter specifying the number of buckets. The bucket $b$ is then mapped to a scalar using an embedding matrix. Hence, distances belonging to the same bucket share the same embedding. For any pair of positions $(i, j)$, the bucketing function $f$ is expressed as:
@@ -405,13 +428,14 @@ Unlike word embeddings and position encodings, segment embeddings remain identic
 \textit{Bidirectional} Pre-trained Language Models refer to models that employ the Transformer encoder. These models are pre-trained on large corpora and learn deep contextualized representations of words and phrases by jointly conditioning on left and right context in all self-attention layers. Bidirectional Transformer-based models are effective for capturing dependencies and contextual information in both directions, making them suitable for various natural language understanding tasks including sentiment analysis, \ac{NER}, text classification, and more. The exploration of bidirectional Transformer-based Pre-trained Language Models began with \ac{BERT}, introduced by \citet{devlin2018bert}, and has led to the development of a myriad of variants.
 
 \subsection{BERT}
+\label{section:related-pretrained-language-models-bert}
 
 \ac{BERT} marked a paradigm shift in the construction of word representations.  
 Prior to \ac{BERT}, language models typically processed text in a unidirectional manner. Bidirectional models, such as those obtained using stacked bidirectional \ac{LSTM} layers \citep{peters-etal-2018-deep}, also processed the sequence in a fixed order, capturing information from both directions but not simultaneously. \ac{BERT} extended the concept of bidirectional processing by employing bidirectional self-attention.
 
 % Using bidirectional self-attention, \ac{BERT} extended the concept of bidirectional processing. For each token in the sequence, the model can simultaneously consider both preceding and following tokens, enabling a more comprehensive understanding of context.
 
-In \ac{NLP}, some tasks (\textit{e.g.}, sentiment analysis) take a single sequence as input, while others (\textit{e.g.}, natural language inference) require a pair of sequences. \ac{BERT} can represent both single text and text pairs. In both cases, special tokens are inserted into the tokenized text to cater for different \ac{NLP} tasks. A classification token \texttt{[CLS]} is prepended to the input sequence and is used to represent the whole sequence. In addition, a special separation token \texttt{[SEP]}, indicating the end of the sequence, is added to the end of the sequence. In the case of text pairs, an extra \texttt{[SEP]} token is added between the pair to separate the texts. Additionally, segment embeddings are used and trained to distinguish text pairs. To encode positions, \ac{BERT} departs from the fixed positional encodings used in the original Transformer and employs learnable positional embeddings. To sum up, text is tokenized into subwords using WordPiece \citep{wu2016google}, and special tokens are added accordingly to the aforementioned scenarios. The final input embeddings of \ac{BERT} are the sum of the token embeddings, positional embeddings, and segment embeddings. The input embeddings $(\bm{x}_1, \ldots, \bm{x}_n)$ are passed through a Transformer encoder that generates a sequence of contextualized token representations $(\overline{\bm{x}}_1, \ldots, \overline{\bm{x}}_n)$.
+In \ac{NLP}, some tasks (\textit{e.g.}, sentiment analysis) take a single sequence as input, while others (\textit{e.g.}, natural language inference) require a pair of sequences. \ac{BERT} can represent both single text and text pairs. In both cases, special tokens are inserted into the tokenized text to cater for different \ac{NLP} tasks. A classification token \texttt{[CLS]} is prepended to the input sequence and is used to represent the whole sequence. In addition, a special separation token \texttt{[SEP]}, indicating the end of the sequence, is added to the end of the sequence. In the case of text pairs, an extra \texttt{[SEP]} token is added between the pair to separate the texts. To obtain token embeddings, an embedding table is used, containing vectors for each token in the vocabulary. Token embeddings are derived by associating each token in the sequence with their respective vector in this table. Additionally, segment embeddings are used and trained to distinguish text pairs. To encode positions, \ac{BERT} departs from the fixed positional encodings used in the original Transformer and employs learnable positional embeddings. To sum up, text is tokenized into subwords using WordPiece \citep{wu2016google}, and special tokens are added accordingly to the aforementioned scenarios. The final input embeddings of \ac{BERT} are the sum of the token embeddings, positional embeddings, and segment embeddings. The input embeddings $(\bm{x}_1, \ldots, \bm{x}_n)$ are passed through a Transformer encoder that generates a sequence of contextualized token representations $(\overline{\bm{x}}_1, \ldots, \overline{\bm{x}}_n)$.
 
 \subsubsection{Pre-training BERT}
 
@@ -480,6 +504,7 @@ To reduce this risk, \textit{beam search} extends greedy search by maintaining a
 To ensure that the less probable tokens should not have any chance of being selected, \textit{top-k sampling} \citep{fan2018hierarchical} filters the $k$ most likely next tokens and redistributes the probability mass among those $k$ tokens only. Alternatively, \textit{nucleus sampling} chooses from the smallest possible set of tokens whose cumulative probability exceeds a certain threshold $p$. The probability mass is then redistributed among this set of tokens. Nucleus sampling balances randomness and predictability better than traditional sampling.
 
 \subsection{Encoder-decoder Models}
+\label{subsection:related-pretrained-language-models-ed-models}
 
 Encoder-decoder Transformer-based Pre-trained Language Models use the original Transformer architecture, consisting of both an encoder and a decoder. The encoder processes an input sequence, producing contextualized representations of each token. The decoder attends to these representations and generates the output tokens one at a time, considering the context provided by the encoder. This architecture is particularly suited for sequence-to-sequence tasks, where the goal is to transform a source sequence into a corresponding target sequence. The encoder-decoder setup is commonly used in sequence-to-sequence tasks like machine translation and text summarization.
 
