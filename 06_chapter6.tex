@@ -11,7 +11,7 @@
             \item Is it possible to determine attention from layout only? 
             \item Can layout help reduce the complexity of self-attention? 
         \end{enumerate}
-        Motivated by human reading strategies, we present Skim-Attention, a new attention mechanism that takes advantage of the structure of the document and its layout. Skim-Attention only attends to the 2-dimensional position of the words in a document. To exploit this mechanism, we introduce Skimformer and Skimming Mask, two frameworks for integrating Skim-Attention into the Transformer architecture. Our experiments show that Skim-Attention obtains a lower perplexity than prior works, while being more computationally efficient. We also show how Skim-Attention can be used off-the-shelf as a mask for any \ac{PLM}, allowing to improve their performance while restricting attention. Finally, we show the emergence of a document structure representation in Skim-Attention.     
+        Motivated by human reading strategies, we present Skim-Attention, a new attention mechanism that takes advantage of the structure of the document and its layout. Skim-Attention only attends to the 2-dimensional position of the words in a document. To exploit this mechanism, we introduce Skimformer and Skimming Mask, two frameworks for integrating Skim-Attention into the Transformer architecture. Our experiments show that Skim-Attention obtains a lower perplexity than prior works, while being more computationally efficient. We also show how Skim-Attention can be used off-the-shelf as a mask for any Pre-trained Language Model, allowing to improve their performance while restricting attention. Finally, we show the emergence of a document structure representation in Skim-Attention.     
 	\vspace*{5mm}
 	
 	The work in this chapter has led to the publication of a conference paper:}
@@ -52,7 +52,7 @@ In this chapter, we first present a simple cognitive experiment that highlights 
 \section{Preliminary Experiments: Human Evaluation}
 \label{section:human-evaluation}
 
-How much does the document layout help in comprehending long textual contents? How faster is it for humans to find information in documents when layout is provided? To answer these questions, we conduct a simple cognitive experiment wherein we measure the amount of time needed for human annotators to extract information from both formatted and plain-text documents. We hand-pick four document pages from the DocBank dataset \citep{li2020docbank}, and create a plain-text version out of each of these documents by serializing them. We create two basic questions for each document, and ask four annotators to answer them. Half of the time, annotators are given access to the full layout, while the other half, they are limited to plain text only (i.e., no layout nor formatting).
+How much does the document layout help in comprehending long textual contents? How faster is it for humans to find information in documents when layout is provided? To answer these questions, we conduct a simple cognitive experiment wherein we measure the amount of time needed for human annotators to extract information from both formatted and plain-text documents. We hand-pick four document pages from the DocBank dataset \citep{li2020docbank}, and create a plain-text version out of each of these documents by serializing them. We create two basic questions for each document, and ask four annotators to answer them. Half of the time, annotators are given access to the full layout, while the other half, they are limited to plain text only (\textit{i.e.}, no layout nor formatting).
 
 \begin{figure}[!htbp]
     \centering
@@ -106,15 +106,15 @@ Our novel attention mechanism, Skim-Attention, views documents as collections of
 
 \subsubsection{Layout Embeddings}
 
-Layout embeddings carry information about the spatial position of the tokens. Following LayoutLM \citep{xu2020layoutlm}, the spatial position of a token is represented by its bounding box in the document page image, $(x_0, y_0, x_1, y_1)$, where $(x_0, y_0)$ and $(x_1, y_1)$ respectively denote the coordinates of the top-left and bottom-right corners. We discretize and normalize them to integers in $\{0, ..., 1000\}$. Four embedding tables are used to encode spatial positions: two for the coordinate axes ($x$ and $y$), and the other two for the bounding box size (width and height). The final layout embedding of a token, $\bell \in \mathbb{R}^{d_{\ell}}$, located at position $(x_0, y_0, x_1, y_1)$ is defined by:
+Layout embeddings carry information about the spatial position of the tokens. Following LayoutLM \citep{xu2020layoutlm}, the spatial position of a token is represented by its bounding box in the document page image, $(x_0, y_0, x_1, y_1)$, where $(x_0, y_0)$ and $(x_1, y_1)$ respectively denote the coordinates of the top-left and bottom-right corners. We discretize and normalize them to integers in $\{0, ..., 1000\}$. Four embedding tables are employed to encode spatial positions: $\text{LE}_x$ and $\text{LE}_y$ for the coordinate axes ($x$ and $y$), and $\text{LE}_w$ and $\text{LE}_h$ for the bounding box size (width and height). The final layout embedding of a token, $\bell \in \mathbb{R}^{d_{\ell}}$, located at position $(x_0, y_0, x_1, y_1)$ is defined by:
 \vspace{-0.5cm}
 
 \begin{equation}
 \begin{split}
-    \bell & = \text{LayoutEmb}_x(x_0) + \text{LayoutEmb}_y(y_0) \\
-    & + \text{LayoutEmb}_x(x_1) + \text{LayoutEmb}_y(y_1) \\
-    & + \text{LayoutEmb}_w(x_1 - x_0) \\
-    & + \text{LayoutEmb}_h(y_1 - y_0) \\
+    \bell & = \text{LE}_x(x_0) + \text{LE}_y(y_0) \\
+    & + \text{LE}_x(x_1) + \text{LE}_y(y_1) \\
+    & + \text{LE}_w(x_1 - x_0) \\
+    & + \text{LE}_h(y_1 - y_0) \\
 \end{split}
 \end{equation}
 
@@ -173,7 +173,7 @@ While we experimented with a standard Transformer encoder-only model, it is wort
 
 Albeit remaining quadratic, the time and memory cost of Skim-Attention is much lower than vanilla self-attention. Let $n$ be the maximum sequence length, $L$ the number of encoder layers, $L'$ the number of layers needed to contextualize layout representations, $d$ the dimension of the text embeddings, and $d'$ the dimension of the layout embeddings. The computational complexity is reduced from $\mathcal{O}(2Ldn^2)$ to $\mathcal{O}(L'd'n^2 + Ldn^2)$, the first term being the time required to calculate the skim-attention scores, and the second term referring to the time needed to compute the residual value for each token in the input. The memory complexity for vanilla self-attention is $\mathcal{O}(Ldn + Ln^2)$, where the first term is the memory required to store keys, queries and values, while the second represents the attention scores produced. These requirements are reduced to $\mathcal{O}((d’n + n^2) + Ldn)$, with the first term corresponding to the keys and queries, the second term representing the attention scores, and the last one corresponding to the values.
 
-In conclusion, Skimformer is a two-stage Transformer architecture designed to determine attention from layout information alone, emulating human reading strategies by efficiently processing document structure. While enhancing efficiency, Skimformer has sub-optimal aspects. One limitation lies in the fixed nature of Skim-Attention scores across all layers, which may oversimplify the model's comprehension, potentially missing complex relationships within the document. Furthermore, a token's attention is determined solely by layout information, potentially overlooking important semantic clues that are essential to understand complex relationships.
+In conclusion, Skimformer is a two-stage Transformer architecture designed to determine attention from layout information alone, emulating human reading strategies by efficiently processing document structure. While enhancing efficiency, Skimformer has suboptimal aspects. One limitation lies in the fixed nature of Skim-Attention scores across all layers, which may oversimplify the model's comprehension, potentially missing complex relationships within the document. Furthermore, a token's attention is determined solely by layout information, potentially overlooking important semantic clues that are essential to understand complex relationships.
 
 \subsubsection{Skimming Mask}
 
@@ -192,9 +192,9 @@ Ideally, the Skimming Mask pattern should be learned in an end-to-end fashion al
 
 The computational complexity is reduced to $\mathcal{O}(L'd'n^2 + Ldk^2 + Ldn^2)$, where the first term represents the time required to compute the skim-attention scores, the second term corresponds to the time needed to calculate the sparse attention matrix, and the third term pertains to the time required to compute the residual value for each token in the input. Meanwhile, the memory complexity for Skimming Mask is reduced to $\mathcal{O}((d’n + n^2) + Ldk + Lk^2)$, encompassing the memory requirements for Skim-Attention and those for the sparsified attention mechanism.
 
-\section{Experiments and Results}
+\section{Experiments}
 
-We first present the data used to pre-train and evaluate our models, and provide details on the experimental settings. Then, we discuss the results obtained on language modeling and document layout analysis, before exploring the attention maps obtained by Skimformer.
+We first present the data used to pre-train and evaluate our models, and provide details on the experimental settings. 
 
 \subsection{Data}
 
@@ -202,17 +202,11 @@ We first present the data used to pre-train and evaluate our models, and provide
 
 To pre-train our models on a wide variety of document formats, we select three datasets with various non-trivial document layouts: DocBank \citep{li2020docbank}, RVL-CDIP \citep{harley2015evaluation} and PubLayNet \citep{zhong2019publaynet}. We combine them by randomly selecting 25k documents from each dataset, for a total of 75K documents. We discard the provided labels and consider these data as unannotated. The resulting dataset is referred to as \textit{MIX}. As a first evaluation metric, we can compare the perplexity for the different language models on MIX. 
 
-\paragraph{DocBank}
+\paragraph{DocBank} \citep{li2020docbank} is a large-scale dataset that contains 500k English document pages from papers extracted from the arXiv repository. These articles span a variety of disciplines (\textit{e.g.}, Physics, Mathematics, and Computer Science), which is beneficial to train more robust models. Pages are split into a training set, validation set and test set with a ratio of 8:1:1. As the authors already extracted the text and bounding boxes using PDFPlumber,\footnote{https://github.com/jsvine/pdfplumber} there is no need for an \ac{OCR} system or a PDF parser. To build our subset, we extract 25k document pages: 20k from the full training set, 2,500 from the validation set and 2,500 from the test set. 
 
-DocBank is a large-scale dataset that contains 500K English document pages from papers extracted from arXiv.com. These articles span a variety of disciplines (\textit{e.g.}, Physics, Mathematics, and Computer Science), which is beneficial to train more robust models. Pages are split into a training set, validation set and test set with a ratio of 8:1:1. As the authors already extracted the text and bounding boxes using PDFPlumber,\footnote{https://github.com/jsvine/pdfplumber} there is no need for an \ac{OCR} system or a PDF parser. To build our subset, we extract 25k document pages: 20k from the full training set, 2,500 from the validation set and 2,500 from the test set. 
+\paragraph{RVL-CDIP} \citep{harley2015evaluation} is a large collection of 400k scanned document images from various categories (\textit{e.g.}, letter, form, advertisement, invoice). The wide range of layouts, as well as the low image quality, allows to train more robust models. We select 25k documents from the RVL-CDIP dataset available on Kaggle,\footnote{https://www.kaggle.com/nbhativp/first-half-training} which amounts to half of the training images from the full dataset (160k images). The text and word bounding boxes are extracted using Tesseract \citep{kay2007tesseract}. We split the data into 80\% for training, 10\% for validation and 10\% for test.
 
-\paragraph{RVL-CDIP}
-
-RVL-CDIP is a large collection of 400k scanned document images from various categories (\textit{e.g.}, letter, form, advertisement, invoice). The wide range of layouts, as well as the low image quality, allows to train more robust models. We select 25k documents from the RVL-CDIP dataset available on Kaggle,\footnote{https://www.kaggle.com/nbhativp/first-half-training} which amounts to half of the training images from the full dataset (160k images). The text and word bounding boxes are extracted using Tesseract \citep{kay2007tesseract}. We split the data into 80\% for training, 10\% for validation and 10\% for test.
-
-\paragraph{PubLayNet}
-
-PubLayNet comprises over 360k document images from PubMed Central\textsuperscript{\texttrademark} Open Access. The medical publications contained in the collection have similar layouts, but the text density coupled with the small image size add to the robustness of the trained models. We arbitrarily extract the first training split among the 7 available on IBM Data Asset eXchange\footnote{https://developer.ibm.com/exchanges/data/all/publaynet/} and use the first 20k images as our training set. For the validation and test sets, we keep the first 2,500 images in each split. Because Tesseract's accuracy is too low without any pre-processing, we apply a few image processing operations (\textit{i.e.}, rescaling, converting to grayscale, applying dilation and erosion) on each image in order to improve text extraction.
+\paragraph{PubLayNet} \citep{zhong2019publaynet} comprises over 360k document images from PubMed Central\textsuperscript{\texttrademark} Open Access. The medical publications contained in the collection have similar layouts, but the text density coupled with the small image size allows to train more robust models. We arbitrarily extract the first training split among the 7 available on IBM Data Asset eXchange\footnote{https://developer.ibm.com/exchanges/data/all/publaynet/} and use the first 20k images as our training set. For the validation and test sets, we keep the first 2,500 images in each split. Because Tesseract's accuracy is too low without any pre-processing, we apply a few image processing operations (\textit{i.e.}, rescaling, converting to grayscale, applying dilation and erosion) on each image in order to improve text extraction.
 
 \subsubsection{Dataset for Document Layout Analysis}
 
@@ -234,7 +228,11 @@ For \ac{BERT}, LayoutLM and Longformer, we use their base architecture. Followin
 
 \subsubsection{Document Layout Analysis}
 
-As DocBank contains fine-grained token-level annotations, we consider the document layout analysis task as a sequence labeling task. Each model pre-trained on MIX is fine-tuned on this downstream task for 10 epochs. For the Skimming Mask models, we selected the hyperparameter $k$ on the validation set, i.e. the number of tokens that can be attended to. We tested $k \in \{512, 384, 256, 128\}$.
+As DocBank contains fine-grained token-level annotations, we consider the document layout analysis task as a sequence labeling task. Each model pre-trained on MIX is fine-tuned on this downstream task for 10 epochs. For the Skimming Mask models, we selected the hyperparameter $k$—the number of tokens that can be attended—to on the validation set. We tested $k \in \{512, 384, 256, 128\}$.
+
+\section{Results}
+
+We first discuss the results obtained on language modeling and document layout analysis, before exploring the attention maps obtained by Skimformer.
 
 \subsection{Language Modeling Evaluation}
 
@@ -258,7 +256,7 @@ As DocBank contains fine-grained token-level annotations, we consider the docume
 \label{tab:ppl-mix}
 \end{table}
 
-In Table~\ref{tab:ppl-mix}, we report the perplexity on the MIX dataset. We observe that Skimformer and LongSkimformer outperform both \ac{BERT} and Longformer by a huge margin, while improving perplexity by more than 10 points over LayoutLM. In addition, Figure~\ref{fig:pretraining-learning-curves} demonstrates that Skimformer converges much faster than \ac{BERT}, and slightly more than LayoutLM, indicating its efficiency in learning from the training data. However, it is worth acknowledging certain limitations. Firstly, the models are pre-trained on a relatively small dataset, which may impact their generalizability to larger datasets. Additionally, achieving better perplexity does not always guarantee improved performance in downstream tasks.
+In Table~\ref{tab:ppl-mix}, we report the perplexity on the MIX dataset. We observe that Skimformer and LongSkimformer outperform both \ac{BERT} and Longformer by a huge margin, while improving perplexity by more than 10 points over LayoutLM. In addition, Figure~\ref{fig:pretraining-learning-curves} demonstrates that Skimformer converges much faster than \ac{BERT}, and slightly more than LayoutLM, indicating its efficiency in learning from the training data. However, it is worth acknowledging certain limitations. Firstly, the models are pre-trained on a relatively small dataset, which may impact their generalizability. Additionally, achieving better perplexity does not always guarantee improved performance in downstream tasks.
 
 \begin{figure}
     \centering \small
@@ -269,7 +267,7 @@ In Table~\ref{tab:ppl-mix}, we report the perplexity on the MIX dataset. We obse
 
 \subsubsection{Ablation Study}
 
-We further conduct an ablation study about the influence of the Skim-Attention inputs on Skimformer's performance. The results are listed in Table~\ref{tab:ablation-study}. To estimate the impact of the input type, we consider a Skimformer model i) wherein layout representations are not contextualized (\textit{Non-contextualized Layout}), ii) Skim-Attention is based on sequential positions (\textit{1D position}), iii) the bounding boxes are all set to the same fixed value, preventing the model to gather any information about the true location (\textit{Uniform layout}), and iv) they are replaced by their centers (\textit{Degraded layout}). We also provide the perplexity obtained by the full Skimformer model.
+We further conduct an ablation study about the influence of the Skim-Attention inputs on Skimformer's performance. The results are listed in Table~\ref{tab:ablation-study}. To estimate the impact of the input type, we consider a Skimformer model i) wherein layout representations are not contextualized (\textit{Non-contextualized Layout}), ii) Skim-Attention is based on sequential positions (\textit{1D position}), iii) the bounding boxes are all set to the same fixed value, preventing the model to gather any information about the true location (\textit{Uniform layout}), and iv) they are replaced by their centers (\textit{Degraded layout}). We also provide the perplexity obtained by the full Skimformer model (\textit{Full model}).
 
 \begin{table}[t]
 \centering \small
@@ -282,7 +280,7 @@ We further conduct an ablation study about the influence of the Skim-Attention i
     Uniform layout   &                   & 421.97 \\
     Degraded layout    &                 & 103.39 \\
     \hline 
-    Full Model  &             & \textbf{33.77} \\
+    Full model  &             & \textbf{33.77} \\
     \hline
 \end{tabular}
 \caption{Ablation study on the MIX dataset, where perplexity on the test set is reported. All models were trained from scratch. Bold denotes the best score.}
@@ -357,7 +355,7 @@ Table~\ref{table:results-docbank} reports the performance on DocBank-LA, the seq
 
 Skimformer is substantially superior to \ac{BERT}, improving the F1 score by 15\% while reducing the number of attentions computed by four. We experimented with plugging the layout embeddings learnt by Skimformer in a \ac{BERT} model. The resulting model, BERT+SkimEmbeddings, resembles LayoutLM in terms of architecture.\footnote{In BERT+SkimEmbeddings, the layout embeddings are first projected into the same dimensional space as the text embeddings. In this way, we can plug the layout embeddings from any Skimformer model, in particular smaller ones.} Results show that BERT+SkimEmbeddings performs on par with LayoutLM despite simply combining separately pre-trained modalities, as opposed to the latter which requires an extensive joint training.
 
-For the Skimming Mask models, the models attend only to the top-$k$ 128 tokens. Compared to LayoutLM, this reduction to the quadratic factor allows to obtain the same downstream results with only 31.25\% of the computational burden.
+For the Skimming Mask models, the models attend only to the top-128 tokens. Compared to LayoutLM, this reduction to the quadratic factor allows to obtain the same downstream results with only 31.25\% of the computational burden.
 Compared to \ac{BERT}, it even obtains an absolute improvement of more than 6\% in term of F1 score.
 
 LongSkimformer benefits from both Skim-Attention and Longformer's gain in efficiency. It outperforms Longformer by 5\% while requiring four times less attention operations, and the use of Longformer's linear attention allows LongSkimformer to process sequences four times larger than Skimformer can.
@@ -376,7 +374,7 @@ Overall, the competitive results achieved by Skimformer show that it is possible
     % \vspace{-0.5cm} 
 \end{figure}
 
-Figure~\ref{fig:attention-vis} shows the attention maps produced by Skimformer on a randomly sampled document. Given a semantic unit (either title or abstract in our example), we select the corresponding tokens and compute their average attention over the whole document. We observe, both qualitatively and quantitatively, that tokens attend mainly to other elements in the same semantic unit, thus creating clusters of tokens that are relevant to each other. This shows that the model has grasped the concept of semantic unit with only self-supervision, enabling the emergence of a document structure representation. We argue that these structure-aware clusters could pave the way for long text encoding and unsupervised document segmentation.
+We explore the distribution of attention scores obtained by Skim-Attention. Figure~\ref{fig:attention-vis} shows the attention maps produced by Skimformer on a randomly sampled document. Given a semantic unit (either title or abstract in our example), we select the corresponding tokens and compute their average attention over the whole document. We observe, both qualitatively and quantitatively, that tokens attend mainly to other elements in the same semantic unit, thus creating clusters of tokens that are relevant to each other. This shows that the model has grasped the concept of semantic unit with only self-supervision, enabling the emergence of a document structure representation. We argue that these structure-aware clusters could pave the way for long text encoding and unsupervised document segmentation.
 
 \section{Conclusion}
 
@@ -384,6 +382,6 @@ We have presented Skim-Attention, a novel structure-aware attention mechanism. D
 
 Potential extensions of this work include full-scale pre-training, integrating image features into Skim-Attention to leverage information across all modalities, as well as exploring tasks that require capturing longer-range dependencies.
 
-Most pre-trained language models depend on serialized text obtained through \ac{OCR} or PDF parsing. Yet, accurately detecting the \textit{reading order} of visually-rich documents poses a significant challenge. With the aim of advancing models that capture document structure more intuitively, the next chapter will focus on addressing reading order issues by leveraging document layout and entirely discarding sequential position information.
+Most Pre-trained Language Models depend on serialized text obtained through \ac{OCR} or PDF parsing. Yet, accurately detecting the \textit{reading order} of visually-rich documents poses a significant challenge. With the aim of advancing models that capture document structure more intuitively, the next chapter will focus on addressing reading order issues by leveraging document layout and entirely discarding sequential position information.
 
 

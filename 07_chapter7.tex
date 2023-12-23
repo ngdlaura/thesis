@@ -1,12 +1,12 @@
 
-\chapter{Leveraging layout to process visually-rich documents}
+\chapter{Leveraging layout to mitigate reading order issues}
 \label{chapter:layout2pos}
 
-\renewcommand{\leftmark}{\spacedlowsmallcaps{Leveraging layout to process visually-rich documents}}
+\renewcommand{\leftmark}{\spacedlowsmallcaps{Leveraging layout to mitigate reading order issues}}
 
 \begin{chapabstract}
     {\em
-    Due to their remarkable performance, general-purpose multimodal pre-trained language models have gained widespread adoption for Document Understanding tasks. The majority of pre-trained language models rely on serialized text, extracted using either Optical Character Recognition (OCR) or PDF parsing. However, accurately determining the reading order of visually-rich documents (VrDs) is challenging, potentially affecting the accuracy of the extracted text and leading to sub-optimal performance in downstream tasks. For information extraction tasks, where entity recognition is commonly framed as a sequence-labeling task, incorrect reading order can hinder entity labeling. In this work, we avoid reading order issues by discarding sequential position information. Based on the intuition that layout contains the information for correct reading order, we present Layout2Pos—a shallow Transformer designed to generate position embeddings from layout. Incorporated into a BART architecture, our approach demonstrates competitiveness with models dependent on reading order across three benchmark datasets for information extraction. We also show that evaluating models using a reading order different from the one seen during training can result in substantial performance drops, thereby highlighting the importance of not relying on the reading order of documents. \\
+    Due to their remarkable performance, general-purpose multimodal Pre-trained Language Models have gained widespread adoption for Document Understanding tasks. The majority of Pre-trained Language Models rely on serialized text, extracted using either Optical Character Recognition (OCR) or PDF parsing. However, accurately determining the reading order of visually-rich documents (VrDs) is challenging, potentially affecting the accuracy of the extracted text and leading to suboptimal performance in downstream tasks. For information extraction tasks, where entity recognition is commonly framed as a sequence-labeling task, incorrect reading order can hinder entity labeling. In this work, we avoid reading order issues by discarding sequential position information. Based on the intuition that layout contains the information for correct reading order, we present Layout2Pos—a shallow Transformer designed to generate position embeddings from layout. Incorporated into a BART architecture, our approach demonstrates competitiveness with models dependent on reading order across three benchmark datasets for information extraction. We also show that evaluating models using a reading order different from the one seen during training can result in substantial performance drops, thereby highlighting the importance of not relying on the reading order of documents. \\
     \vspace*{5mm}
 
     The work in this chapter has led to the submission of a paper currently under review at NAACL 2024.}
@@ -38,7 +38,7 @@ Furthermore, in real-word scenarios, documents may be processed by various \ac{O
 % Furthermore, inaccuracies in \ac{OCR} outputs often require manual correction, which can be time-consuming and resource-intensive.
 
 % \paragraph{Reading Order and Visual Information Extraction} 
-In particular, in visual information extraction tasks, the primary goal\footnote{Additionally, the task extends to classifying the relationships between these recognized entities (\textit{relation extraction}). In this work, we do not focus on this task.} is to identify entities of predefined semantic types (\textit{e.g.}, names, dates, addresses). In this context, performance is notably impacted by serialization errors. Following the classic settings of \ac{NLP}, the task is commonly framed as a sequence-labeling problem. This approach involves labeling each token using a tagging scheme, such as BIO-tagging \citep{ramshaw1999text}, and leveraging these tags to identify entities, and leveraging these tags to identify entities. A sequence labeling-based approach operates under the assumption that each identified segment of an entity forms a continuous sequence of words within the input. While this assumption is valid for plain texts, it may not hold for real-world documents, where \ac{OCR} systems or PDF parsers might not correctly organize text. For instance, an entity might be split into non-continuous fragments. Such disordered input disrupts the BIO-tagging scheme, preventing the models from accurately identifying entities. Moreover, for training sequence labeling approaches, word-level annotations are essential. However, they are not always available; some datasets only provide the text corresponding to each information type \citep{gralinski2020kleister}. Obtaining word-level annotations involves matching these texts with the words in the document, which can be time-consuming if done manually or susceptible to errors if performed automatically.
+In particular, in visual information extraction tasks, the primary goal\footnote{Additionally, the task extends to classifying the relationships between these recognized entities (\textit{relation extraction}). In this work, we do not focus on this task.} is to identify entities of predefined semantic types (\textit{e.g.}, names, dates, addresses). Following the classic settings of \ac{NLP}, the task is commonly framed as a sequence-labeling problem. This approach involves labeling each token using a tagging scheme, such as BIO-tagging \citep{ramshaw1999text}, and leveraging these tags to identify entities. A sequence labeling-based approach operates under the assumption that each identified segment of an entity forms a continuous sequence of words within the input. While this assumption is valid for plain texts, it may not hold for real-world documents, where \ac{OCR} systems or PDF parsers might not correctly organize text. In this context, performance is notably impacted by serialization errors. For instance, an entity might be split into non-continuous fragments. Such disordered input disrupts the BIO-tagging scheme, preventing the models from accurately identifying entities. Moreover, for training sequence labeling approaches, word-level annotations are essential. However, they are not always available; some datasets only provide the text corresponding to each information type \citep{gralinski2020kleister}. Obtaining word-level annotations involves matching these texts with the words in the document, which can be time-consuming if done manually or susceptible to errors if performed automatically.
 
 % Current state-of-the-art approaches require labeling of every word, which is costly to obtain, and consequently not available for many real life tasks. The distinction between endto-end data and data labeled on the word level is subtle but important. In the invoice example the end-to-end data simply tells us what the total is, whereas data labeled on the word level tells us where it is. The former type of data is plentiful, produced naturally and is hard to learn from. The latter is scarce, must be explicitly produced for the purpose of machine learning, and is easier to learn from.
 
@@ -48,7 +48,7 @@ On the other hand, layout inherently encapsulates the correct reading order of d
 Yet, existing pre-training methods for Document Understanding often neglect this aspect, opting to oversimply the integration of layout. For instance, LayoutLM \citep{xu2020layoutlm} incorporates layout information as an extra embedding in the input layer, while LayoutLMv2 \citep{xu2020layoutlmv2} adds it as a bias term in the attention layer. Although ERNIE-Layout \citep{peng2022ernie} learns the relationship between layout and reading order through a pre-training strategy involving reading order prediction, it continues to rely on sequential position embeddings derived from the reading order obtained via \ac{OCR}. However, by investigating the position-awareness in causal language models with no explicit positional encodings, \citet{haviv2022transformer} show that these models develop an implicit understanding of absolute positions to compensate for missing information. It is suggested that causal attention, a mechanism in which each token attends only to its preceding positions in a sequence, allows the model to estimate the number of predecessors each token can attend to, thereby approximating its absolute position. Our objective is to demonstrate that the capability of a model to approximate its absolute position is not restricted to causal models, but holds true across various scenarios when layout information is provided.
 
 % \paragraph{Generative Approaches for Visual Information Extraction} 
-Unlike sequence labeling approaches that entirely depend on the content extracted via \ac{OCR}, generative models can bypass the need for word-level annotations and generate text without being restricted by the document's content or its reading order, enabling them to potentially correct \ac{OCR}-induced errors. \citet{sage2020end} represent the information to be extracted as a sequence of tokens in the XML language. They employ a recurrent encoder-decoder architecture to generate XML representations, using pointer-generator networks \citep{see2017get} to allow the model to dynamically decide whether to generate a word from its vocabulary or copy it directly from the document. \citet{townsend2021doc2dict} use a Transformer \citep{vaswani2017attention} language model trained on database records to generate JSON-like representation of the extracted information. In close relation to our work, TILT \citet{powalski2021going} is a Transformer encoder-decoder model enhanced with layout and visual information, specifically designed for visual information extraction tasks. Instead of relying on \ac{OCR} for text extraction, Donut \citep{kim2022ocr} uses a Transformer visual encoder to extract features from a document image. A textual Transformer decoder is then used to map these features to a desired structured format, such as JSON, for visual information extraction tasks. In contrast to Donut, our method does not rely on visual features, providing better computational efficiency when various information extraction tasks are conducted or/and complex documents are processed. \\
+Unlike sequence labeling approaches that entirely depend on the content extracted via \ac{OCR}, generative models can bypass the need for word-level annotations and generate text without being restricted by the document's content or its reading order, enabling them to potentially correct \ac{OCR}-induced errors. \citet{sage2020end} represent the information to be extracted as a sequence of tokens in the XML language. They employ a recurrent encoder-decoder architecture to generate XML representations, using pointer-generator networks \citep{see2017get} to allow the model to dynamically decide whether to generate a word from its vocabulary or copy it directly from the document. \citet{townsend2021doc2dict} use a Transformer \citep{vaswani2017attention} language model trained on database records to generate JSON-like representation of the extracted information. In close relation to our work, TILT \citep{powalski2021going} is a Transformer encoder-decoder model enhanced with layout and visual information, specifically designed for visual information extraction tasks. Instead of relying on \ac{OCR} for text extraction, Donut \citep{kim2022ocr} uses a Transformer visual encoder to extract features from a document image. A textual Transformer decoder is then used to map these features to a desired structured format, such as JSON, for visual information extraction tasks. In contrast to Donut, our method does not rely on visual features, providing better computational efficiency when various information extraction tasks are conducted or/and complex documents are processed. \\
 
 % In particular, Visual Information Extraction heavily relies on the detected text and reading order provided by \ac{OCR}. Inaccuracies in the reading order can disrupt the structure of the extracted data, leading to issues such as entities being split into non-contiguous fragments. Besides, the task is commonly framed as a sequence labeling task, and common labeling schemes used to annotate entities in a sequence for sequence labeling, such as the BIO-tagging scheme \citep{ramshaw1999text}, entirely depend on the detected reading order. Furthermore, in the context of sequence labeling, the model's output is restricted to the detected words. As a consequence, there might be no exact match for the expected value in a document. 
 
@@ -59,42 +59,32 @@ In this chapter, we focus on mitigating serialization errors by \textit{entirely
 
 In this section, we present preliminary experiments that underscore the limitations inherent to \ac{OCR} procesing in terms of accurately preserving the reading order of tokens. In response to the challenges posed by \ac{OCR}-induced serialization errors, we then introduce a novel approach named Layout2Pos. This module goes beyond conventional approaches by discarding the reliance on reading order information. Instead, Layout2Pos leverages the inherent 2D positional information of tokens within the document page to reconstruct sequential positional information, thereby enhancing the robustness and reliability of downstream tasks.
 
-\subsection{Preliminary Experiments: OCR Serialization Errors}
-
-To gauge the extent of \ac{OCR}-induced serialization errors, we conduct preliminary experiments comparing the annotated ground-truth reading order against the reading orders produced by 1) Tesseract OCR \citep{kay2007tesseract}, a widely-used \ac{OCR} engine, and 2) DocTR \citep{doctr2021}, an \ac{OCR} engine based on deep learning models. The goal is to assess the alignment of the reading order produced via \ac{OCR} with the actual human reading patterns.
-
-We use a subset of 100 documents from the ReadingBank \citep{wang2021layoutreader} dataset. ReadingBank is a benchmark dataset for reading order detection that includes high-quality reading order annotations extracted from Word documents. These annotations capture the correct sequence of words as visually presented in the documents. Upon examination of the samples and discerning patterns that appear most frequently, we have identified four prevalent document layout types: \textit{plain} layout, \textit{lists}, \textit{multicolumn} layout, and \textit{tables}. We provide examples in Figure~\ref{fig:layout-examples}. 
-
-Tesseract OCR and DocTR are employed to extract and serialize text from the documents. The reading orders produced are compared against the ground-truth for discrepancies. Specifically, we evaluate accuracy by comparing, for each word in the ground-truth sequence, the actual next word with the one predicted by each \ac{OCR} engine. We compute the accuracy obtained by each system for each specific layout type. Results are reported in Table~\ref{table:ocr-preliminary-experiments}. Additionally, we include the results obtained by our approach, Layout2Pos. Our findings indicate that both \ac{OCR} engines face increased difficulty in reconstructing the correct reading order as the document layout becomes more complex.\footnote{This difficulty in accurately predicting the next word is further attributed to the \ac{OCR} engines' misinterpretation of certain words.} Our approach exhibits a similar trend, although to a significantly lesser degree. Furthermore, it demonstrates higher accuracy for each document type compared to both OCR engines.
-
-Additionally, we provide the ground-truth reading order and the reading order generated by Tesseract OCR for a sample table (Figure~\ref{fig:reading-orders-table}) and a document with a multi-column layout (Figure~\ref{fig:reading-orders-multicolumn}). In the case of the table, a comparison with the ground-truth reading order reveals that Tesseract OCR lacks knowledge about cells, as it organizes text in a top-left to bottom-right manner. Regarding the document with two columns, Tesseract OCR reads the text column by column, despite the document being horizontally divided into subgroups. This observation highlights the limited understanding of structure by \ac{OCR} engines. 
-
-These preliminary experiments provide the groundwork for investigating into novel approaches designed to alleviate serialization errors, ultimately enhancing the performance of document understanding models.
-
-\begin{figure}
-    \centering
-    \small
-      \begin{subfigure}[b]{0.24\textwidth}
-        \includegraphics[width=\textwidth]{images/chapter4/plain.pdf}
-        \caption{Plain}
-      \end{subfigure}
-      \begin{subfigure}[b]{0.24\textwidth}
-        \includegraphics[width=\textwidth]{images/chapter4/list.pdf}
-        \caption{List}
-      \end{subfigure}
-      \begin{subfigure}[b]{0.24\textwidth}
-        \includegraphics[width=\textwidth]{images/chapter4/multicolumn.pdf}
-        \caption{Multicolumn}
-      \end{subfigure}
-      \begin{subfigure}[b]{0.24\textwidth}
-        \includegraphics[width=\textwidth]{images/chapter4/tables.pdf}
-        \caption{Table}
-      \end{subfigure}
-    \caption{Examples of documents for each layout category, arranged from the simplest to the most complex.}
-    \label{fig:layout-examples}
+\begin{figure}[ht]
+  \centering
+  \small
+    \begin{subfigure}[b]{0.24\textwidth}
+      \includegraphics[width=\textwidth]{images/chapter4/plain.pdf}
+      \caption{Plain}
+    \end{subfigure}
+    \begin{subfigure}[b]{0.24\textwidth}
+      \includegraphics[width=\textwidth]{images/chapter4/list.pdf}
+      \caption{List}
+    \end{subfigure}
+    \begin{subfigure}[b]{0.24\textwidth}
+      \includegraphics[width=\textwidth]{images/chapter4/multicolumn.pdf}
+      \caption{Multicolumn}
+    \end{subfigure}
+    \begin{subfigure}[b]{0.24\textwidth}
+      \includegraphics[width=\textwidth]{images/chapter4/tables.pdf}
+      \caption{Table}
+    \end{subfigure}
+  \caption{Examples of documents for each layout category, arranged from the simplest to the most complex.}
+  \label{fig:layout-examples}
 \end{figure}
 
-\begin{table}
+\subsection{Preliminary Experiments: OCR Serialization Errors}
+
+\begin{table}[ht]
   \centering
   \small
   \begin{adjustbox}{max width=\textwidth}
@@ -114,7 +104,7 @@ These preliminary experiments provide the groundwork for investigating into nove
   \label{table:ocr-preliminary-experiments}
 \end{table}
 
-\begin{figure}
+\begin{figure}[ht]
     \centering
     \small
       \begin{subfigure}[b]{\textwidth}
@@ -125,11 +115,11 @@ These preliminary experiments provide the groundwork for investigating into nove
         \includegraphics[width=\textwidth]{images/chapter4/tesseract_tables_with_ro.pdf}
         \caption{Reading order obtained through Tesseract}
       \end{subfigure}
-    \caption{Ground-truth reading order (a) compared to the reading order generated by Tesseract (b) for a sample table. Arrows emphasize the difference in reading order in the first row. Non-highlighted text indicates that it does not appear in the serialized sequence.}
+    \caption{Ground-truth reading order (a) compared to the reading order generated by Tesseract (b) for a sample table. Arrows emphasize the differences in reading order in the first row. Non-highlighted text indicates that it does not appear in the serialized sequence.}
     \label{fig:reading-orders-table}
 \end{figure}
 
-\begin{figure}
+\begin{figure}[ht]
   \centering
   \small
       \begin{subfigure}[b]{0.4\textwidth}
@@ -140,14 +130,25 @@ These preliminary experiments provide the groundwork for investigating into nove
         \includegraphics[width=\textwidth]{images/chapter4/tesseract_multicolumn_with_ro.pdf}
         \caption{Tesseract}
       \end{subfigure}
-    \caption{Ground-truth reading order (a) compared to the reading order generated by Tesseract (b) for a document with a two-column layout. The document was cropped for better visibility. Arrows emphasize the difference in reading order. Non-highlighted text indicates that it does not appear in the serialized sequence.}
+    \caption{Ground-truth reading order (a) compared to the reading order generated by Tesseract (b) for a document with a two-column layout. The document was cropped for better visibility. Arrows emphasize the differences in reading order. Non-highlighted text indicates that it does not appear in the serialized sequence.}
     \label{fig:reading-orders-multicolumn}
 \end{figure}
 
 
+To gauge the extent of \ac{OCR}-induced serialization errors, we conduct preliminary experiments comparing the annotated ground-truth reading order against the reading orders produced by 1) Tesseract OCR \citep{kay2007tesseract}, a widely-used \ac{OCR} engine, and 2) DocTR \citep{doctr2021}, an \ac{OCR} engine based on deep learning models. The goal is to assess the alignment of the reading order produced via \ac{OCR} with the actual human reading patterns.
+
+We use a subset of 100 documents from the ReadingBank \citep{wang2021layoutreader} dataset. ReadingBank is a benchmark dataset for reading order detection that includes high-quality reading order annotations extracted from Word documents. These annotations capture the correct sequence of words as visually presented in the documents. Upon examination of the samples and discerning patterns that appear most frequently, we have identified four prevalent document layout types: \textit{plain} layout, \textit{lists}, \textit{multicolumn} layout, and \textit{tables}. We provide examples in Figure~\ref{fig:layout-examples}. 
+
+Tesseract OCR and DocTR are employed to extract and serialize text from the documents. The reading orders produced are compared against the ground-truth for discrepancies. Specifically, we evaluate accuracy by comparing, for each word in the ground-truth sequence, the actual next word with the one predicted by each \ac{OCR} engine. We compute the accuracy obtained by each system for each specific layout type. Results are reported in Table~\ref{table:ocr-preliminary-experiments}. Additionally, we include the results obtained by our approach, Layout2Pos. Our findings indicate that both \ac{OCR} engines face increased difficulty in reconstructing the correct reading order as the document layout becomes more complex.\footnote{This difficulty in accurately predicting the next word is further attributed to the \ac{OCR} engines' misinterpretation of certain words.} Our approach exhibits a similar trend, although to a significantly lesser degree. Furthermore, it demonstrates higher accuracy for each document type compared to both \ac{OCR} engines.
+
+Additionally, we provide the ground-truth reading order and the reading order generated by Tesseract OCR for a sample table (Figure~\ref{fig:reading-orders-table}) and a document with a multi-column layout (Figure~\ref{fig:reading-orders-multicolumn}). In the case of the table, a comparison with the ground-truth reading order reveals that Tesseract OCR lacks knowledge about cells, as it organizes text in a top-left to bottom-right manner. Regarding the document with two columns, Tesseract OCR reads the text column by column, despite the document being horizontally divided into subgroups. This observation highlights the limited understanding of structure by \ac{OCR} engines. 
+
+These preliminary experiments provide the groundwork for investigating into novel approaches designed to alleviate serialization errors, ultimately enhancing the performance of document understanding models.
+
+
 \subsection{Layout2Pos Module}
 
-Building on the insights gained from the previous experiment, accurately retrieving the correct reading order poses a significant challenge for \ac{OCR} engines. We argue that it is possible to retrieve the correct reading order by leveraging document layout. To address this, we propose a novel approach, \textit{Layout2Pos}, a transformer-based module that does not rely on the reading order generated by OCR, and learns position embeddings solely from the spatial positions of tokens. In the following, we elaborate on the process of encoding spatial information into layout embeddings, followed by an in-depth description of our Layout2Pos module.
+Building on the insights gained from the previous experiment, accurately retrieving the correct reading order poses a significant challenge for \ac{OCR} engines. We argue that it is possible to retrieve the correct reading order by leveraging document layout. To address this, we propose a novel approach, \textit{Layout2Pos}, a transformer-based module that does not rely on the reading order generated by \ac{OCR}, and learns position embeddings solely from the spatial positions of tokens. In the following, we elaborate on the process of encoding spatial information into layout embeddings, followed by an in-depth description of our Layout2Pos module.
 
 % Layout2Pos is a stack of Transformer layers designed to generate a corresponding sequence of 1D position embeddings based on spatial information. 
 
@@ -157,7 +158,7 @@ To encode layout information, we use 1) bounding box information, 2) 2D relative
 
 \paragraph{Encoding Bounding Box Information} 
 
-The spatial position of a token is represented by its bounding box in the document page image, denoted as $(x_0, y_0, x_1, y_1)$, where $(x_0, y_0)$ and $(x_1, y_1)$ correspond to the coordinates of the top-left and bottom-right corners, respectively. Following LayoutLMv2, we discretize and normalize these coordinates to integers within the range of $[0, ..., 1000]$. Four embedding tables are employed to encode spatial positions: $\text{LE}_x$ and $\text{LE}_y$ for the coordinate axes ($x$ and $y$), and $\text{LE}_w$ and $\text{LE}_h$ for the bounding box size (width and height). In line with LayoutLMv2, the final layout embedding $\bell \in \mathbb{R}^{d}$ of a token, whose bounding box is $(x_0, y_0, x_1, y_1)$, is defined as follows~($\mathbin\Vert$ denotes concatenation):
+The spatial position of a token is represented by its bounding box in the document page image, denoted as $(x_0, y_0, x_1, y_1)$, where $(x_0, y_0)$ and $(x_1, y_1)$ correspond to the coordinates of the top-left and bottom-right corners, respectively. Following LayoutLMv2, we discretize and normalize these coordinates to integers within the range of $\{0, ..., 1000\}$. Four embedding tables are employed to encode spatial positions: $\text{LE}_x$ and $\text{LE}_y$ for the coordinate axes ($x$ and $y$), and $\text{LE}_w$ and $\text{LE}_h$ for the bounding box size (width and height). In line with LayoutLMv2, the final layout embedding $\bell \in \mathbb{R}^{d}$ of a token, whose bounding box is $(x_0, y_0, x_1, y_1)$, is defined as follows~($\mathbin\Vert$ denotes concatenation):
 
 \begin{equation}
   \begin{split}
@@ -173,7 +174,7 @@ The spatial position of a token is represented by its bounding box in the docume
 
 LayoutLMv2 encodes spatial relative positions as bias terms added to the attention scores to explicitly capture the spatial relationship between tokens (see Section~\ref{section:related-document-understanding-layout-aware-attention}). Following LayoutLMv2, for each pair of bounding boxes $((x_0, y_0, x_1, y_1), (x^{\prime}_0, y^{\prime}_0, x^{\prime}_1, y^{\prime}_1))$, we compute the horizontal distance $x^{\prime}_0 - x_0$ between the left edge of each box and the vertical distance $y^{\prime}_1 - y_1$ between the bottom edge of each box. 
 
-In addition, we provide additional insights into the spatial relationships of tokens by computing the horizontal distance $x^{\prime}_1 - x_0$ between the right edge of one box and the left edge of the other (indicating information about the combined length). Furthermore, we calculate the horizontal distance $x^{\prime}_1 - x_1$ between the right edge of each box, providing information about the length of the second token in the pair. 
+Furthermore, we provide additional insights into the spatial relationships of tokens. We compute the horizontal distance $x^{\prime}_1 - x_0$ between the right edge of one box and the left edge of the other, indicating information about the combined length. In addition, we calculate the horizontal distance $x^{\prime}_1 - x_1$ between the right edge of each box, providing information about the length of the second token in the pair. 
 
 \paragraph{Incorporating Line and Column Relative Positions}
 
@@ -224,7 +225,7 @@ Given a sequence of layout embeddings derived from token bounding box coordinate
   A_{ij} = \left(\bm{p}_i \bm{W}^q\right)\left(\bm{p}_j \bm{W}^k\right).
 \end{equation}
 
-\noindent We assume that the attention matrix $\bm{A}$ carries information about the reading order, \textit{i.e.}, $A_{ij}$ represents the probability that the $j$-th token follows the $i$-th token. Let $N$ denote the ground-truth binary matrix obtained from the ground-truth reading order, where $N_{ij}$ equals $1$ if token at position $j$ is the \textit{next} token after token at position $i$ in the sequence, and $0$ otherwise. We define the \textit{Next Token Position Prediction} strategy, which consists in using the attention matrix $\bm{A}$ to predict the next token of each token in the sequence (\textit{next token matrix}). The corresponding cross-entropy loss is defined as follows:
+\noindent We assume that the attention matrix $\bm{A}$ carries information about the reading order, \textit{i.e.}, $A_{ij}$ represents the probability that the $j$-th token follows the $i$-th token. Let $N$ denote the ground-truth binary matrix obtained from the ground-truth reading order, where $N_{ij}$ equals $1$ if token at position $j$ is the \textit{next} token in the sequence after token at position $i$, and $0$ otherwise. We define the \textit{Next Token Position Prediction} strategy, which consists in using the attention matrix $\bm{A}$ to predict the next token of each token in the sequence (\textit{next token matrix}). The corresponding cross-entropy loss is defined as follows:
 
 \begin{equation}
   \mathcal{L}_{NTPP} = - \dfrac{1}{n} \sum_{i=1}^n \sum_{j=1}^n \bm{N}_{ij} \log\left(\textrm{softmax}_i(\bm{A}_{\cdot j})\right)
@@ -239,7 +240,7 @@ Given a sequence of layout embeddings derived from token bounding box coordinate
 \begin{figure}
   \centering
   \includegraphics[width=\textwidth]{images/chapter4/Layout2Pos+BART.pdf}
-  \caption{Architecture of Layout2Pos integrated into a BART model, \textit{i.e.}, BART+Layout2Pos. The input consists of two components: a sequence of tokens and a sequence of token bounding box coordinates.}
+  \caption{Architecture of Layout2Pos integrated into a BART model, \textit{i.e.}, BART+Layout2Pos. The input consists of two components: a sequence of tokens (middle) and a sequence of token bounding box coordinates (left).}
   \label{fig:layout2pos-ed}
 \end{figure}
 
@@ -260,7 +261,7 @@ Layout2Pos can be integrated into any language model, removing the reliance on s
 
 \section{Experiments}
 
-In this section, we provide an overview of the datasets used for pre-training our models and conducting visual information extraction tasks. Furthermore, we provide details on the experimental setup, covering baselines, pre-training methodologies, and fine-tuning protocols. 
+In this section, we provide an overview of the datasets used for pre-training our models and conducting visual information extraction tasks. Furthermore, we provide details on the experimental setup, covering baselines, pre-training methodologies, and fine-tuning protocols. For reproducibility purposes, we will make the models implementation, along with the fine-tuning and evaluation scripts, publicly available. 
 
 % To valid our position embeddings, we evaluate our model on the Next Token Position Prediction task. Finally, we analyze how it behaves on three benchmark visual information extraction tasks. 
 
@@ -278,7 +279,44 @@ In cases where a word is split into multiple tokens, earlier approaches based on
 
 \subsubsection{Data for Visual Information Extraction}
 
-We evaluate our approach on visual information extraction tasks, where the goal is to extract semantic entities from visually-rich documents, based on a set of pre-defined keys. This evaluation is conducted using three benchmark for visual information extraction (Section~\ref{section:related-document-understanding-visual-information-extraction}), each covering different document types: FUNSD \citep{jaume2019funsd}, SROIE \citep{huang2019icdar2019}, and CORD \citep{park2019cord}. For each dataset, we use the reading order provided. To maintain consistency with pre-training data, we employ approximated token-level bounding boxes. In Figure~\ref{fig:source-target-sample}, we provide an example of source documents from FUNSD, SROIE, and CORD, along with their corresponding target sequences. 
+\begin{table}[ht]
+  \centering
+  \begin{tabular}{  c | c | c  }
+    Dataset & Document & Targets \\ \hline
+    FUNSD
+    & 
+    \begin{minipage}{.2\textwidth}
+      \includegraphics[width=\linewidth]{images/chapter4/funsd_sample.pdf}
+    \end{minipage}
+    &
+    \begin{minipage}{.2\textwidth}
+      \includegraphics[width=\linewidth]{images/chapter4/funsd_targets.pdf}
+    \end{minipage} \\
+    \hline 
+    SROIE & 
+    \begin{minipage}{.2\textwidth}
+      \includegraphics[width=\linewidth]{images/chapter4/sroie_sample.pdf}
+    \end{minipage}
+    &
+    \begin{minipage}{.2\textwidth}
+      \includegraphics[width=\linewidth]{images/chapter4/sroie_targets.pdf}
+    \end{minipage} \\
+    \hline 
+    CORD & 
+    \begin{minipage}{.2\textwidth}
+      \includegraphics[width=\linewidth]{images/chapter4/cord_sample.pdf}
+    \end{minipage}
+    &
+    \begin{minipage}{.2\textwidth}
+      \includegraphics[width=\linewidth]{images/chapter4/cord_targets.pdf}
+    \end{minipage}
+    \\
+  \end{tabular}
+  \caption{Example document from FUNSD, SROIE, and CORD, accompanied by their corresponding target sequences that include the entities to be extracted paired with their corresponding keys. Best viewed in color.}
+  \label{fig:source-target-sample}
+\end{table}
+
+We evaluate our approach on visual information extraction tasks, where the goal is to extract semantic entities from visually-rich documents, based on a set of pre-defined keys. This evaluation is conducted using three benchmark datasets for visual information extraction (Section~\ref{section:related-document-understanding-visual-information-extraction}), each covering different document types: FUNSD \citep{jaume2019funsd}, SROIE \citep{huang2019icdar2019}, and CORD \citep{park2019cord}. For each dataset, we use the reading order provided. To maintain consistency with pre-training data, we employ approximated token-level bounding boxes. In Figure~\ref{fig:source-target-sample}, we provide an example of source documents from FUNSD, SROIE, and CORD, along with their corresponding target sequences. 
 
 \paragraph{FUNSD} \citep{jaume2019funsd} is a form understanding dataset consisting of 199 real, noisy and scanned forms where each sample is a list of form entities. There are three keys for which values have to be extracted: \textit{question}, \textit{answer}, and \textit{header}. The dataset is split into 149 samples for training and 50 for test.
 
@@ -292,7 +330,7 @@ Models were implemented in Python using PyTorch \citep{paszke2017automatic} and 
 
 \subsubsection{Baselines}
 
-We compare our approach with BART+2D, a layout-augmented \ac{BART} model which relies on position embeddings derived from \ac{OCR}-induced positions. These position embeddings are calculated using embedding tables and are subsequently added to textual features. Layout embeddings, computed from bounding boxes using Equation~\ref{eq:layout-embeddings}, are incorporated to the resulting embeddings to construct the input embeddings. Following LayoutLMv2, BART+2D encodes spatial relative positions as bias terms added to the attention scores:
+We compare our approach with BART+2D, a layout-augmented \ac{BART} model which relies on position embeddings derived from \ac{OCR}-induced positions. These position embeddings are calculated using embedding tables \citep{devlin2018bert} and are subsequently added to textual features. Layout embeddings, computed from bounding boxes using Equation~\ref{eq:layout-embeddings}, are incorporated to the resulting embeddings to construct the input embeddings. Following LayoutLMv2, BART+2D encodes spatial relative positions as bias terms added to the attention scores:
 
 \begin{equation}
   \alpha_{i,j} = \dfrac{1}{\sqrt{d}} \bm{q}_i \cdot \bm{k}_j + \bm{b}^{(1D)}_{j - i} + \bm{b}^{(2D_x)}_{x^{(j)}_{0} - x^{(i)}_{0}} + \bm{b}^{(2D_y)}_{y^{(j)}_{1} - y^{(i)}_{1}},
@@ -357,49 +395,11 @@ Considering that the pre-training phase has allowed BART+Layout2Pos to compute m
 %   \caption{Example document from FUNSD, SROIE, and CORD, accompanied by their corresponding target sequences that include the entities to be extracted paired with their corresponding keys. Best viewed in color.}
 %   \label{fig:source-target-sample}
 % \end{figure}
-\begin{table}[h!]
-  \centering
-  \begin{tabular}{  c | c | c  }
-    Dataset & Document & Targets \\ \hline
-    FUNSD
-    & 
-    \begin{minipage}{.2\textwidth}
-      \includegraphics[width=\linewidth]{images/chapter4/funsd_sample.pdf}
-    \end{minipage}
-    &
-    \begin{minipage}{.2\textwidth}
-      \includegraphics[width=\linewidth]{images/chapter4/funsd_targets.pdf}
-    \end{minipage} \\
-    \hline 
-    SROIE & 
-    \begin{minipage}{.2\textwidth}
-      \includegraphics[width=\linewidth]{images/chapter4/sroie_sample.pdf}
-    \end{minipage}
-    &
-    \begin{minipage}{.2\textwidth}
-      \includegraphics[width=\linewidth]{images/chapter4/sroie_targets.pdf}
-    \end{minipage} \\
-    \hline 
-    CORD & 
-    \begin{minipage}{.2\textwidth}
-      \includegraphics[width=\linewidth]{images/chapter4/cord_sample.pdf}
-    \end{minipage}
-    &
-    \begin{minipage}{.2\textwidth}
-      \includegraphics[width=\linewidth]{images/chapter4/cord_targets.pdf}
-    \end{minipage}
-    \\
-  \end{tabular}
-  \caption{Example document from FUNSD, SROIE, and CORD, accompanied by their corresponding target sequences that include the entities to be extracted paired with their corresponding keys. Best viewed in color.}
-  \label{fig:source-target-sample}
-\end{table}
+
 
 \section{Results and Discussion}
 
-\subsection{Next Token Position Prediction}
-\label{section:layout2pos-results-ntpp}
-
-\begin{table}
+\begin{table}[ht]
   \centering
   \small
   \begin{adjustbox}{max width=\textwidth}
@@ -419,15 +419,18 @@ Considering that the pre-training phase has allowed BART+Layout2Pos to compute m
   \label{table:next-token-prediction-results}
 \end{table}
 
+We first provide an ablation study of Layout2Pos on the Next Token Position Prediction task, before discussing the results obtained on visual information extraction.
+
+\subsection{Next Token Position Prediction}
+\label{section:layout2pos-results-ntpp}
+
 We first evaluate the performance of the Layout2Pos module by computing the accuracy of Next Token Position Prediction. Recalling that the IIT-CDIP dataset is not considered reliable, this evaluation is conducted on a set of pairs of consecutive tokens derived from 100 examples from ReadingBank, which were not used in the pre-training phase. Specifically, we curated pairs categorized as "difficult", where the tokens are positioned on different lines, making a raster-scan approach ineffective. This choice demands the model to leverage layout information to accurately predict the next token in these scenarios.
 
 In these experiments, we exclusively train and evaluate Layout2Pos, omitting the encoder-decoder architecture. For each token, we compute accuracy by comparing the position of its subsequent token with the position of the token associated with the highest logit according to Layout2Pos. We vary the number of layers and the pre-training dataset used. 
 
-Performance is reported in Table~\ref{table:next-token-prediction-results}. Notably, pre-training Layout2Pos on ReadingBank compared to IIT-CDIP yields an increase of over 22\% in accuracy. Additionally, our results indicate that augmenting the number of layers in Layout2Pos results in a notable increase of over 6\% in accuracy. These results highlight the significance of using documents with accurate reading orders and contextualizing layout information to produce position embeddings able to capture the reading order of documents.
+Performance is reported in Table~\ref{table:next-token-prediction-results}. Notably, pre-training Layout2Pos on ReadingBank compared to IIT-CDIP yields an increase of over 22\% in accuracy. Additionally, augmenting the number of layers in Layout2Pos results in a notable increase of over 6\% in accuracy. These results highlight the significance of using documents with accurate reading orders and contextualizing layout information to produce position embeddings able to capture the reading order of documents.
 
-\subsection{Visual Information Extraction}
-
-\begin{table*}[h]
+\begin{table*}[ht]
   \centering
   \small
   \begin{adjustbox}{max width=\textwidth}
@@ -471,8 +474,12 @@ Performance is reported in Table~\ref{table:next-token-prediction-results}. Nota
   \label{table:visual-information-extraction-results}
 \end{table*}
 
+\subsection{Visual Information Extraction}
 
-Table~\ref{table:visual-information-extraction-results} reports the performance of all four models on FUNSD, SROIE, and CORD. We find that our sequence-to-sequence models achieve performance that is comparable or even superior to sequence-labeling approaches. This suggests that the sequence-to-sequence approach can match the effectiveness of traditional sequence labeling methods, offering an alternative that is not constrained by the document's content and reading order. On SROIE, BART+Layout2Pos performs on par with its counterpart fed with sequential position information, BART+2D. This suggests that Layout2Pos effectively leverages layout information to generate meaningful position embeddings on SROIE, implying that the reading order provided by OCR is no longer necessary. However, on the other two datasets, BART+Layout2Pos demonstrates lower performance than BART+2D, with a slight underperformance on CORD and a more notable disparity on FUNSD. Additionally, we find that the majority of errors arise from either omitted or mislabeled entities. Overall, both models rarely hallucinate, repeat entities, or identify a text as an entity when it should not be considered as such. 
+
+Table~\ref{table:visual-information-extraction-results} reports the performance of all four models on FUNSD, SROIE, and CORD. We find that our sequence-to-sequence models achieve performance that is comparable or even superior to sequence-labeling approaches. This suggests that the sequence-to-sequence approach can match the effectiveness of traditional sequence labeling methods, offering an alternative that is not constrained by the document's content and reading order. 
+
+On SROIE, BART+Layout2Pos performs on par with its counterpart fed with sequential position information—BART+2D. This suggests that Layout2Pos effectively leverages layout information to generate meaningful position embeddings on SROIE, implying that the reading order provided by \ac{OCR} is no longer necessary. However, on the other two datasets, BART+Layout2Pos demonstrates lower performance than BART+2D, with a slight underperformance on CORD and a more notable disparity on FUNSD. Additionally, we find that the majority of errors arise from either omitted or mislabeled entities. Overall, both models rarely hallucinate, repeat entities, or identify a text as an entity when it should not be considered as such. 
 
 To measure the impact of reading order on models dependent on it, we evaluate BART+2D and BART+Layout2Pos on test documents with shuffled reading orders. For every test dataset, the reading order of each document is shuffled such that words belonging to the same entity remain grouped together. This process is repeated three times, generating three shuffled test sets for every original test dataset. BART+2D and BART+Layout2Pos, fine-tuned using the reading order provided by the dataset, are then evaluated on each of the shuffled test sets. The resulting scores are then averaged and reported in Table~\ref{table:visual-information-extraction-results}. Results show that altering the reading order, even while ensuring that words belonging to the same entities are kept together, leads to a significant performance decline for BART+2D. Specifically, there is a F1-score drop of 5.19 and 5.93 for FUNSD and CORD, respectively, and a notable decrease of 20.84 for SROIE. In contrast, such variations have no effect on BART+Layout2Pos, as the model is not reliant on reading order.\footnote{While we do observe marginal variations for BART+Layout2Pos, we attribute these differences to the fact that documents longer than the maximum sequence length may be split into sequences different from those obtained with the original reading order.} This highlights the significance of developing methods robust to variations in reading order.
 

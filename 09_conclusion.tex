@@ -7,5 +7,33 @@
 
 %\minitoc
 
-We first summarize the contributions that we propose in this thesis before discussing interesting directions for future work. % that could be done in prolongation of those contributions.
+This thesis explores the field of Document Understanding through the application of deep learning techniques. Our exploration is guided by two main research axes. First, we delve into the challenge of efficiently and effectively encoding the multimodal nature of documents, extending beyond textual content to consider the complex interplay of layout and visual elements. Secondly, we address the challenge of efficiently processing long and complex documents by leveraging their visual presentation.
 
+\section{Summary of Contributions}
+
+In the past decade, Deep Learning techniques, in particular Foundation Models \citep{devlin2018bert, radford2019language, touvron2023llama}, have dominated the field of \ac{NLP}. This trend has prompted a paradigm shift in the field of Document Understanding, witnessing a significant rise in the adoption of large-scale, general-purpose multimodal Pre-trained Language Models. LayoutLM \citep{xu2020layoutlm} initiated the use of Transformers' modeling capabilities \citep{vaswani2017attention} to jointly pre-train text and layout information for a range of tasks involving visually-rich documents. Our first research axis involved contributing to this shift towards integrating document layout into pre-training by developing novel strategies for encoding layout information efficiently (Chapter~\ref{chapter:skim-attention}) and enhancing robustness on data with unreliable reading order information (Chapter~\ref{chapter:layout2pos}). Subsequently, various approaches have investigated the extension of multimodal Pre-trained Language Models to longer, more complex documents. Our second research axis centered on leveraging layout information to capture long-range dependencies (Chapter~\ref{chapter:loralay}), capitalizing on its potential to reduce the complexity of self-attention mechanisms (Chapter~\ref{chapter:skim-attention}). We will now outline the main contributions derived from our work.
+
+% It has emerged as the building block for developing more complex document understanding systems, leading to state-of-the-art performance across various document understanding tasks.
+
+% It has emerged as the building block for designing more complex document understanding systems that incorporate visual appearance through Computer Vision techniques \citep{xu2020layoutlmv2, appalaraju2021docformer, li2021selfdoc}, employ advanced strategies for integrating layout information \citep{wu2021lampret, lee2022formnet, peng2022ernie}, and use novel model architectures and pre-training tasks to better absorb cross-modal knowledge \citep{kim2022ocr, powalski2021going, hong2020bros, peng2022ernie}.
+
+\paragraph{Literature review}
+
+In Chapters~\ref{chapter:related-language-modeling} to~\ref{chapter:related-document-understanding}, we conducted a thorough literature review, extensively exploring works relevant to our research. Chapter~\ref{chapter:related-language-modeling} delves into the foundational aspects of language modeling, with a specific emphasis on Neural Language Models. In Chapter~\ref{chapter:related-pretrained-language-models}, we provided a detailed explanation of the Transformer architecture and its core component—the attention mechanism. Additionally, we explored the use of Transformers to construct powerful language models, with a focus on key Pre-trained Language Models that underpin recent advancements in Document Understanding. Transitioning to longer documents in Chapter~\ref{chapter:related-long-range-modeling}, we consolidated and organized efficient self-attention model variants designed to reduce the computational cost of Transformers, enabling efficient modeling of long texts. In Chapter~\ref{chapter:related-document-understanding}, we reviewed representative tasks and benchmark datasets within the field of Document Understanding. We then structured and reviewed deep learning approaches, with a specific focus on multimodal pre-training techniques, which serve as the cornerstone for our contributions.
+
+
+\paragraph{Layout-based attention strategies}
+
+In Chapter~\ref{chapter:skim-attention}, we tackled the efficiency challenges of multimodal pre-training techniques by strategically leveraging layout. Inspired by human reading strategies, we introduced \textit{Skim-Attention}, a novel attention mechanism based on layout information exclusively. Addressing key research questions, we illustrated Skim-Attention's ability to determine attention solely from layout and reduce self-attention complexity. Furthermore, we demonstrated its versatility as a mask for any Pre-trained Language Model, enhancing performance while sparsifying attention. Lastly, we showed the emergence of a document structure representation within Skim-Attention.
+
+\paragraph{Leveraging layout to mitigate reading order issues}
+
+In Chapter~\ref{chapter:layout2pos}, we tackle challenges in Document Understanding tasks arising from inaccuracies induced by \ac{OCR} in determining the reading order of visually-rich documents. We introduce \textit{Layout2Pos} as a solution to address these challenges. This shallow Transformer generates position embeddings from the spatial arrangement of text, avoiding reading order issues. Integrated into a BART architecture, Layout2Pos competes with models relying on reading order across three benchmark datasets for Visual Information Extraction. Importantly, the work emphasizes the significance of not relying on the reading order of documents produced by \ac{OCR}, showcasing the substantial performance drops observed in models dependent on reading order when evaluated with a different reading order than seen during training.
+
+\paragraph{Leveraging layout to deal with long and layout-rich documents}
+
+In Chapter~\ref{chapter:loralay}, we extended the exploration of layout-based techniques introduced in Chapters~\ref{chapter:skim-attention} and~\ref{chapter:layout2pos} to Long Document Summarization. We introduced \textit{LoRaLay}, a dataset collection for long-range summarization with visual/layout information, addressing the lack of multimodal information in existing summarization datasets. We augmented popular English datasets and built new datasets for French, Spanish, Portuguese, and Korean. Baselines merging layout-aware and long-range models were introduced, achieving state-of-the-art results and highlighting the importance of considerong both research directions for summarization of long documents. Additionally, we proposed an annotation interface for human evaluation and a novel metric to assess information flow preservation in generated summaries.
+
+% Limits: we did not explore use of visual information
+
+\section{Perspectives}
