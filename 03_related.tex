@@ -41,7 +41,7 @@ A Transformer \citep{vaswani2017attention} is an encoder-decoder architecture th
 
 \noindent The source sequence $(\bm{x}_1, \ldots, \bm{x}_n)$ and target sequence $(\bm{y}_1, \ldots, \bm{y}_m)$ are embedded and fed to the encoder and the decoder, respectively.
 
-The Transformer tackles two primary limitations of \acp{RNN}. \acp{RNN} suffer from the vanishing/exploding gradient problem, which hinders their ability to capture long-range dependencies. In addition, the sequential processing of input in \acp{RNN} hampers efficient parallelization \citep{vaswani2017attention}. To overcome these limitations, the Transformer removes recurrence altogether by leveraging the \textit{self-attention} mechanism to capture global dependencies between input and output. 
+The Transformer tackles two primary limitations of \acp{RNN}. \acp{RNN} suffer from the vanishing/exploding gradient problem, which hinders their ability to capture long-range dependencies. In addition, the sequential processing of input in \acp{RNN} hampers efficient parallelization \citep{vaswani2017attention}. To overcome these limitations, the Transformer removes recurrence altogether by leveraging the \textit{self-attention} mechanism to capture global dependencies. 
 
 We elaborate on the concept of \textit{attention} and explore a few attention mechanisms, including \textit{self-attention}. We then study the application of self-attention within the Transformer architecture. Finally, we provide details on the processing of sequential information in Transformers.
 
@@ -119,8 +119,10 @@ One common form of the generalized attention model is \textit{self-attention}, o
 \begin{equation}
     \begin{aligned}
         \alpha_{ij} &= p(a(\bm{q}_i, \bm{k}_j)) \\
-                    &= \textrm{softmax}_j (a(\bm{q}_i, \bm{K})) \\ 
-                    &= \frac{\exp(a(\bm{q}_{i}, \bm{k}_j))}{\sum_{j'} \exp(a(\bm{q}_{i}, \bm{k}_{j'}))}. \\
+                    &= \textrm{softmax}_j\left(\frac{\bm{q}_i^{\top} \bm{K}}{\sqrt{d_k}}\right) \\
+                    &= \frac{\exp\left(\bm{q}^{\top}_i \bm{k}_j / \sqrt{d_k}\right)}{\sum_{j'} \exp \left(\bm{q}^{\top}_i \bm{k}_{j'} / \sqrt{d_k}\right)} \\
+                    % &= \textrm{softmax}_j (a(\bm{q}_i, \bm{K})) \\ 
+                    % &= \frac{\exp(a(\bm{q}_{i}, \bm{k}_j))}{\sum_{j'} \exp(a(\bm{q}_{i}, \bm{k}_{j'}))}. \\
 \end{aligned}
 \end{equation}
 
@@ -140,9 +142,9 @@ One common form of the generalized attention model is \textit{self-attention}, o
 
 % attention scores are computed by taking the dot product of the query (decoder hidden state) and key (encoder hidden state) vectors
 
-\subsubsection{Muti-Head Self-Attention} 
+\subsubsection{Muti-Head Attention} 
 
-Rather than computing attention in a single step, \citet{vaswani2017attention} propose to decompose the self-attention operation in multiple heads to capture different aspects of the relationships between tokens. The dimensionality $d$ is divided into $h$ fixed-size segments, with one segment per attention head. Each of the $h$ heads uses three weight matrices (for queries, keys, and values) to project the segment into different subspaces. Self-attention is then computed across each of the $h$ segments in parallel, following Equation~\ref{equation:self-attention}. The outputs of each head are then concatenated to form the complete attention output, and projected back into the original $d$-dimensional representation space.
+Rather than computing attention in a single step, \citet{vaswani2017attention} propose to decompose the self-attention operation in multiple heads to capture different aspects of the relationships between tokens. The dimensionality $d$ is split into $h$ fixed-size segments, with one segment per attention head. Each of the $h$ heads uses three weight matrices (for queries, keys, and values) to project the segment into different subspaces. Self-attention is then computed across each of the $h$ segments in parallel, following Equation~\ref{equation:self-attention}. The outputs of each head are then concatenated to form the complete attention output, and projected back into the original $d$-dimensional representation space.
 
 % Given a query $\bm{q}_i \in \mathbb{R}^{d_q}$, a set of keys $\bm{K} \in \mathbb{R}^{n \times d_k}$, and a set of values $\bm{V} \in \mathbb{R}^{n \times d_v}$, each attention head $r \in [1, \ldots, h]$ is expressed as:
 
@@ -183,14 +185,14 @@ Given a projection matrix $\bm{W}_o \in \mathbb{R}^{d_v \times d}$, multi-head a
     
 
 % The dimension of each head is a subspace of the model's representation space, \textit{i.e.}, $d_k = d_v = \frac{d}{h}$. 
-\noindent In addition, multi-head self-attention enables parallelized computation of attention across different representation subspaces.
+\noindent In addition, multi-head attention enables parallelized computation of attention across different representation subspaces.
 
  
 \subsection{Self-Attention in Transformers}
 
-In a Transformer, both encoder and decoder are composed by stacking a series of Transformer layers on top of each other. Each Transformer layer is characterized by a \textit{multi-head self-attention} module and two position-wise feed-forward networks. To help the model train faster and more accurately, a residual connection \citep{he2016deep} is added to all sublayers, followed by layer normalization.
+In a Transformer, both encoder and decoder are composed by stacking a series of Transformer layers on top of each other. Each Transformer layer is characterized by a \textit{multi-head attention} module and two position-wise feed-forward networks. To help the model train faster and more accurately, a residual connection \citep{he2016deep} is added to all sublayers, followed by layer normalization.
 
-Given two sequences $\bm{Z} = (\bm{z}_1, \ldots, \bm{z}_n)$ and $\bm{Z'} = (\bm{z'}_1, \ldots, \bm{z'}_m)$, we use the following notation for multi-head self-attention:
+Given two sequences $\bm{Z} = (\bm{z}_1, \ldots, \bm{z}_n)$ and $\bm{Z'} = (\bm{z'}_1, \ldots, \bm{z'}_m)$, we use the following notation for multi-head attention between $\bm{Z}$ and $\bm{Z'}$:
 
 \begin{equation}
     \textrm{MHA}\bigl(\bm{Z}; \bm{Z'}\bigr) = 
@@ -299,16 +301,14 @@ In contrast to the encoder, the output vector $\bm{y}^{(l+1)}_i$ represents the 
 
 The position and order of words deeply impact the semantics of a sentence. By processing sequences token by token in a sequential manner, \acp{RNN} inherently integrate the order of the sequence. Unlike \acp{RNN}, Transformers simultaneously process each token in the sequence, making them entirely invariant to sequence ordering. Consequently, there is a need to explicitly incorporate the order of tokens into the Transformer.
 
-\subsubsection{Positional Encodings} 
-
 % There are many reasons why assigning a single number (\textit{e.g.}, the index value) to each time step is not used to represent a token's position in Transformer models. For long sequences, the indices can grow large in magnitude. If the index value is normalized to lie between 0 and 1, it can create problems for variable length sequences, as they would be normalized differently. 
 
-A satisfactory positional encoding method must be deterministic, produce a unique encoding at each time step, generalize to longer sequences, and ensure that distance between any two elements are consistent across sequences with different lengths. Instead of integrating this encoding into the model itself, the dominant approach for preserving information about the sequence order is to modify the initial token representation with information about the token's position in the sequence. These inputs are called positional encodings (or embeddings) and can either be learned or fixed a priori. % In other words, we enhance the model’s input to inject the order of words.
+A satisfactory positional encoding method must be deterministic, produce a unique encoding at each time step, generalize to longer sequences, and ensure that distance between any two elements are consistent across sequences with different lengths.  % In other words, we enhance the model’s input to inject the order of words.
 
 
-\paragraph{Absolute Position Encodings}
+\subsubsection{Absolute Position Encodings}
 
-Absolute position encodings encode the absolute position of a token within a sequence, meaning that each token is assigned a fixed vector based on its position in the sequence. \citet{vaswani2017attention} propose a simple scheme for fixed absolute positional encodings, where each position is mapped to a vector. Given $t$ a position in an input sequence, $d$ the encoding dimension, and $k \in \{1, \ldots, d/2\}$, the function $f: \mathbb{N} \rightarrow \mathbb{R}^d$ produces the positional encoding $\bm{p}_t$ as follows:
+Instead of integrating this encoding into the model itself, the dominant approach for preserving information about the sequence order is to modify the initial token representation with information about the token's position in the sequence. These inputs are called absolute position encodings (or embeddings) and can either be learned or fixed a priori. Absolute position encodings encode the absolute position of a token within a sequence, meaning that each token is assigned a fixed vector based on its position in the sequence. \citet{vaswani2017attention} propose a simple scheme for fixed absolute positional encodings, where each position is mapped to a vector. Given $t$ a position in an input sequence, $d$ the encoding dimension, and $k \in \{1, \ldots, d/2\}$, the function $f: \mathbb{N} \rightarrow \mathbb{R}^d$ produces the positional encoding $\bm{p}_t$ as follows:
 
 \begin{equation}
     p_{t,i} = f(t)_i = 
@@ -344,7 +344,7 @@ Besides capturing absolute positional information, sinusoidal positional encodin
 
 An alternative form of absolute positional encoding involves learning position embeddings jointly with the model during training \citep{devlin2018bert}. Instead of using fixed functions, learned positional encodings introduce trainable parameters. Each position in the sequence is associated with a unique vector, and these vectors are treated as parameters that the model can learn during training. Learned positional encodings offer flexibility as the model can adapt to various tasks and datasets. The embeddings are not predetermined by fixed functions, enabling the model to learn patterns related to position.
 
-\paragraph{Relative Position Encodings}
+\subsubsection{Relative Position Encodings}
 
 Although absolute positional encodings show satisfactory performance, they still face limitations. First, absolute positional encodings do not generalize well to sequences of lengths not seen at training time \citep{dai2019transformer}. Another limitation of absolute positional encoding lies in its lack of translation invariance. Shifting the same sequence alters the absolute positions, leading to different attention patterns. In the case of learned positional encodings,  there is a restriction on the number of tokens a model can handle. For instance, if a language model can only encode up to 1,024 positions, any sequence longer than 1,024 tokens cannot be processed by the model. Relative positional encoding address these issues by using a different vector for each pair of tokens, based on their relative distance \citep{shaw2018self, huang2018music, ke2020rethinking}. \citet{shaw2018self} are the first to leverage pairwise distances to create positional encodings. To account for pairwise distances when computing alignment scores, the relative position embedding $\bm{b}^K_{ij} \in \mathbb{R}^{d_k}$ representing the distance between tokens $t_i$ and $t_j$ is added to the keys as follows:
 
@@ -367,7 +367,7 @@ Although absolute positional encodings show satisfactory performance, they still
 
 \noindent where $\bm{w}^K = (\bm{w}^K_{-k}, \ldots, \bm{w}^K_{k}) \in \mathbb{R}^{2k \times d_a}$ is a learned vector.
 
-\citet{raffel2020exploring} introduce a simplified form of relative position embeddings where the distance between every pair of tokens $(t_i, t_j)$ is mapped to a scalar $\bm{b}_{ij} \in \mathbb{R}$ and added to the corresponding logit used for computing the attention weights. Alignment scores are re-defined as follows:
+\citet{raffel2020exploring} introduce a simplified form of relative position embeddings where the distance between every pair of tokens $(t_i, t_j)$ is mapped to a scalar $\bm{b}_{ij} \in \mathbb{R}$, which is then added to the corresponding alignment score:
 
 \begin{equation}
     a(\bm{q}_i, \bm{k}_j) = \frac{(\bm{q}_i^{\top} \bm{k}_j) + \bm{b}_{ij}}{\sqrt{d_k}}.
@@ -467,9 +467,9 @@ While \ac{MLM} effectively captures bidirectional context to represent words, it
 \subsubsection{Fine-tuning BERT}
 
 % The outcome of this pre-training process is a language model able to comprehend context, semantics, and relationships between words and sentences. 
-The knowledge gained during pre-training can then transferred to various downstream tasks through fine-tuning. The contextualized token representations obtained by the pre-trained \ac{BERT} are fed to a feed-forward network built over the last encoder layer. In this layer, predictions are generated for either individual tokens or the entire sequence. While the parameters of the pre-trained encoder are reused and fine-tuned for the task, the additional layer is initialized randomly and trained from scratch. However, it contains significantly fewer parameters. This layer can output predictions for individual tokens or the entire sequence, rendering the model suitable for tasks involving token classification and sequence classification, respectively. \\
+The knowledge gained during pre-training can then transferred to various downstream tasks through fine-tuning. The contextualized token representations obtained by the pre-trained \ac{BERT} are fed to a feed-forward network built over the last encoder layer. While the parameters of the pre-trained encoder are reused and fine-tuned for the task, the additional layer is initialized randomly and trained from scratch. However, it contains significantly fewer parameters. This layer can output predictions for individual tokens or the entire sequence, rendering the model suitable for tasks involving token classification and sequence classification, respectively. \\
 
-The bidirectional capability of \ac{BERT} addressed a crucial limitation in previous models, especially for tasks requiring a deep understanding of context and relationships between words. \ac{BERT} demonstrated remarkable performance across various natural language understanding benchmarks (\textit{e.g.}, sentiment analysis, question answering, text classification), showcasing the potential of bidirectional Transformer-based PLMs.
+The bidirectional capability of \ac{BERT} addressed a crucial limitation in previous models, especially for tasks requiring a deep understanding of context and relationships between words. \ac{BERT} demonstrated remarkable performance across various natural language understanding benchmarks (\textit{e.g.}, sentiment analysis, question answering, text classification), showcasing the potential of bidirectional Transformer-based Pre-trained Language Models.
  
 \subsection{BERT Variants}
 
@@ -510,7 +510,7 @@ Encoder-decoder Transformer-based Pre-trained Language Models use the original T
 
 \paragraph{BART} \ac{BART} \citep{lewis2019bart} is pre-trained with a denoising objective, where the model is trained to reconstruct the original sequence from a corrupted version. \ac{BART} extends the \ac{MLM} approach by adding more perturbations: replacing text spans with a single mask token (\textit{text infilling}), permuting sentences, deleting or replacing tokens, and rotating documents. The corrupted sequence is encoded using the bidirectional encoder, and the decoder is trained to reconstruct the original sequence. When fine-tuned, \ac{BART} shows remarkable results for natural language generation tasks such as text summarization, machine translation, question answering. Additionally, the model also works well for natural language understanding tasks, \textit{e.g.}, \ac{NER}, \ac{NLI}, and coreference resolution. Inspired by the success of \ac{BART}, \citet{liu2020multilingual} introduce mBART, a multilingual version of \ac{BART} pre-trained on large-scale monolingual corpora in many languages. mBART can be fine-tuned for any of the language pairs, whether in supervised or unsupervised settings, without necessitating task-specific or language-specific adjustments or initialization methods.
 
-\paragraph{Pegasus} \citep{zhang2020pegasus} is specifically tailored for abstractive text summarization. It is trained using the \ac{MLM} strategy coupled with the \textit{Gap-Sentences Generation} task, a novel pre-training approach intentionally similar to summarization. For each document, a subset comprising 15\% of sentences is selected and masked from the original documents.These masked sentence (\textit{gap sentences}) are masked and combined to form a pseudo-summary, which serves as the training label during pre-training. To refine the pseudo-summary and approach summary-like quality, the top-$m$ sentences are selected based on their importance, determined by the \ac{ROUGE}-1 score between each gap sentence and the rest of the document. The model is then tasked to generate the gap sentences using the remaining sentences.
+\paragraph{Pegasus} \citep{zhang2020pegasus} is specifically tailored for abstractive text summarization. It is trained using the \ac{MLM} strategy coupled with the \textit{Gap-Sentences Generation} task, a novel pre-training approach intentionally similar to summarization. For each document, a subset comprising 15\% of sentences is selected and masked from the original documents. These masked sentence (\textit{gap sentences}) are combined to form a pseudo-summary, which serves as the training label during pre-training. To refine the pseudo-summary and approach summary-like quality, the top-$m$ sentences are selected based on their importance, determined by the \ac{ROUGE}-1 score between each gap sentence and the rest of the document. The model is then tasked to generate the gap sentences using the remaining sentences.
 
 % The Gap-Sentences Generation task consists in masking whole sentences important to an input sequence and generating them together as one output sequence using the remaining sentences, similar to an extractive summary. 
 
@@ -520,10 +520,9 @@ Encoder-decoder Transformer-based Pre-trained Language Models use the original T
 
 \subsection{Decoder-only Models}
 
-
 The use of decoder-only Transformer architectures in Pre-trained Language Models has seen a recent surge, with several groundbreaking models \citep{radford2018improving, brown2020language, ouyang2022training, touvron2023llama} emerging. Decoder-only Pre-trained Language Models, also referred to as \textit{autoregressive} or \textit{causal} language models, remove the Transformer encoder and cross-attention layers. Each source sequence is concatenated with the corresponding target sequence to form a single input sequence, which is then used to train a language model. This design significantly simplifies the architecture and provides potential advantages in computational efficiency and ease of training. 
 
-Among the most performant generative models of the decade is the series of \ac{GPT} models introduced by \citep{radford2018improving}. \ac{GPT} is the first autoregressive language model that uses a Transformer decoder as its backbone. It learns to predict the next word in a sequence using an autoregressive language modeling. Suppose $\bm{w} = \{w_1, \ldots, w_n\}$ an unsupervised corpus of tokens, $k$ the size of the context window, and $\theta$ the parameters of the decoder. 
+Among the most performant generative models of the decade is the series of \ac{GPT} models introduced by \citep{radford2018improving}. \ac{GPT} is the first autoregressive language model that uses a Transformer decoder as its backbone. It learns to predict the next word in a sequence using an autoregressive language modeling. Suppose $\bm{w} = \{w_1, \ldots, w_n\}$ a sequence of tokens, $k$ the size of the context window, and $\theta$ the parameters of the decoder. 
 \ac{GPT} uses the following approximation:
 
 \begin{equation}
@@ -562,7 +561,7 @@ In particular, the next iteration in the \ac{GPT} series, \ac{GPT}-3 \citep{brow
 
 % The idea is that, during pre-training, language models develop pattern recognition while learning to predict the following word conditioned on the context. Therefore, Pre-trained Language Models may be able to generate the correct task solution (formatted as a text sequence) given the task desk description, task-specific input-output examples, and a prompt. In-context learning, also referred to as \textit{prompting}, encompasses zero-shot, one-shot, and few-shot learning. 
 
-The series of \ac{GPT} models has allowed significant progress in the field of \ac{NLP} by demonstrating the power of Large Language Models. Building on the success of the \ac{GPT} series, a myriad of Large Language Models have been released \citep{scao2022bloom, chowdhery2022palm, touvron2023llama}. The progress in Large Language Models has expanded into more specific domains, with models tailored for specialized tasks such as medical language processing \citep{thirunavukarasu2023large}, scientific research \citep{wang2023scientific}, website development \citep{wang2023software}, and code generation \citep{xu2022systematic}. A groundbreaking application of Large Language Models is ChatGPT \footnote{\url{https://openai.com/blog/chatgpt}}, an adaptation of the \ac{GPT}-series designed for dialogue. ChatGPT exhibits exceptional conversational abilities with humans and has sparked a wealth of reviews and discussions on the advancements of Large Language Models \citep{zhao2023survey, mohamadi2023chatgpt, hadi2023large}. 
+The series of \ac{GPT} models has allowed significant progress in the field of \ac{NLP} by demonstrating the power of Large Language Models. Building on the success of the \ac{GPT} series, a myriad of Large Language Models have been released \citep{scao2022bloom, chowdhery2022palm, touvron2023llama}. The progress in Large Language Models has expanded into more specific domains, with models tailored for specialized tasks such as medical language processing \citep{thirunavukarasu2023large}, scientific research \citep{wang2023scientific}, website development \citep{wang2023software}, and code generation \citep{xu2022systematic}. A groundbreaking application of Large Language Models is ChatGPT,\footnote{\url{https://openai.com/blog/chatgpt}} an adaptation of the \ac{GPT}-series designed for dialogue. ChatGPT exhibits exceptional conversational abilities with humans and has sparked a wealth of reviews and discussions on the advancements of Large Language Models \citep{zhao2023survey, mohamadi2023chatgpt, hadi2023large}. 
 
 In recent years, the size of Pre-trained Language Models has been scaled from a few million parameters (\ac{BERT}, 110M) to hundreds of billions of parameters (PaLM, 540B). This scaling has boosted capabilities, enabling models to generate even more coherent and natural-sounding text and further pushing the boundaries of \ac{NLP}. Despite substantial progress, there are still limitations associated with Large Language Models. First, pre-training effective Large Language Models is challenging due to the very high computational needs and the sensitivity to data quality and training settings. In addition, these have a tendency to generate inaccurate information, either conflicting with existing sources or unverifiable by available sources \citep{bang2023multitask}. Even robust Large Language Models such as ChatGPT encounter significant difficulties in managing hallucinations within generated texts. Another significant challenge for Large Language Models is their limitation in solving tasks that require the latest knowledge beyond what was available in their training data. Fine-tuning such large models with new data is a costly process and can potentially lead to catastrophic forgetting when incrementally training these models. Keeping up with and incorporating information from real-time or rapidly evolving context remains an open research problem \citep{yao2023editing}. Besides, Large Language Models may struggle with tasks that demand generating structured data \citep{jiang2023structgpt} or require domain-specific knowledge \citep{ye2023comprehensive}. Incorporating this knowledge into these models while preserving their original capabilities is non-trivial. Furthermore, Large Language models have been shown to internalize, spread, and potentially amplify harmful information present in the training data they are exposed to. This often includes toxic language such as offensiveness, hate speech, and insults \citep{gehman2020realtoxicityprompts}, as well as social biases such as stereotypes directed towards individuals with specific demographic identities \citep{sheng2021societal}. Addressing all of these limitations remains an ongoing area of research to enhance the robustness and ethical deployment of Large Language Models in various applications.
 

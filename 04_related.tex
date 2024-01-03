@@ -35,7 +35,7 @@ To alleviate the cost of Transformers, a diversity of efficient self-attention m
 \subsection{Sparse Patterns}
 \label{subsubsection:related-long-range-modeling-sparse}
 
-The earliest modifications to self-attention involve applying pattern-based methods to sparsify the attention matrix, reducing it to a sparse version by computing attention solely on a limited number of query-key pairs. This approach restricts the field of view to specific patterns.
+The earliest modifications to self-attention involve applying pattern-based methods to sparsify the attention matrix. By computing attention solely on a limited number of query-key pairs, this approach restricts the field of view to specific patterns.
 The key idea is to relax the constraint that a single layer is necessary to aggregate information from any two tokens. Although the attention of each layer is not dense, the receptive field can be increased as multiple layers are stacked. 
 
 As an initial attempt, the Sparse Transformer \citep{child2019generating} introduces a two-dimensional factorization of the attention matrix, where the network can attend to all positions through two steps of sparse attention. Half of the attention heads attend only to preceding elements in the sequence, while the other half attend to predesignated indices spread evenly throughout the sequence. 
