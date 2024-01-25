@@ -6,12 +6,12 @@
 
 \begin{chapabstract}
 	{\em    
-        While multimodal pre-training techniques prove effective, their development is not driven by efficiency considerations. Built upon the Transformer architecture, these models suffer from the quadratic complexity of self-attention, hindering their applicability to long documents. In this work, our focus lies in exploiting layout in a computationally efficient manner. In particular, we explore two research questions: 
+        While multimodal pre-training techniques prove effective, their development is not driven by efficiency considerations. Built upon the Transformer architecture, these models suffer from the quadratic complexity of self-attention, hindering their applicability to long documents. In this chapter, our focus lies in exploiting layout in a computationally efficient manner. In particular, we explore two research questions: 
         \begin{enumerate}
             \item Is it possible to determine attention from layout only? 
             \item Can layout help reduce the complexity of self-attention? 
         \end{enumerate}
-        Motivated by human reading strategies, we present Skim-Attention, a new attention mechanism that takes advantage of the structure of the document and its layout. Skim-Attention only attends to the 2-dimensional position of the words in a document. To exploit this mechanism, we introduce Skimformer and Skimming Mask, two frameworks for integrating Skim-Attention into the Transformer architecture. Our experiments show that Skim-Attention obtains a lower perplexity than prior works, while being more computationally efficient. We also show how Skim-Attention can be used off-the-shelf as a mask for any Pre-trained Language Model, allowing to improve their performance while restricting attention. Finally, we show the emergence of a document structure representation in Skim-Attention.     
+        Motivated by human reading strategies, we present Skim-Attention, a new attention mechanism that takes advantage of the structure of the document and its layout. Skim-Attention only depends on the 2-dimensional position of the words in a document. To exploit this mechanism, we introduce Skimformer and Skimming Mask, two frameworks for integrating Skim-Attention into the Transformer architecture. Our experiments show that Skim-Attention obtains a lower perplexity than prior works, while being more computationally efficient. We also show how Skim-Attention can be used off-the-shelf as a mask for any Pre-trained Language Model, allowing to improve their performance while restricting attention. Finally, we show the emergence of a document structure representation in Skim-Attention.     
 	\vspace*{5mm}
 	
 	The work in this chapter has led to the publication of a conference paper:}
@@ -35,7 +35,7 @@ As seen in Chapter~\ref{chapter:related-document-understanding}, Transformer-bas
 
 % Understanding how the author is presenting and organizing information frees up memory and processing resources allowing the reader more capacity to comprehend content
 % According to Meyer (1987), text structure instruction might beeffective for improving reading comprehension
-It has been shown that a well-designed layout results in less cognitive effort \citep{kieras1978beyond, britton1982effects, olive2017processing} and facilitates comprehension of the conveyed information by helping identify the document type and its constituents, as well as providing cues regarding relationships between elements \citep{meyer1980use, wright1999psychology}. Semiotic research assumes that readers scan the document before taking a closer look at certain units \citep{kress1996reading}, a claim supported by eye-tracking experiments on newspapers \citep{leckner2012presentation}. Inspired by these research findings, we claim that one does not need to have read each word in a document page to be able to understand a specific paragraph. Therefore, we argue that, to efficiently process long and structurally-complex documents, it is a waste of effort and computation to contextualize a token with respect to the entire input sequence. To shift towards processing long documents with awareness of their structure, we propose to leverage layout in a more intuitive and efficient way, resembling human cognition. We argue that this approach can be key to a model coping with long and complex documents.
+Considering cognitive aspects, it has been shown that a well-designed layout results in less cognitive effort \citep{kieras1978beyond, britton1982effects, olive2017processing} and facilitates comprehension of the conveyed information by helping identify the document type and its constituents, as well as providing cues regarding relationships between elements \citep{meyer1980use, wright1999psychology}. Semiotic research hypothesizes that readers scan the document before taking a closer look at certain units \citep{kress1996reading}, a claim supported by eye-tracking experiments on newspapers \citep{leckner2012presentation}. Inspired by these research findings, we claim that one does not need to have read each word in a document page to be able to understand a specific paragraph. Therefore, we argue that, to efficiently process long and structurally-complex documents, it is a waste of effort and computation to contextualize a token with respect to the entire input sequence. To shift towards processing long documents with awareness of their structure, we propose to leverage layout in a more intuitive and efficient way, resembling human cognition. We argue that this approach can be key to a model coping with long and complex documents.
 
 We delve into two research questions:
 
@@ -80,7 +80,7 @@ How much does the document layout help in comprehending long textual contents? H
 
 Table~\ref{tab:human-eval} reports the average time needed to retrieve information from the documents. We find that it is 2.5 times faster to answer questions from the formatted documents, and that the variability in the results is much lower in this case. These results support the hypothesis that \emph{less cognitive effort} is spent when the document is formatted, emphasizing the importance of layout information in reading comprehension.
 
-We believe that machines could benefit from the the document layout, just like humans, as a strategy to retrieve information faster while expending less effort. In particular, layout information could be of great help in reducing the cost of self-attention in Transformer models (Section~\ref{subsubsection:training-speed-memory-usage}) and facilitating the emergence of a document structure representation (Section~\ref{subsection:attention-visualization}).
+We make the hypothesis that machines could benefit from the the document layout, just like humans, as a strategy to retrieve information faster while expending less effort. In particular, layout information could be of great help in reducing the cost of self-attention in Transformer models (Section~\ref{subsubsection:training-speed-memory-usage}) and facilitating the emergence of a document structure representation (Section~\ref{subsection:attention-visualization}).
 
 \begin{table}
 \centering \small
@@ -140,21 +140,21 @@ The integration of Skim-Attention with any long-range Transformer is entirely fe
 
 \subsection{Skim-Attention in Transformers}
 
-We present two approaches to exploit Skim-Attention:
-\emph{i)} \textit{Skimformer}, wherein self-attention is replaced by Skim-Attention; and \emph{ii)} \textit{Skimming Mask}, where an attention mask is built from Skim-Attention and fed to a Transformer language model.
+We now present two approaches to exploit Skim-Attention:
+\emph{i)} \textit{Skimformer}, wherein self-attention is replaced by Skim-Attention; and \emph{ii)} \textit{Skimming Mask}, where an attention mask, built from Skim-Attention, is plugged into a Transformer language model to restrict its attention.
 
 \subsubsection{Skimformer}
 
 \begin{figure}[h]
     \centering
     \includegraphics[width=0.7\textwidth]{images/chapter3/skimformer-architecture.pdf}
-    \caption{Skimformer model architecture. The input consists of two components: a sequence of tokens (right-hand side) and a sequence of token bounding box coordinates (left-hand side). Both of these sequences are transformed into corresponding embedding sequences. Only the layout embeddings are used to compute Skim-Attention. $L$ denotes the number of Transformer encoder layers. $\bm{Q}$ and $\bm{K}$ are the queries and keys obtained by projecting the layout embeddings. $\bm{V}$ represents the values produced by projecting the encoder layers' textual inputs. The attention is solely based on token spatial positions and computed only once. The attention scores are then distributed to each layer of a Transformer encoder.}
+    \caption{Skimformer model architecture. The input consists of two components: a sequence of tokens (right-hand side) and a sequence of token bounding box coordinates (left-hand side). Only the layout embeddings (left) are used to compute Skim-Attention. $L$ denotes the number of Transformer encoder layers. $\bm{Q}$ and $\bm{K}$ are the queries and keys obtained by projecting the layout embeddings. $\bm{V}$ represents the values produced by projecting the encoder layers' textual inputs. The attention is solely based on token spatial positions and computed only once. The attention scores are then distributed to each layer of a Transformer encoder.}
     \label{fig:skimformer-architecture}
 \end{figure}
 
 \emph{Skimformer} is designed to answer the first research question: \textit{Is it possible to determine attention from layout only ?} Skimformer is a two-stage Transformer that replaces multiple standard self-attention layers with a single layer of Skim-Attention. Drawing inspiration from insights in cognitive science, the intuition behind this approach is to mimic how humans process a document by \emph{i)} skimming through the document to extract its structure, and \emph{ii)}  reading the contents based on the prior structural understanding. 
 
-Skimformer is fed with a sequence of token embeddings and the corresponding sequence of layout embeddings. Because layout information implicitly reflect the reading order of documents, we do not encode the sequential positions of tokens. The model adopts a two-step approach: first, it computes the skim-attention scores once and only once using layout information alone; then it uses these attention scores across all layers of a Transformer encoder. The architecture of Skimformer is depicted in Figure~\ref{fig:skimformer-architecture}.
+Skimformer is fed with a sequence of token embeddings and the corresponding sequence of layout embeddings. Because layout information implicitly reflects the reading order of documents, we do not encode the sequential positions of tokens. The model adopts a two-step approach: first, it computes the skim-attention scores (once and only once) using layout information alone. It then uses these attention scores across all layers of a Transformer encoder. The architecture of Skimformer is depicted in Figure~\ref{fig:skimformer-architecture}.
 
 For a given encoder layer and a single head, the output representations $\bm{Z}$ of the standard self-attention operation becomes:
 
@@ -173,7 +173,7 @@ While we experimented with a standard Transformer encoder-only model, it is wort
 
 Albeit remaining quadratic, the time and memory cost of Skim-Attention is much lower than vanilla self-attention. Let $n$ be the maximum sequence length, $L$ the number of encoder layers, $L'$ the number of layers needed to contextualize layout representations, $d$ the dimension of the text embeddings, and $d'$ the dimension of the layout embeddings. The computational complexity is reduced from $\mathcal{O}(2Ldn^2)$ to $\mathcal{O}(L'd'n^2 + Ldn^2)$, the first term being the time required to calculate the skim-attention scores, and the second term referring to the time needed to compute the residual value for each token in the input. The memory complexity for vanilla self-attention is $\mathcal{O}(Ldn + Ln^2)$, where the first term is the memory required to store keys, queries and values, while the second represents the attention scores produced. These requirements are reduced to $\mathcal{O}((d’n + n^2) + Ldn)$, with the first term corresponding to the keys and queries, the second term representing the attention scores, and the last one corresponding to the values.
 
-In conclusion, Skimformer is a two-stage Transformer architecture designed to determine attention from layout information alone, emulating human reading strategies by efficiently processing document structure. While enhancing efficiency, Skimformer has suboptimal aspects. One limitation lies in the fixed nature of Skim-Attention scores across all layers, which may oversimplify the model's comprehension, potentially missing complex relationships within the document. Furthermore, a token's attention is determined solely by layout information, potentially overlooking important semantic clues that are essential to understand complex relationships.
+In conclusion, Skimformer is a two-stage Transformer architecture designed to determine attention from layout information alone, inspired by human reading strategies that efficiently process document structure. While enhancing efficiency, Skimformer has suboptimal aspects. One limitation lies in the fixed nature of Skim-Attention scores across all layers, which may oversimplify the model's comprehension, potentially missing complex relationships within the document. Furthermore, a token's attention is determined solely by layout information, potentially overlooking important semantic clues that are essential to understand complex relationships.
 
 \subsubsection{Skimming Mask}
 
@@ -184,7 +184,7 @@ In conclusion, Skimformer is a two-stage Transformer architecture designed to de
     \label{fig:skimmingmask-architecture}
 \end{figure}
 
-One drawback of Skimformer is that it does not use attention based on semantics. However, for each token in a sequence, Skim-Attention provides a ranking of every other token in accordance with their layout-based similarity. Drawing from this observation, \emph{Skimming Mask} answers the second question: \textit{Can layout help reduce the complexity of self-attention?} by using Skim-Attention as a \textit{mask} to restrict the computation of self-attention to a smaller number of elements for each token. In this setting, Skim-Attention is viewed as an independent, complementary module that can be plugged into any language model. Given a sequence of layout embeddings, the corresponding skim-attention matrix is converted to an attention mask: based on the similarity scores provided in the attention matrix, each token only attends to at most $k$ tokens. The mask is given as input to a text-based Transformer language model with vanilla self-attention, and is used to restrict self-attention for each element in the input text sequence. This can be viewed as \emph{sparsifying} the standard self-attention matrix. In contrast to the sparse pattern methods discussed in Section~\ref{subsubsection:related-long-range-modeling-sparse}, this sparsity is determined by the document's layout.
+One drawback of Skimformer is that it does not use attention based on semantics. However, for each token in a sequence, Skim-Attention provides a ranking of every other token in accordance with their layout-based similarity. Drawing from this observation, \emph{Skimming Mask} answers the second question: \textit{Can layout help reduce the complexity of self-attention?} by using Skim-Attention as a \textit{mask} to restrict the computation of self-attention to a smaller number of elements for each token. In this setting, Skim-Attention is viewed as an independent, complementary module that can be plugged into any Transformer-based language model. Given a sequence of layout embeddings, the corresponding skim-attention matrix is converted to an attention mask: based on the similarity scores provided in the attention matrix, each token only attends to at most $k$ tokens. The mask is given as input to a text-based Transformer language model with vanilla self-attention, and is used to restrict self-attention for each element in the input text sequence. This can be viewed as \emph{sparsifying} the standard self-attention matrix. In contrast to the sparse pattern methods discussed in Section~\ref{subsubsection:related-long-range-modeling-sparse}, this sparsity is determined by the document's layout.
 
 It is worth nothing that Skimming Mask introduces a new way to cluster tokens: tokens within the same group have a high similarity to each other in terms of their respective \emph{layout positions}. This characteristic positions Skimming Mask as a concurrent approach to Reformer \citep{kitaev2020reformer}, which reduces the cost of self-attention by clustering tokens into chunks. As opposed to the latter, the concept of similarity is not derived from text semantics but rather from the document structure. Furthermore, Skimming Mask does not require an understanding of the semantic content; it solely relies on their layout features. Because each token is viewed as a bounding box whose characteristics are only its size and position, the representation space of layout features is much smaller than that of the text, which spans a vocabulary of more than 30k sub-words. As a consequence, computing attention based on layout could require a smaller latent space dimension than for text, corresponding to less computational efforts. This is also the case for humans: as demonstrated in section \ref{section:human-evaluation}, it is much easier to retrieve information from documents when the layout is provided.
 
@@ -206,7 +206,7 @@ To pre-train our models on a wide variety of document formats, we select three d
 
 \paragraph{RVL-CDIP} \citep{harley2015evaluation} is a large collection of 400k scanned document images from various categories (\textit{e.g.}, letter, form, advertisement, invoice). The wide range of layouts, as well as the low image quality, allows to train more robust models. We select 25k documents from the RVL-CDIP dataset available on Kaggle,\footnote{https://www.kaggle.com/nbhativp/first-half-training} which amounts to half of the training images from the full dataset (160k images). The text and word bounding boxes are extracted using Tesseract \citep{kay2007tesseract}. We split the data into 80\% for training, 10\% for validation and 10\% for test.
 
-\paragraph{PubLayNet} \citep{zhong2019publaynet} comprises over 360k document images from PubMed Central\textsuperscript{\texttrademark} Open Access. The medical publications contained in the collection have similar layouts, but the text density coupled with the small image size allows to train more robust models. We arbitrarily extract the first training split among the 7 available on IBM Data Asset eXchange\footnote{https://developer.ibm.com/exchanges/data/all/publaynet/} and use the first 20k images as our training set. For the validation and test sets, we keep the first 2,500 images in each split. Because Tesseract's accuracy is too low without any pre-processing, we apply a few image processing operations (\textit{i.e.}, rescaling, converting to grayscale, applying dilation and erosion) on each image in order to improve text extraction.
+\paragraph{PubLayNet} \citep{zhong2019publaynet} comprises over 360k document images from PubMed Central\textsuperscript{\texttrademark} Open Access. The medical publications contained in the collection have similar layouts, but the text density coupled with the small image size allows to train more robust models. We arbitrarily extract the first training split among the 7 available on IBM Data Asset eXchange\footnote{https://developer.ibm.com/exchanges/data/all/publaynet/} and use the first 20k images as our training set. For the validation and test sets, we keep the first 2,500 images in each split. Because Tesseract's accuracy is too low without any pre-processing, we apply a few image processing operations (\textit{i.e.}, rescaling, converting to grayscale, applying dilation and erosion) on each image to improve text extraction.
 
 \subsubsection{Dataset for Document Layout Analysis}
 
@@ -256,7 +256,7 @@ We first discuss the results obtained on language modeling and document layout a
 \label{tab:ppl-mix}
 \end{table}
 
-In Table~\ref{tab:ppl-mix}, we report the perplexity on the MIX dataset. We observe that Skimformer and LongSkimformer outperform both \ac{BERT} and Longformer by a huge margin, while improving perplexity by more than 10 points over LayoutLM. In addition, Figure~\ref{fig:pretraining-learning-curves} demonstrates that Skimformer converges much faster than \ac{BERT}, and slightly more than LayoutLM, indicating its efficiency in learning from the training data. However, it is worth acknowledging certain limitations. Firstly, the models are pre-trained on a relatively small dataset, which may impact their generalizability. Additionally, achieving better perplexity does not always guarantee improved performance in downstream tasks.
+In Table~\ref{tab:ppl-mix}, we report the perplexity on the MIX dataset. We observe that Skimformer and LongSkimformer outperform both \ac{BERT} and Longformer by a huge margin, while improving perplexity by more than 10 points over LayoutLM. In addition, Figure~\ref{fig:pretraining-learning-curves} demonstrates that Skimformer converges much faster than \ac{BERT}, and slightly more than LayoutLM, indicating its efficiency in learning from the training data. However, it is worth acknowledging certain limitations. Firstly, the models are pre-trained for a relatively brief duration on a rather small dataset, which may impact their generalizability. Additionally, achieving better perplexity does not always guarantee improved performance in downstream tasks.
 
 \begin{figure}
     \centering \small
@@ -287,7 +287,7 @@ We further conduct an ablation study about the influence of the Skim-Attention i
 \label{tab:ablation-study}
 \end{table}
 
-We find that computing Skim-Attention directly on the layout embeddings (\textit{Non-contextualized Layout}) results in higher perplexity. Additionally, substituting spatial positions with sequential positions (\textit{1D position}) leads to an increase in perplexity, indicating that layout information is crucial for the language model. We also observe that assigning the same bounding box to every token (\textit{Uniform Layout}) leads to a severe drop in performance. Coupled with the perplexity obtained with a degraded layout, this shows that the model's performance is greatly impacted by the layout input quality. 
+We find that computing Skim-Attention directly on the layout embeddings (\textit{Non-contextualized Layout}) results in higher perplexity, indicating that depending solely on non-contextualized layout information results in increased uncertainty regarding the predictions made. Additionally, substituting spatial positions with sequential positions (\textit{1D position}) leads to an increase in perplexity, indicating that layout information is crucial for the language model. We also observe that assigning the same bounding box to every token (\textit{Uniform Layout}) leads to a severe drop in performance. Coupled with the perplexity obtained with a degraded layout, this shows that the model's performance is greatly impacted by the layout input quality. 
 
 \subsubsection{Training Speed and Memory Usage}
 \label{subsubsection:training-speed-memory-usage}
@@ -296,7 +296,7 @@ Using Hugging Face's Transformers benchmarking tools \citep{wolf2019huggingface}
 
 % We use Python 3.7.10, PyTorch 1.8.1+cu101 \citep{paszke2019pytorch}, and Transformers 4.6.0.dev0.
 
-Figures~\ref{fig:benchmark-train-time} and \ref{fig:benchmark-train-memory} report the time and peak memory consumption, respectively, with respect to the sequence length. Results show that Skimformer is more time and memory efficient than LayoutLM. 
+Figures~\ref{fig:benchmark-train-time} and \ref{fig:benchmark-train-memory} report the time and peak memory consumption, respectively, with respect to the sequence length. Results confirm that Skimformer is more time and memory efficient than LayoutLM. 
 
 \begin{figure}[!htbp]
 \centering
@@ -316,6 +316,8 @@ Figures~\ref{fig:benchmark-train-time} and \ref{fig:benchmark-train-memory} repo
 \end{figure}
 
 \subsection{Document Layout Analysis Evaluation}
+
+We now evaluate the performance of our models on a document layout analysis task using the DocBank-LA dataset. Table~\ref{table:results-docbank} reports the performance on DocBank-LA, the sequence length processed, the number of times attention is computed and the ratio of the total calculation unit ($n^2 \times \textrm{Nb Skim-Attn} + \textrm{Seq. Len}^2 \times \textrm{Nb Standard Attn}$, where $n$ is the length of the initial sequence on which Skim-Attention is applied; and \textit{Seq. Len} is the length obtained after applying Skimming Mask) to that of \ac{BERT}/LayoutLM and Longformer. All models were pre-trained from scratch on MIX.
 
 \begin{table}
 \centering
@@ -351,37 +353,59 @@ Figures~\ref{fig:benchmark-train-time} and \ref{fig:benchmark-train-memory} repo
 %\vspace{-0.5cm}
 \end{table}
 
-Table~\ref{table:results-docbank} reports the performance on DocBank-LA, the sequence length processed, the number of times attention is computed and the ratio of the total calculation unit ($n^2 \times \textrm{Nb Skim-Attn} + \textrm{Seq. Len}^2 \times \textrm{Nb Standard Attn}$, where $n$ is the length of the initial sequence on which Skim-Attention is applied; and \textit{Seq. Len} is the length obtained after applying Skimming Mask) to that of \ac{BERT}/LayoutLM and Longformer. All models were pre-trained from scratch on MIX. 
+
 
 Skimformer is substantially superior to \ac{BERT}, improving the F1 score by 15\% while reducing the number of attentions computed by four. We experimented with plugging the layout embeddings learnt by Skimformer in a \ac{BERT} model. The resulting model, BERT+SkimEmbeddings, resembles LayoutLM in terms of architecture.\footnote{In BERT+SkimEmbeddings, the layout embeddings are first projected into the same dimensional space as the text embeddings. In this way, we can plug the layout embeddings from any Skimformer model, in particular smaller ones.} Results show that BERT+SkimEmbeddings performs on par with LayoutLM despite simply combining separately pre-trained modalities, as opposed to the latter which requires an extensive joint training.
 
-For the Skimming Mask models, the models attend only to the top-128 tokens. Compared to LayoutLM, this reduction to the quadratic factor allows to obtain the same downstream results with only 31.25\% of the computational burden.
-Compared to \ac{BERT}, it even obtains an absolute improvement of more than 6\% in term of F1 score.
+For the Skimming Mask models, the models attend only to the top-128 tokens. Compared to LayoutLM, reducing the number of tokens attended to from 512 to 128 allows to obtain the same downstream results with only 31.25\% of the computational burden. Compared to \ac{BERT}, it even obtains an absolute improvement of more than 6\% in term of F1 score.
 
 LongSkimformer benefits from both Skim-Attention and Longformer's gain in efficiency. It outperforms Longformer by 5\% while requiring four times less attention operations, and the use of Longformer's linear attention allows LongSkimformer to process sequences four times larger than Skimformer can.
 
 Overall, the competitive results achieved by Skimformer show that it is possible to learn attention solely from layout information. Additionally, the efficiency gains and effectiveness demonstrated by the Skimming Mask approach emphasize the potential of leveraging layout information to reduce the complexity of self-attention.
 
+
+
 \subsection{Attention Visualization}
 \label{subsection:attention-visualization}
 
-\begin{figure}
-    \centering \small
-    \includegraphics[width=.49\textwidth]{images/chapter3/attention-maps_with-average.pdf}
-    \caption{Skim-attention maps corresponding to the title (left) and the abstract (right), along with average attention score (in white) per text block (in green). We consider the skim-attention matrix averaged over all the attention heads. Given a semantic unit (title or abstract), we plot the average attention score for each token.
-    }
+\begin{figure}[H]
+  \centering
+    \begin{subfigure}{0.49\textwidth}
+      \centering
+      \includegraphics[width=0.8\textwidth]{images/chapter3/attention-maps_with-average.pdf}
+      \caption{Skim-attention maps corresponding to the title (left) and the abstract (right), with average attention score (in white) per text block (in green).}
+    \end{subfigure}
+    \begin{subfigure}{0.49\textwidth}
+      \centering
+      \includegraphics[width=\textwidth]{images/chapter3/vis2-cropped.pdf}
+      \caption{Skim-attention maps corresponding to the top table (left) and the bottom table (right).}
+    \end{subfigure}
+    \begin{subfigure}{\textwidth}
+      \centering
+      \includegraphics[width=\textwidth]{images/chapter3/vis3.pdf}
+      \caption{Skim-attention maps corresponding to the title (left), the authors (center) and the abstract (right).}
+    \end{subfigure}
+    \caption{Skim-Attention maps obtained on three sample documents. We consider the skim-attention matrix averaged over all the attention heads. Given a semantic unit, we plot the average attention score for each token.}
     \label{fig:attention-vis}
-    % \vspace{-0.5cm} 
 \end{figure}
 
-We explore the distribution of attention scores obtained by Skim-Attention. Figure~\ref{fig:attention-vis} shows the attention maps produced by Skimformer on a randomly sampled document. Given a semantic unit (either title or abstract in our example), we select the corresponding tokens and compute their average attention over the whole document. We observe, both qualitatively and quantitatively, that tokens attend mainly to other elements in the same semantic unit, thus creating clusters of tokens that are relevant to each other. This shows that the model has grasped the concept of semantic unit with only self-supervision, enabling the emergence of a document structure representation. We argue that these structure-aware clusters could pave the way for long text encoding and unsupervised document segmentation.
+% \begin{figure}
+%     \centering \small
+%     \includegraphics[width=.49\textwidth]{images/chapter3/attention-maps_with-average.pdf}
+%     \caption{Skim-attention maps corresponding to the title (left) and the abstract (right), along with average attention score (in white) per text block (in green). We consider the skim-attention matrix averaged over all the attention heads. Given a semantic unit (title or abstract), we plot the average attention score for each token.
+%     }
+%     \label{fig:attention-vis}
+%     % \vspace{-0.5cm} 
+% \end{figure}
+
+We explore the distribution of attention probabilities obtained by Skim-Attention. Figure~\ref{fig:attention-vis} shows the attention maps produced by Skimformer on three  randomly sampled documents. Given a semantic unit (either title or abstract in our example), we select the corresponding tokens and compute their average attention over the whole document. We observe, both qualitatively and quantitatively, that tokens attend mainly to other elements in the same semantic unit, thereby creating clusters of tokens that are relevant to each other. This shows that the model has grasped the concept of semantic unit with only self-supervision, enabling the emergence of a document structure representation. We argue that these structure-aware clusters could pave the way for long text encoding and unsupervised document segmentation.
 
 \section{Conclusion}
 
-We have presented Skim-Attention, a novel structure-aware attention mechanism. Distinct from prior works in layout-aware pre-training, Skim-Attention builds on cognitive science: rather than considering every single token in the document to compute attention, our approach exploits 2D positions. We conduct extensive experiments to show the effectiveness of Skim-Attention, both as an end-to-end model (Skimformer) and as a mask for any language model (Skimming Mask). 
+We have presented Skim-Attention, a novel structure-aware attention mechanism. Distinct from prior works in layout-aware pre-training, Skim-Attention is inspired by human reading strategies: rather than considering every single token in the document to compute attention, our approach exploits 2D positions. We conduct extensive experiments to show the effectiveness of Skim-Attention, both as an end-to-end model (Skimformer) and as a mask for any language model (Skimming Mask). 
 
 Potential extensions of this work include full-scale pre-training, integrating image features into Skim-Attention to leverage information across all modalities, as well as exploring tasks that require capturing longer-range dependencies.
 
-Most Pre-trained Language Models depend on serialized text obtained through \ac{OCR} or PDF parsing. Yet, accurately detecting the \textit{reading order} of visually-rich documents poses a significant challenge. With the aim of advancing models that capture document structure more intuitively, the next chapter will focus on addressing reading order issues by leveraging document layout and entirely discarding sequential position information.
+Most pre-training techniques, including Skim-Attention, depend on serialized text obtained through \ac{OCR} or PDF parsing. Yet, accurately detecting the \textit{reading order} of visually-rich documents poses a significant challenge. With the aim of advancing models that capture document structure more intuitively, the next chapter will focus on addressing reading order issues by leveraging document layout and entirely discarding sequential position information.
 
 

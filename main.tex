@@ -38,6 +38,23 @@
 
 \usepackage{array}
 
+\usepackage[xcolor]{changebar}
+
+\newcommand{\added}[1]{%
+  \cbcolor{green}
+  \begin{changebar}
+    #1
+  \end{changebar}%
+}%
+
+\newcommand{\modified}[1]{%
+  \cbcolor{orange}
+  \begin{changebar}
+    #1
+  \end{changebar}%
+}%
+\setlength{\changebarsep}{2ex}
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Si y a une erreur à la compilation dans la biblio du genre : 
 %
@@ -126,10 +143,10 @@
 	\cleardoublepage
 	\let\leftmark=\oldleftmark
 
-	\acresetall
-	\input{04_related.tex} 
-	\cleardoublepage
-	\let\leftmark=\oldleftmark
+	% \acresetall
+	% \input{04_related.tex} 
+	% \cleardoublepage
+	% \let\leftmark=\oldleftmark
 
 	\acresetall
 	\input{05_related.tex} 
@@ -161,14 +178,14 @@
 	\cleardoublepage
 	}
 
-	\appendix
-	\acresetall
-	\input{11_appendix1.tex}
-	\cleardoublepage
+	% \appendix
+	% \acresetall
+	% \input{11_appendix1.tex}
+	% \cleardoublepage
 
-	\acresetall
-	\input{12_appendix2.tex}
-	\cleardoublepage
+	% \acresetall
+	% \input{12_appendix2.tex}
+	% \cleardoublepage
 
 	\printbibliography
 
